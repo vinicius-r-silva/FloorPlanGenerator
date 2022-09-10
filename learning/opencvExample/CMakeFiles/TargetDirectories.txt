@@ -1,0 +1,3 @@
+/home/visum/Documents/FloorPlanGenerator/learning/opencvExample/CMakeFiles/main.dir
+/home/visum/Documents/FloorPlanGenerator/learning/opencvExample/CMakeFiles/edit_cache.dir
+/home/visum/Documents/FloorPlanGenerator/learning/opencvExample/CMakeFiles/rebuild_cache.dir
