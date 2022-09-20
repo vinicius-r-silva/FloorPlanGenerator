@@ -11,5 +11,12 @@ if (OPENMP_FOUND)
 endif()
 
 
-add_executable( main main.cpp )
+include (CTest)
+include_directories(lib)
+
+set(CMAKE_BUILD_TYPE Debug)
+set(headers "./lib/storage.h") 
+set(codes "./src/main.cpp" "./src/storage.cpp")
+add_executable(main ${headers} ${codes}) 
+# add_executable( storage src/storage.cpp )
 target_link_libraries( main PUBLIC OpenMP::OpenMP_CXX ${OpenCV_LIBS} )
