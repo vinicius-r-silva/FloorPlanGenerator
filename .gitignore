@@ -34,5 +34,10 @@
 /build/
 
 /.vscode/
+docs/html/
+docs/latex/
+docs/_build/
+docs/_static/
+docs/_templates/
 
 calculator.py

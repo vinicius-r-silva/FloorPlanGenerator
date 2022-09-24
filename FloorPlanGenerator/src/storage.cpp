@@ -5,14 +5,14 @@
 #include "../lib/globals.h"
 #include "../lib/log.h"
 
+/// @brief          Storage Constructor
+/// @return         None
 Storage::Storage(){
     readConfigs();
 }
 
-// void Storage::printRoom(RoomConfig room){
-//     std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << "), : W (" << room.minW << " - " << room.maxW << "), E: " << room.numExtensions << " step: " << room.step << std::endl;
-// }
-
+/// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
+/// @return         None
 void Storage::readConfigs(){
     setups.clear();
     
@@ -46,6 +46,8 @@ void Storage::readConfigs(){
 
 }
 
+/// @brief          Get the possible RoomConfig informations
+/// @return         RoomConfig vector
 std::vector<RoomConfig> Storage::getConfigs(){
     return setups;
 }

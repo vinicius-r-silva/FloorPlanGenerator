@@ -1,0 +1,4 @@
+Globals
+=======
+.. doxygenfile:: globals.h
+
