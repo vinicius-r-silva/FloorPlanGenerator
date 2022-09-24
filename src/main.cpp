@@ -8,11 +8,24 @@
 
 
 #include "../lib/storage.h"
+#include "../lib/combination.h"
 
 int main( int ac, char **av){
     Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
+
+    std::vector<std::vector<RoomConfig>> allCombs = getAllComb(setups, 3);
+    for(int i = 0; i < allCombs.size(); i++){
+        std::vector<RoomConfig> comb = allCombs[i];
+        for(int k = 0; k < comb.size(); k++){
+            std::cout << comb[k].name << ",  ";
+        }
+        std::cout << std::endl;
+    }
     return 0;
 }
+
+
 // int factorial(int x){
 //     if(x == 1)
 //         return x;

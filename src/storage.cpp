@@ -3,14 +3,15 @@
 #include <vector>
 #include "../lib/storage.h"
 #include "../lib/globals.h"
+#include "../lib/log.h"
 
 Storage::Storage(){
     readConfigs();
 }
 
-void Storage::printRoom(RoomConfig room){
-    std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << "), : W (" << room.minW << " - " << room.maxW << "), E: " << room.numExtensions << std::endl;
-}
+// void Storage::printRoom(RoomConfig room){
+//     std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << "), : W (" << room.minW << " - " << room.maxW << "), E: " << room.numExtensions << " step: " << room.step << std::endl;
+// }
 
 void Storage::readConfigs(){
     setups.clear();
@@ -26,6 +27,7 @@ void Storage::readConfigs(){
     
     for(int i = 0; i < numOfRooms; i++){
         input_file.read((char*)&(rooms[i].id), sizeof(long));
+        input_file.read((char*)&(rooms[i].step), sizeof(int));
         input_file.read((char*)&(rooms[i].numExtensions), sizeof(int));
         input_file.read((char*)&(rooms[i].minH), sizeof(int));
         input_file.read((char*)&(rooms[i].maxH), sizeof(int));
@@ -37,8 +39,10 @@ void Storage::readConfigs(){
 
     input_file.close();
     free(rooms);
+
+    Log log = Log();
     for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
-        printRoom(*it);
+        log.print((RoomConfig)(*it));
 
 }
 
