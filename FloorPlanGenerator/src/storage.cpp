@@ -16,7 +16,7 @@ Storage::Storage(){
 void Storage::readConfigs(){
     setups.clear();
     
-    std::ifstream input_file("../configs/rooms", std::ios::binary);
+    std::ifstream input_file("../FloorPlanGenerator/configs/rooms", std::ios::binary);
     
     int numOfRooms = 0;
 
