@@ -18,6 +18,8 @@ typedef struct{
     int maxH;                       /**< maximum Height */
     int minW;                       /**< minimum Width */
     int maxW;                       /**< maximum Width */
+    int minRepetitions;             /**< minimum number of repetitions */
+    int maxRepetitions;             /**< maximum number of repetitions */
     char name[ROOM_NAME_SIZE];      /**< room name */
     
     /**

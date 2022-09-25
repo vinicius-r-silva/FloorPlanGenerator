@@ -81,3 +81,41 @@ std::vector<std::vector<RoomConfig>> Iter::getAllComb(std::vector<RoomConfig> se
     } while(Iter::next_combination(setupIdx.begin(),setupIdx.begin() + k, setupIdx.end()));
     return result;
 }
+
+
+/*!
+    @brief Calculate a new room's width and height
+    @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
+    @param[out] sizeH rooms Height size
+    @param[out] sizeW rooms Width size
+    @return True if there is a next room size iteration, false otherwise
+*/
+bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
+    int n = rooms.size();
+    int flag = 0;
+    for(int i = 0; i < n; i++){
+        if(sizeH[i] < rooms[i].maxH){
+            sizeH[i] += rooms[i].step;
+            if(sizeH[i] > rooms[i].maxH)
+                sizeH[i] = rooms[i].maxH;
+
+            break;
+        } else {
+            sizeH[i] = rooms[i].minH;
+            flag++;
+        }
+        
+        if(sizeW[i] < rooms[i].maxW){
+            sizeW[i] += rooms[i].step;
+            if(sizeW[i] > rooms[i].maxW)
+                sizeW[i] = rooms[i].maxW;
+
+            break;
+        } else {
+            sizeW[i] = rooms[i].minW;
+            flag++;
+        }
+    }
+
+    return flag < 2*n;
+}

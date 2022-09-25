@@ -28,7 +28,6 @@ public:
      * @return None
     */
     Iter();
-    
 
     /*!
         @brief Get all possible combinations of k elements in a vector of size n
@@ -38,6 +37,15 @@ public:
         @return (vector of vector of RoomConfig) return a vector with all possible combinations where wich combination is a vector of RoomConfig 
     */
     static std::vector<std::vector<RoomConfig>> getAllComb(std::vector<RoomConfig> setups, int k);
+
+    /*!
+        @brief Calculate a new room's width and height
+        @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
+        @param[out] sizeH rooms Height size
+        @param[out] sizeW rooms Width size
+        @return True if there is a next room size iteration, false otherwise
+    */
+    static bool nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW);
 };
 
 #endif //COMBINATION

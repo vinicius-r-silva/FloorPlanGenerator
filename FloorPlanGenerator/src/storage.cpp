@@ -20,9 +20,10 @@ Storage::Storage(){
  * @return String of the current project directory
 */
 std::string Storage::getProjectDir(){
-    std::string res = "";
+    std::string res = ""; //Result string
     const std::filesystem::path currPath = std::filesystem::current_path();
     
+    //Iterate over every folder of the current path until it reachs the FloorPlanGenerator folder
     for (auto it = currPath.begin(); it != currPath.end(); ++it){
         res += (*it);
         res += "/";
@@ -31,6 +32,7 @@ std::string Storage::getProjectDir(){
             break;
     }
 
+    //Cleanup result
     if (res.rfind("//", 0) == 0)
         res.erase(0,1);
 
