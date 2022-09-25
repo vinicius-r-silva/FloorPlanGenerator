@@ -15,9 +15,11 @@ endif()
 include (CTest)
 include_directories(lib)
 
+
 set(CMAKE_BUILD_TYPE Debug)
 set(headers "./lib/storage.h" "./lib/combination.h" "./lib/globals.h" "./lib/log.h") 
 set(codes "./src/main.cpp" "./src/storage.cpp" "./src/log.cpp")
 add_executable(FloorPlanGenerator ${headers} ${codes}) 
+target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra -Wpedantic)
 # add_executable( storage src/storage.cpp )
 target_link_libraries( FloorPlanGenerator PUBLIC OpenMP::OpenMP_CXX ${OpenCV_LIBS} )

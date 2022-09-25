@@ -55,10 +55,10 @@ inline bool next_combination(const Iterator first, Iterator k, const Iterator la
     @param[in] k size of the combinations
     @return (vector of vector of RoomConfig) return a vector with all possible combinations where wich combination is a vector of RoomConfig 
 */
-std::vector<std::vector<RoomConfig>> getAllComb(std::vector<RoomConfig> setups, std::size_t k){
+std::vector<std::vector<RoomConfig>> getAllComb(std::vector<RoomConfig> setups, int k){
     std::vector<std::vector<RoomConfig>> result = std::vector<std::vector<RoomConfig>>();
 
-    std::size_t n = setups.size();
+    int n = setups.size();
     std::vector<int> setupIdx;
     for (int i = 0; i < n; setupIdx.push_back(i++));
 

@@ -12,44 +12,63 @@
 
 void SizeLoop(const std::vector<RoomConfig> rooms);
 
-int main( int ac, char **av){
-    Storage hdd = Storage();
-    // std::vector<RoomConfig> setups = hdd.getConfigs();
+bool nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
+    int n = rooms.size();
+    int flag = 0;
+    for(int i = 0; i < n; i++){
+        if(sizeH[i] < rooms[i].maxH){
+            sizeH[i] += rooms[i].step;
+            if(sizeH[i] > rooms[i].maxH)
+                sizeH[i] = rooms[i].maxH;
 
-    // std::vector<std::vector<RoomConfig>> allCombs = getAllComb(setups, 3);
-    // for(int i = 0; i < allCombs.size(); i++){
-    //     for(int k = 0; k < allCombs[i].size(); k++){
-    //         std::cout << allCombs[i][k].name << ",  ";
-    //     }
-    //     std::cout << std::endl;
-    //     SizeLoop(allCombs[i]);
-    //     break;
-    // }
-    // return 0;
+            break;
+        } else {
+            sizeH[i] = rooms[i].minH;
+            flag++;
+        }
+        
+        if(sizeW[i] < rooms[i].maxW){
+            sizeW[i] += rooms[i].step;
+            if(sizeW[i] > rooms[i].maxW)
+                sizeW[i] = rooms[i].maxW;
+
+            break;
+        } else {
+            sizeW[i] = rooms[i].minW;
+            flag++;
+        }
+    }
+
+    return flag < 2*n;
+}
+
+int main(){
+    Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
+
+    std::vector<std::vector<RoomConfig>> allCombs = getAllComb(setups, 3);
+    for(std::size_t i = 0; i < allCombs.size(); i++){
+        for(std::size_t k = 0; k < allCombs[i].size(); k++){
+            std::cout << allCombs[i][k].name << ",  ";
+        }
+        std::cout << std::endl;
+        SizeLoop(allCombs[i]);
+        break;
+    }
+    return 0;
 }
 
 void SizeLoop(const std::vector<RoomConfig> rooms){
     const int n = rooms.size();
-    int *minH = (int*)calloc(n, sizeof(int));
-    int *minW = (int*)calloc(n, sizeof(int));
-    int *maxH = (int*)calloc(n, sizeof(int));
-    int *maxW = (int*)calloc(n, sizeof(int));
     int *sizeH = (int*)calloc(n, sizeof(int));
     int *sizeW = (int*)calloc(n, sizeof(int));
-    int *steps = (int*)calloc(n, sizeof(int));
 
     for(int i = 0; i < n; i++){
-        minH[i] = rooms[i].minH;
-        minW[i] = rooms[i].minW;
-        maxH[i] = rooms[i].maxH;
-        maxW[i] = rooms[i].maxW;
         sizeH[i] = rooms[i].minH;
         sizeW[i] = rooms[i].minW;
-        steps[i] = rooms[i].step;
     }
 
-    int flag = 0;
-    while(flag < 2*n){
+    do {
         // do some operation
         std::cout << "#########################" << std::endl;
         for(int i = 0; i < n; i++){
@@ -57,41 +76,10 @@ void SizeLoop(const std::vector<RoomConfig> rooms){
         }
         std::cout << "#########################" << std::endl << std::endl << std::endl;
 
-        
+    } while(nextRoomSize(rooms, sizeH, sizeW));
 
-        flag = 0;
-        for(int i = 0; i < n; i++){
-            if(sizeH[i] < maxH[i]){
-                sizeH[i] += steps[i];
-                if(sizeH[i] > maxH[i])
-                    sizeH[i] = maxH[i];
-
-                break;
-            } else {
-                sizeH[i] = minH[i];
-                flag++;
-            }
-            
-            if(sizeW[i] < maxW[i]){
-                sizeW[i] += steps[i];
-                if(sizeW[i] > maxW[i])
-                    sizeW[i] = maxW[i];
-
-                break;
-            } else {
-                sizeW[i] = minW[i];
-                flag++;
-            }
-        }
-    }
-
-    free(minH);
-    free(minW);
-    free(maxH);
-    free(maxW);
     free(sizeH);
     free(sizeW);
-    free(steps);
 }
 
 
