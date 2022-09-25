@@ -1,6 +1,7 @@
 #ifndef LOG
 #define LOG
 
+#include "log.h"
 #include "globals.h"
 
 /** 
@@ -20,7 +21,7 @@ public:
      * @brief console print RoomConfig object
      * @return None
     */
-    void print(RoomConfig setup);
+    static void print(RoomConfig setup);
 };
 
 #endif //LOG

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <filesystem>
+#include <string>
 #include "../lib/storage.h"
 #include "../lib/globals.h"
 #include "../lib/log.h"
@@ -11,12 +13,40 @@ Storage::Storage(){
     readConfigs();
 }
 
+    
+/** 
+ * @brief get the project directory
+ * @details returns the current executable directory until the first appearence of the folder "FloorPlanGenerator"
+ * @return String of the current project directory
+*/
+std::string Storage::getProjectDir(){
+    std::string res = "";
+    const std::filesystem::path currPath = std::filesystem::current_path();
+    
+    for (auto it = currPath.begin(); it != currPath.end(); ++it){
+        res += (*it);
+        res += "/";
+
+        if (res.find("FloorPlanGenerator") != std::string::npos) 
+            break;
+    }
+
+    if (res.rfind("//", 0) == 0)
+        res.erase(0,1);
+
+    if(res.length() > 0)
+        res.pop_back();
+
+    return res;
+}
+
 /// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
 /// @return         None
 void Storage::readConfigs(){
     setups.clear();
-    
-    std::ifstream input_file("../FloorPlanGenerator/configs/rooms", std::ios::binary);
+
+    std::string path = getProjectDir() + "/FloorPlanGenerator/configs/rooms";
+    std::ifstream input_file(path, std::ios::binary);
     
     int numOfRooms = 0;
 
@@ -40,9 +70,8 @@ void Storage::readConfigs(){
     input_file.close();
     free(rooms);
 
-    Log log = Log();
     for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
-        log.print((RoomConfig)(*it));
+        Log::print((RoomConfig)(*it));
 
 }
 
