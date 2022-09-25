@@ -40,6 +40,6 @@ docs/_build/
 docs/_static/
 docs/_templates/
 /logs/
-config
+config.out
 
 calculator.py

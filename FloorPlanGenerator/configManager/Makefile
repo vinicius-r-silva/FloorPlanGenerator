@@ -1,2 +1,2 @@
 all:
-	g++ -Wall configManager.cpp -o config
+	g++ -Wall configManager.cpp -o config.out

@@ -1,2 +1,2 @@
 cd FloorPlanGenerator/configManager && make
-./config
+./config.out
