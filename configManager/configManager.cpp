@@ -2,7 +2,7 @@
 #include <fstream>
 #include <string.h>
 #include <inttypes.h>
-#include "../lib/globals.h"
+#include "../FloorPlanGenerator/lib/globals.h"
 
 void writeRoom(RoomConfig room, std::ofstream& file){
     file.write((char*)&(room.id), sizeof(long));

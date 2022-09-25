@@ -1,3 +1,0 @@
-Combination
-===========
-.. doxygenfile:: combination.h

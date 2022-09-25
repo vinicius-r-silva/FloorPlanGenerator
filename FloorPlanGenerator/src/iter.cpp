@@ -1,5 +1,15 @@
-#ifndef COMBINATION
-#define COMBINATION
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include "../lib/iter.h"
+#include "../lib/globals.h"
+
+/** 
+ * @brief Iter Constructor
+ * @return None
+*/
+Iter::Iter(){
+}
 
 /*!
     @brief Get the next combination of k elements in a vector of size n
@@ -10,7 +20,7 @@
     @return True if there is a new combination, false otherwise
 */
 template <typename Iterator>
-inline bool next_combination(const Iterator first, Iterator k, const Iterator last){
+inline bool Iter::next_combination(const Iterator first, Iterator k, const Iterator last){
     /* Credits: Thomas Draper */
     if ((first == last) || (first == k) || (last == k))
         return false;
@@ -55,7 +65,7 @@ inline bool next_combination(const Iterator first, Iterator k, const Iterator la
     @param[in] k size of the combinations
     @return (vector of vector of RoomConfig) return a vector with all possible combinations where wich combination is a vector of RoomConfig 
 */
-std::vector<std::vector<RoomConfig>> getAllComb(std::vector<RoomConfig> setups, int k){
+std::vector<std::vector<RoomConfig>> Iter::getAllComb(std::vector<RoomConfig> setups, int k){
     std::vector<std::vector<RoomConfig>> result = std::vector<std::vector<RoomConfig>>();
 
     int n = setups.size();
@@ -68,8 +78,6 @@ std::vector<std::vector<RoomConfig>> getAllComb(std::vector<RoomConfig> setups, 
             comb.push_back(setups[setupIdx[i]]);
         }
         result.push_back(comb);
-    } while(next_combination(setupIdx.begin(),setupIdx.begin() + k, setupIdx.end()));
+    } while(Iter::next_combination(setupIdx.begin(),setupIdx.begin() + k, setupIdx.end()));
     return result;
 }
-
-#endif //COMBINATION

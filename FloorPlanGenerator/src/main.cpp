@@ -3,12 +3,12 @@
 #include <algorithm>   
 #include <omp.h>
 // #include <sstream>    
-#include <opencv2/opencv.hpp>
+// #include <opencv2/opencv.hpp>
 #include <stdlib.h>
 
 #include "../lib/log.h"
 #include "../lib/storage.h"
-#include "../lib/combination.h"
+#include "../lib/iter.h"
 
 void SizeLoop(const std::vector<RoomConfig> rooms);
 
@@ -46,7 +46,7 @@ int main(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
 
-    std::vector<std::vector<RoomConfig>> allCombs = getAllComb(setups, 3);
+    std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, 3);
     for(std::size_t i = 0; i < allCombs.size(); i++){
         for(std::size_t k = 0; k < allCombs[i].size(); k++){
             std::cout << allCombs[i][k].name << ",  ";

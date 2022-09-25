@@ -15,6 +15,6 @@ Welcome to FloorPlanGenerator's documentation!
 
    globals
    main
-   combination
+   iter
    storage
    log

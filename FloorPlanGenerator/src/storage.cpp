@@ -45,7 +45,7 @@ std::string Storage::getProjectDir(){
 void Storage::readConfigs(){
     setups.clear();
 
-    std::string path = getProjectDir() + "/FloorPlanGenerator/configs/rooms";
+    std::string path = getProjectDir() + "/configs/rooms";
     std::ifstream input_file(path, std::ios::binary);
     
     int numOfRooms = 0;
