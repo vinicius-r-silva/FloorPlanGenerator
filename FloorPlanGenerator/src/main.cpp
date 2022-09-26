@@ -63,7 +63,7 @@ void SizeLoop(const std::vector<RoomConfig> rooms){
     do {
         std::cout << "#########################" << std::endl;
         for(int i = 0; i < n; i++){
-            std::cout << rooms[i].name << ": " << sizeH[i] << ", " << sizeW[i] << std::endl;
+            std::cout << rooms[i].name << ": " << sizeW[i] << ", " << sizeH[i] << std::endl;
         }
         std::cout << "#########################" << std::endl << std::endl << std::endl;
 
@@ -106,7 +106,7 @@ int NConnections(int n){
 void showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, const int n){
     cv::Mat fundo = cv::Mat::zeros(cv::Size(500, 500), CV_8UC3);
     for(int i = 0; i < n; i++){
-        cv::Scalar color = cv::Scalar(255 * ((i + 1) & 0b1), 255 * ((i + 1) & 0b10), 255 * ((i + 1) & 0b100));   
+        cv::Scalar color = cv::Scalar(35 + (220 * ((i + 1) & 0b1)), 35 + (220 * ((i + 1) & 0b10)), 35 + (220 * ((i + 1) & 0b100)));   
         cv::rectangle(fundo, cv::Point(ptsX[i*4]*5 + 200, ptsY[i*4]*5 + 200), cv::Point(ptsX[i*4 + 3]*5 + 200, ptsY[i*4 + 3]*5 + 200), color, 2, 8, 0);
     }
 
@@ -115,6 +115,7 @@ void showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, 
     cv::imshow("tela", fundo);
     cv::waitKey(1);
     while(cv::waitKey(30) != 27);
+    // std::cout << "showLayout end" << std::endl;
 }
 
 void roomPerm(const int *sizeH, const int *sizeW, const int n){
@@ -130,11 +131,6 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
     int i = 0;
     // int changedIdx = 0;
     do {
-        for(i = 0; i < n; i++){
-            std::cout << perm[i] << ",  ";
-        }
-        std::cout << std::endl;
-
 
         for(i = 0; i < NConn; i++){
             // std::vector<short> ptsX = allPtX[i];
@@ -148,13 +144,26 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
             
             int dstX = 0;
             int dstY = 0;
+            int dstH = sizeH[0];
+            int dstW = sizeW[0];
+            int srcH = sizeH[0];
+            int srcW = sizeW[0];
             for(int j = 1; j < n; j++){
-                const int pos = (j - 1) * 4;
+                const int pos = (n - j - 1) * 4;
                 const int srcConn = (i >> pos) & 0b11;
                 const int dstConn = ((i >> (pos + 2)) & 0b11);
+                
             
-                const int dstH = sizeH[j];
-                const int dstW = sizeW[j];
+                dstH = sizeH[j];
+                dstW = sizeW[j];
+                if(srcConn == 1)
+                    dstX += srcW;
+                else if(srcConn == 2)
+                    dstY += srcH;
+                else if(srcConn == 3){
+                    dstX += srcW;
+                    dstY += srcH;
+                }
 
                 if(dstConn == 1)
                     dstX -= dstW;
@@ -169,16 +178,18 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
                 allPtX[i][dstIndex] = dstX; allPtY[i][dstIndex] = dstY;
                 allPtX[i][dstIndex + 1] = dstX + dstW; allPtY[i][dstIndex + 1] = dstY;
                 allPtX[i][dstIndex + 2] = dstX       ; allPtY[i][dstIndex + 2] = dstY + dstH;
-                allPtX[i][dstIndex + 3] = dstX + dstW; allPtY[i][dstIndex + 3] = dstY + dstH;     
+                allPtX[i][dstIndex + 3] = dstX + dstW; allPtY[i][dstIndex + 3] = dstY + dstH;   
                 
-                dstX = allPtX[i][dstIndex + srcConn];
-                dstY = allPtY[i][dstIndex + srcConn];
+                dstX = allPtX[i][dstIndex];
+                dstY = allPtY[i][dstIndex];
+                srcH = dstH;
+                srcW = dstW;
             }
+            showLayout(allPtX[i], allPtY[i], n);
         }
         // std::cout << std::endl;
         // std::cout << std::endl;
-        for(i = 0; i < NConn; i++){
-            showLayout(allPtX[i], allPtY[i], n);
+        // for(i = 0; i < NConn; i++){
             // std::cout << "\t" << i << std::endl;
             // for(int j = 0; j < n; j++){
             //     std::cout << "\t\t" << j << std::endl;
@@ -187,7 +198,7 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
             //     }
             //     std::cout << std::endl;
             // }
-        }
+        // }
 
         break;
     } while (std::next_permutation(perm.begin(), perm.end()));
