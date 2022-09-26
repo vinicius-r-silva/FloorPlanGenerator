@@ -103,6 +103,19 @@ int NConnections(int n){
 
 // colocar return (n - (n >> 1)) / 4 pra descobrir quem mudou
 // }
+void showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, const int n){
+    cv::Mat fundo = cv::Mat::zeros(cv::Size(500, 500), CV_8UC3);
+    for(int i = 0; i < n; i++){
+        cv::Scalar color = cv::Scalar(255 & ((i + 1) & 0b1), 255 & ((i + 1) & 0b10), 255 & ((i + 1) & 0b100));   
+        cv::rectangle(fundo, cv::Point(ptsX[i*4], ptsY[i*4]), cv::Point(ptsX[i*4 + 3], ptsY[i*4 + 3]), color, 2, 8, 0);
+    }
+
+    // std::cout << "cv::cv2.getBuildInformation(): " << cv::getBuildInformation() << std::endl;
+    cv::imshow("tela", fundo);
+    cv::waitKey(1);
+    while(cv::waitKey(30) != 27);
+    std::cout << "showLayout end" << std::endl;
+}
 
 void roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;
@@ -126,7 +139,6 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
         for(i = 0; i < NConn; i++){
             // std::vector<short> ptsX = allPtX[i];
             // std::vector<short> ptsY = allPtY[i];
-            std::cout << std::endl << "\t" << i << std::endl;
             allPtX[i][1] = sizeW[0];
             allPtY[i][1] = 0;
             allPtX[i][2] = 0;
@@ -165,16 +177,17 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
         }
         // std::cout << std::endl;
         // std::cout << std::endl;
-        // for(i = 0; i < NConn; i++){
-        //     std::cout << "\t" << i << std::endl;
-        //     for(int j = 0; j < n; j++){
-        //         std::cout << "\t\t" << j << std::endl;
-        //         for(int k = 0; k < 4; k++){
-        //             std::cout << "\t\t\t" << k << ": (" << allPtX[i][j*4 + k]  << ", " << allPtY[i][j*4 + k] << ")" << std::endl;
-        //         }
-        //         std::cout << std::endl;
-        //     }
-        // }
+        for(i = 0; i < NConn; i++){
+            showLayout(allPtX[i], allPtY[i], n);
+            // std::cout << "\t" << i << std::endl;
+            // for(int j = 0; j < n; j++){
+            //     std::cout << "\t\t" << j << std::endl;
+            //     for(int k = 0; k < 4; k++){
+            //         std::cout << "\t\t\t" << k << ": (" << allPtX[i][j*4 + k]  << ", " << allPtY[i][j*4 + k] << ")" << std::endl;
+            //     }
+            //     std::cout << std::endl;
+            // }
+        }
 
         break;
     } while (std::next_permutation(perm.begin(), perm.end()));
