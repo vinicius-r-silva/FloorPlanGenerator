@@ -17,8 +17,8 @@ include_directories(lib)
 
 
 set(CMAKE_BUILD_TYPE Debug)
-set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/globals.h") 
-set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/main.cpp")
+set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/globals.h") 
+set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/main.cpp")
 add_executable(FloorPlanGenerator ${headers} ${codes}) 
 target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra -Wpedantic)
 # add_executable( storage src/storage.cpp )

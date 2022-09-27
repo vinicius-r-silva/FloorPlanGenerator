@@ -18,3 +18,4 @@ Welcome to FloorPlanGenerator's documentation!
    iter
    storage
    log
+   cvHelper

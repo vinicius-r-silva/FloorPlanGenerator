@@ -3,12 +3,12 @@
 #include <algorithm>   
 #include <omp.h>
 // #include <sstream>    
-#include <opencv2/opencv.hpp>
 #include <stdlib.h>
 
 #include "../lib/log.h"
 #include "../lib/storage.h"
 #include "../lib/iter.h"
+#include "../lib/cvHelper.h"
 
 
 /*!
@@ -76,13 +76,13 @@ void SizeLoop(const std::vector<RoomConfig> rooms){
 }
 
 
-// int factorial(int x){
-//     int res = 1;
-//     for(; x > 1; x--)
-//         res *= x;
+int Factorial(int x){
+    int res = 1;
+    for(; x > 1; x--)
+        res *= x;
 
-//     return res;
-// }
+    return res;
+}
 
 int NConnections(int n){
     int res = 1;
@@ -92,116 +92,102 @@ int NConnections(int n){
     return res;
 }
 
+void ConnLoop(
+    const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn,
+    std::vector<std::vector<short>> *allPtX, std::vector<std::vector<short>> *allPtY){
 
-// int hibit(unsigned int n) {
-//     n |= (n >>  1);
-//     n |= (n >>  2);
-//     n |= (n >>  4);
-//     n |= (n >>  8);
-//     n |= (n >> 16);
-//     return n - (n >> 1);
+    std::vector<std::vector<short>> ptsX(NConn, std::vector<short> (n * 4, 0)); 
+    std::vector<std::vector<short>> ptsY(NConn, std::vector<short> (n * 4, 0)); 
+    for(int i = 0; i < NConn; i++){
+        // std::vector<short> ptsX = (*allPtX)[i];
+        // std::vector<short> ptsY = (*allPtY)[i];
+        ptsX[i][1] = sizeW[order[0]];
+        ptsY[i][1] = 0;
+        ptsX[i][2] = 0;
+        ptsY[i][2] = sizeH[order[0]];
+        ptsX[i][3] = sizeW[order[0]];
+        ptsY[i][3] = sizeH[order[0]];
+        
+        int dstX = 0;
+        int dstY = 0;
+        int dstH = sizeH[order[0]];
+        int dstW = sizeW[order[0]];
+        int srcH = sizeH[order[0]];
+        int srcW = sizeW[order[0]];
+        for(int j = 1; j < n; j++){
+            const int pos = (n - j - 1) * 4;
+            const int srcConn = (i >> pos) & 0b11;
+            const int dstConn = ((i >> (pos + 2)) & 0b11);
+            
+        
+            dstH = sizeH[order[j]];
+            dstW = sizeW[order[j]];
+            if(srcConn == 1)
+                dstX += srcW;
+            else if(srcConn == 2)
+                dstY += srcH;
+            else if(srcConn == 3){
+                dstX += srcW;
+                dstY += srcH;
+            }
 
-// colocar return (n - (n >> 1)) / 4 pra descobrir quem mudou
-// }
-void showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, const int n){
-    cv::Mat fundo = cv::Mat::zeros(cv::Size(500, 500), CV_8UC3);
-    for(int i = 0; i < n; i++){
-        cv::Scalar color = cv::Scalar(35 + (220 * ((i + 1) & 0b1)), 35 + (220 * ((i + 1) & 0b10)), 35 + (220 * ((i + 1) & 0b100)));   
-        cv::rectangle(fundo, cv::Point(ptsX[i*4]*5 + 200, ptsY[i*4]*5 + 200), cv::Point(ptsX[i*4 + 3]*5 + 200, ptsY[i*4 + 3]*5 + 200), color, 2, 8, 0);
+            if(dstConn == 1)
+                dstX -= dstW;
+            else if(dstConn == 2)
+                dstY -= dstH;
+            else if(dstConn == 3){
+                dstX -= dstW;
+                dstY -= dstH;
+            }
+
+            const int dstIndex = j*4;
+            ptsX[i][dstIndex] = dstX; ptsY[i][dstIndex] = dstY;
+            ptsX[i][dstIndex + 1] = dstX + dstW; ptsY[i][dstIndex + 1] = dstY;
+            ptsX[i][dstIndex + 2] = dstX       ; ptsY[i][dstIndex + 2] = dstY + dstH;
+            ptsX[i][dstIndex + 3] = dstX + dstW; ptsY[i][dstIndex + 3] = dstY + dstH;   
+            
+            dstX = ptsX[i][dstIndex];
+            dstY = ptsY[i][dstIndex];
+            srcH = dstH;
+            srcW = dstW;
+        }
+        // (*allPtX)[i] = ptsX[i];
+        // (*allPtY)[i] = ptsY[i];
+        // CVHelper::showLayout(ptsX[i], ptsY[i], n);
     }
-
-    // std::cout << "cv::cv2.getBuildInformation(): " << cv::getBuildInformation() << std::endl;
-    cv::namedWindow("tela", cv::WINDOW_AUTOSIZE );
-    cv::imshow("tela", fundo);
-    cv::waitKey(1);
-    while(cv::waitKey(30) != 27);
-    // std::cout << "showLayout end" << std::endl;
+    *allPtX = ptsX;
+    *allPtY = ptsY;
 }
+
 
 void roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;
     for(int i = 0; i < n; i++)
         perm.push_back(i);
 
+    const int NPerm = Factorial(n);
     const int NConn = NConnections(n);
 
-    std::vector<std::vector<short>> allPtX(NConn, std::vector<short> (n * 4, 0)); 
-    std::vector<std::vector<short>> allPtY(NConn, std::vector<short> (n * 4, 0)); 
+    std::vector<std::vector<std::vector<short>>> allPtX(NPerm * NConn); 
+    std::vector<std::vector<std::vector<short>>> allPtY(NPerm * NConn); 
+    // std::vector<std::vector<short>> allPtY(NPerm * NConn, std::vector<short> (n * 4, 0)); 
+
+    // std::vector<std::vector<short>> allPtX(NPerm * NConn, std::vector<short> (n * 4, 0)); 
+    // std::vector<std::vector<short>> allPtY(NPerm * NConn, std::vector<short> (n * 4, 0)); 
+
     // Cycle each permutation
     int i = 0;
-    // int changedIdx = 0;
     do {
-
-        for(i = 0; i < NConn; i++){
-            // std::vector<short> ptsX = allPtX[i];
-            // std::vector<short> ptsY = allPtY[i];
-            allPtX[i][1] = sizeW[0];
-            allPtY[i][1] = 0;
-            allPtX[i][2] = 0;
-            allPtY[i][2] = sizeH[0];
-            allPtX[i][3] = sizeW[0];
-            allPtY[i][3] = sizeH[0];
-            
-            int dstX = 0;
-            int dstY = 0;
-            int dstH = sizeH[0];
-            int dstW = sizeW[0];
-            int srcH = sizeH[0];
-            int srcW = sizeW[0];
-            for(int j = 1; j < n; j++){
-                const int pos = (n - j - 1) * 4;
-                const int srcConn = (i >> pos) & 0b11;
-                const int dstConn = ((i >> (pos + 2)) & 0b11);
-                
-            
-                dstH = sizeH[j];
-                dstW = sizeW[j];
-                if(srcConn == 1)
-                    dstX += srcW;
-                else if(srcConn == 2)
-                    dstY += srcH;
-                else if(srcConn == 3){
-                    dstX += srcW;
-                    dstY += srcH;
-                }
-
-                if(dstConn == 1)
-                    dstX -= dstW;
-                else if(dstConn == 2)
-                    dstY -= dstH;
-                else if(dstConn == 3){
-                    dstX -= dstW;
-                    dstY -= dstH;
-                }
-
-                const int dstIndex = j*4;
-                allPtX[i][dstIndex] = dstX; allPtY[i][dstIndex] = dstY;
-                allPtX[i][dstIndex + 1] = dstX + dstW; allPtY[i][dstIndex + 1] = dstY;
-                allPtX[i][dstIndex + 2] = dstX       ; allPtY[i][dstIndex + 2] = dstY + dstH;
-                allPtX[i][dstIndex + 3] = dstX + dstW; allPtY[i][dstIndex + 3] = dstY + dstH;   
-                
-                dstX = allPtX[i][dstIndex];
-                dstY = allPtY[i][dstIndex];
-                srcH = dstH;
-                srcW = dstW;
-            }
-            showLayout(allPtX[i], allPtY[i], n);
-        }
-        // std::cout << std::endl;
-        // std::cout << std::endl;
-        // for(i = 0; i < NConn; i++){
-            // std::cout << "\t" << i << std::endl;
-            // for(int j = 0; j < n; j++){
-            //     std::cout << "\t\t" << j << std::endl;
-            //     for(int k = 0; k < 4; k++){
-            //         std::cout << "\t\t\t" << k << ": (" << allPtX[i][j*4 + k]  << ", " << allPtY[i][j*4 + k] << ")" << std::endl;
-            //     }
-            //     std::cout << std::endl;
-            // }
-        // }
-
-        break;
+        ConnLoop(perm, sizeH, sizeW, n, NConn, &(allPtX[i]), &(allPtY[i]));
+        i += 1;
+        // break;
     } while (std::next_permutation(perm.begin(), perm.end()));
+
+    for(int i = 0; i < NPerm; i++){
+        for(int j = 0; j < NConn; j++){
+            CVHelper::showLayout(allPtX[i][j], allPtY[i][j], n);
+        }
+    }
 }
 
 // // 0--1

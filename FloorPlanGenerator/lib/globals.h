@@ -5,6 +5,14 @@
  * Size of the char array for the RoomConfig Name field
  */
 #define ROOM_NAME_SIZE 30
+
+/**
+ * Enbale/Disable opencv functions
+ * necessary to simplify valgrind output
+ */
+#define OPENCV_ENABLED
+
+
 // #define N_ROOMS 3
 
 /**
