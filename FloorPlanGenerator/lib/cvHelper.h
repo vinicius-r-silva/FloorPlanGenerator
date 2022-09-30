@@ -24,7 +24,7 @@ public:
      * @param[in] ptsY y axis values
      * @return None
     */
-    static void showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, const int n);
+    static void showLayout(const std::vector<int> &ptsX, const std::vector<int> &ptsY, const int n);
 };
 
 #endif //OPENCV_HELPER

@@ -21,7 +21,6 @@ void SizeLoop(const std::vector<RoomConfig> rooms);
 
 void roomPerm(const int *sizeH, const int *sizeW, const int n);
 
-
 /*!
     @brief Main Function
     @return if there are no erros returns 0 
@@ -37,7 +36,7 @@ int main(){
         }
         std::cout << std::endl;
         SizeLoop(allCombs[i]);
-        break;
+        // break;
     }
     return 0;
 }
@@ -68,14 +67,18 @@ void SizeLoop(const std::vector<RoomConfig> rooms){
         std::cout << "#########################" << std::endl << std::endl << std::endl;
 
         roomPerm(sizeH, sizeW, n);
-        break;
+        // break;
     } while(Iter::nextRoomSize(rooms, sizeH, sizeW));
 
     free(sizeH);
     free(sizeW);
 }
 
-
+/*!
+    @brief Factorial Calculator (n!)
+    @param[in] x input to calculate the factorial
+    @return (int) factorial of x
+*/
 int Factorial(int x){
     int res = 1;
     for(; x > 1; x--)
@@ -84,6 +87,12 @@ int Factorial(int x){
     return res;
 }
 
+
+/*!
+    @brief Calculates the number of possible connections given the quantity of rooms
+    @param[in] n input to calculate the number of connections
+    @return (int) number of connections
+*/
 int NConnections(int n){
     int res = 1;
     for(; n > 1; n--)
@@ -92,21 +101,71 @@ int NConnections(int n){
     return res;
 }
 
-void ConnLoop(
-    const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn,
-    std::vector<std::vector<short>> *allPtX, std::vector<std::vector<short>> *allPtY){
 
-    std::vector<std::vector<short>> ptsX(NConn, std::vector<short> (n * 4, 0)); 
-    std::vector<std::vector<short>> ptsY(NConn, std::vector<short> (n * 4, 0)); 
+/*!
+    @brief Given two squares, returns if there is a overleap between the two
+    @param[in] a_left   left side of square A (smallest value of the x axis)
+    @param[in] a_right  right side of square A (biggest value of the x axis)
+    @param[in] a_up     up side of square A (smallest value of the y axis)
+    @param[in] a_down   down side of square A (biggest value of the y axis)
+    @param[in] b_left   left side of square B (smallest value of the x axis)
+    @param[in] b_right  right side of square B (biggest value of the x axis)
+    @param[in] b_up     up side of square B (smallest value of the y axis)
+    @param[in] b_down   down side of square B (biggest value of the y axis)
+    @return (bool) true if there is a overleap, false otherwise
+*/
+inline bool check_overlap(int a_left, int a_right, int a_up, int a_down, int b_left, int b_right, int b_up, int b_down){   
+    if(((a_down > b_up && a_down <= b_down) ||
+        (a_up  >= b_up && a_up < b_down)) &&
+        ((a_right > b_left && a_right <= b_right) ||
+        (a_left  >= b_left && a_left  <  b_right) ||
+        (a_left  <= b_left && a_right >= b_right))){
+            return true;
+    }
+
+    
+    if(((b_down > a_up && b_down <= a_down) ||
+        (b_up >= a_up && b_up < a_down)) &&
+        ((b_right > a_left && b_right <= a_right) ||
+        (b_left  >= a_left && b_left  <  a_right) ||
+        (b_left  <= a_left && b_right >= a_right))){
+            return true;
+    }
+
+    
+    if(((a_right > b_left && a_right <= b_right) ||
+        (a_left >= b_left && a_left < b_right)) &&
+        ((a_down > b_up && a_down <= b_down) ||
+        (a_up  >= b_up && a_up   <  b_down) ||
+        (a_up  <= b_up && a_down >= b_down))){
+            return true;
+    }
+
+    
+    if(((b_right > a_left && b_right <= a_right) ||
+        (b_left >= a_left && b_left < a_right)) &&
+        ((b_down > a_up && b_down <= a_down) ||
+        (b_up  >= a_up && b_up   <  a_down) ||
+        (b_up  <= a_up && b_down >= a_down))){
+            return true;
+    }
+
+    return false;
+}
+
+
+/*!
+    @brief Iterate over every possible connection between the given rooms 
+*/
+void ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn){
+
+    std::vector<int> ptsX(n * 2, 0); 
+    std::vector<int> ptsY(n * 2, 0); 
     for(int i = 0; i < NConn; i++){
-        // std::vector<short> ptsX = (*allPtX)[i];
-        // std::vector<short> ptsY = (*allPtY)[i];
-        ptsX[i][1] = sizeW[order[0]];
-        ptsY[i][1] = 0;
-        ptsX[i][2] = 0;
-        ptsY[i][2] = sizeH[order[0]];
-        ptsX[i][3] = sizeW[order[0]];
-        ptsY[i][3] = sizeH[order[0]];
+        ptsX[0] = 0;
+        ptsY[0] = 0;
+        ptsX[1] = sizeW[order[0]];
+        ptsY[1] = sizeH[order[0]];
         
         int dstX = 0;
         int dstY = 0;
@@ -114,12 +173,13 @@ void ConnLoop(
         int dstW = sizeW[order[0]];
         int srcH = sizeH[order[0]];
         int srcW = sizeW[order[0]];
-        for(int j = 1; j < n; j++){
+
+        bool sucess = true;
+        for(int j = 1; j < n && sucess; j++){
             const int pos = (n - j - 1) * 4;
             const int srcConn = (i >> pos) & 0b11;
             const int dstConn = ((i >> (pos + 2)) & 0b11);
             
-        
             dstH = sizeH[order[j]];
             dstW = sizeW[order[j]];
             if(srcConn == 1)
@@ -140,23 +200,26 @@ void ConnLoop(
                 dstY -= dstH;
             }
 
-            const int dstIndex = j*4;
-            ptsX[i][dstIndex] = dstX; ptsY[i][dstIndex] = dstY;
-            ptsX[i][dstIndex + 1] = dstX + dstW; ptsY[i][dstIndex + 1] = dstY;
-            ptsX[i][dstIndex + 2] = dstX       ; ptsY[i][dstIndex + 2] = dstY + dstH;
-            ptsX[i][dstIndex + 3] = dstX + dstW; ptsY[i][dstIndex + 3] = dstY + dstH;   
+            const int dstIndex = j*2;
+            ptsX[dstIndex] = dstX; ptsY[dstIndex] = dstY;
+            ptsX[dstIndex + 1] = dstX + dstW; ptsY[dstIndex + 1] = dstY + dstH;
             
-            dstX = ptsX[i][dstIndex];
-            dstY = ptsY[i][dstIndex];
+            dstX = ptsX[dstIndex];
+            dstY = ptsY[dstIndex];
             srcH = dstH;
             srcW = dstW;
+            
+            for(int k = 0; k < j; k++){
+                if(check_overlap(ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1])){
+                    sucess = false;
+                    break;
+                }
+            }
         }
-        // (*allPtX)[i] = ptsX[i];
-        // (*allPtY)[i] = ptsY[i];
-        // CVHelper::showLayout(ptsX[i], ptsY[i], n);
+
+        if(sucess)
+            CVHelper::showLayout(ptsX, ptsY, n);
     }
-    *allPtX = ptsX;
-    *allPtY = ptsY;
 }
 
 
@@ -165,11 +228,11 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
     for(int i = 0; i < n; i++)
         perm.push_back(i);
 
-    const int NPerm = Factorial(n);
+    // const int NPerm = Factorial(n);
     const int NConn = NConnections(n);
 
-    std::vector<std::vector<std::vector<short>>> allPtX(NPerm * NConn); 
-    std::vector<std::vector<std::vector<short>>> allPtY(NPerm * NConn); 
+    // std::vector<std::vector<std::vector<int>>> allPtX(NPerm * NConn); 
+    // std::vector<std::vector<std::vector<int>>> allPtY(NPerm * NConn); 
     // std::vector<std::vector<short>> allPtY(NPerm * NConn, std::vector<short> (n * 4, 0)); 
 
     // std::vector<std::vector<short>> allPtX(NPerm * NConn, std::vector<short> (n * 4, 0)); 
@@ -178,16 +241,16 @@ void roomPerm(const int *sizeH, const int *sizeW, const int n){
     // Cycle each permutation
     int i = 0;
     do {
-        ConnLoop(perm, sizeH, sizeW, n, NConn, &(allPtX[i]), &(allPtY[i]));
+        ConnLoop(perm, sizeH, sizeW, n, NConn);
         i += 1;
         // break;
     } while (std::next_permutation(perm.begin(), perm.end()));
 
-    for(int i = 0; i < NPerm; i++){
-        for(int j = 0; j < NConn; j++){
-            CVHelper::showLayout(allPtX[i][j], allPtY[i][j], n);
-        }
-    }
+    // for(int i = 0; i < NPerm; i++){
+    //     for(int j = 0; j < NConn; j++){
+    //         CVHelper::showLayout(allPtX[i][j], allPtY[i][j], n);
+    //     }
+    // }
 }
 
 // // 0--1

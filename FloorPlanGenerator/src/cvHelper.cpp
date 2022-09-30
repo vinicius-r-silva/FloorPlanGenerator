@@ -18,17 +18,17 @@ CVHelper::CVHelper(){
  * @param[in] ptsY y axis values
  * @return None
 */
-void CVHelper::showLayout(const std::vector<short> &ptsX, const std::vector<short> &ptsY, const int n){
+void CVHelper::showLayout(const std::vector<int> &ptsX, const std::vector<int> &ptsY, const int n){
 #ifdef OPENCV_ENABLED
-    cv::Mat fundo = cv::Mat::zeros(cv::Size(500, 500), CV_8UC3);
+    cv::Mat fundo = cv::Mat::zeros(cv::Size(600, 600), CV_8UC3);
     for(int i = 0; i < n; i++){
         cv::Scalar color = cv::Scalar(35 + (220 * ((i + 1) & 0b1)), 35 + (220 * ((i + 1) & 0b10)), 35 + (220 * ((i + 1) & 0b100)));   
-        cv::rectangle(fundo, cv::Point(ptsX[i*4]*5 + 200, ptsY[i*4]*5 + 200), cv::Point(ptsX[i*4 + 3]*5 + 200, ptsY[i*4 + 3]*5 + 200), color, 2, 8, 0);
+        cv::rectangle(fundo, cv::Point(ptsX[i*2]*5 + 240, ptsY[i*2]*5 + 240), cv::Point(ptsX[i*2 + 1]*5 + 240, ptsY[i*2 + 1]*5 + 240), color, 2, 8, 0);
     }
 
     cv::namedWindow("tela", cv::WINDOW_AUTOSIZE );
     cv::imshow("tela", fundo);
     cv::waitKey(1);
-    // while(cv::waitKey(30) != 27);
+    while(cv::waitKey(30) != 27);
 #endif
 }
