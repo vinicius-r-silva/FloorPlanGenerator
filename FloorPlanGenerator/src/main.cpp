@@ -2,8 +2,10 @@
 #include <vector>
 #include <algorithm>   
 #include <omp.h>
+#include <opencv2/opencv.hpp>
 // #include <sstream>    
 #include <stdlib.h>
+#include <string> 
 
 #include "../lib/log.h"
 #include "../lib/storage.h"
@@ -158,7 +160,6 @@ inline bool check_overlap(int a_left, int a_right, int a_up, int a_down, int b_l
     @brief Iterate over every possible connection between the given rooms 
 */
 void ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn){
-
     std::vector<int> ptsX(n * 2, 0); 
     std::vector<int> ptsY(n * 2, 0); 
     for(int i = 0; i < NConn; i++){
@@ -212,13 +213,34 @@ void ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW,
             for(int k = 0; k < j; k++){
                 if(check_overlap(ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1])){
                     sucess = false;
+                    const int diff = n - j - 1;
+                    i += (1 << (diff * 4)) - 1;
                     break;
                 }
             }
         }
 
-        if(sucess)
-            CVHelper::showLayout(ptsX, ptsY, n);
+        if(sucess){
+            // CVHelper::showLayout(ptsX, ptsY, n);
+            
+            cv::Mat fundo = cv::Mat::zeros(cv::Size(600, 600), CV_8UC3);
+            for(int j = 0; j < n; j++){
+                cv::Scalar color = cv::Scalar(35 + (220 * ((j + 1) & 0b1)), 35 + (220 * ((j + 1) & 0b10)), 35 + (220 * ((j + 1) & 0b100)));   
+                cv::rectangle(fundo, cv::Point(ptsX[j*2]*5 + 240, ptsY[j*2]*5 + 240), cv::Point(ptsX[j*2 + 1]*5 + 240, ptsY[j*2 + 1]*5 + 240), color, 2, 8, 0);
+            }
+            std::string s = std::to_string(i);
+            // char str[s.length() + 1];
+            char *str = (char*)calloc(s.length() + 1, sizeof(char));
+            strcpy(str, s.c_str());
+            cv::putText(fundo, str, cv::Point(20,20),  cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255,255,255), 2);
+
+
+            cv::namedWindow("tela", cv::WINDOW_AUTOSIZE );
+            cv::imshow("tela", fundo);
+            cv::waitKey(1);
+            // std::cout << "waitkey" << std::endl;
+            while(cv::waitKey(30) != 27);
+        }
     }
 }
 
