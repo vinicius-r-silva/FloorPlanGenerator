@@ -1,5 +1,7 @@
 #include <iostream>
+// #ifdef OPENCV_ENABLED 
 #include <opencv2/opencv.hpp>
+// #endif
 
 #include "../lib/cvHelper.h"
 #include "../lib/globals.h"
