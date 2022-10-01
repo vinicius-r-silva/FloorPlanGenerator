@@ -6,6 +6,7 @@
 #include "../lib/calculator.h"
 #include "../lib/cvHelper.h"
 
+
 /** 
  * @brief Iter Constructor
  * @return None
@@ -181,8 +182,12 @@ bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return None
 */
-void Iter::SizeLoop(const std::vector<RoomConfig> rooms){
+SizeLoopRes Iter::SizeLoop(const std::vector<RoomConfig>& rooms){
+    SizeLoopRes res;
     const int n = rooms.size();
+
+    std::vector<int> roomsId;
+    roomsId.reserve(n);
 
     //Create array with the current size of every room
     int *sizeH = (int*)calloc(n, sizeof(int)); //Height
@@ -190,22 +195,34 @@ void Iter::SizeLoop(const std::vector<RoomConfig> rooms){
     for(int i = 0; i < n; i++){
         sizeH[i] = rooms[i].minH;
         sizeW[i] = rooms[i].minW;
+
+        roomsId.push_back(rooms[i].id);
     }
 
+    const int NSizes = Calculator::NRoomSizes(rooms);
+    std::vector<PermLoopRes> perms;
+    perms.reserve(NSizes);
+
     //Main loop
+    int count = 0;
     do {
-        // std::cout << "#########################" << std::endl;
+        // std::cout << "#########################" << std::endl << count << std::endl;
         // for(int i = 0; i < n; i++){
         //     std::cout << rooms[i].name << ": " << sizeW[i] << ", " << sizeH[i] << std::endl;
         // }
         // std::cout << "#########################" << std::endl << std::endl << std::endl;
 
-        roomPerm(sizeH, sizeW, n);
+        perms.push_back(roomPerm(sizeH, sizeW, n));
+        count++;
         // break;
     } while(Iter::nextRoomSize(rooms, sizeH, sizeW));
 
     free(sizeH);
     free(sizeW);
+
+    res.roomsId = std::move(roomsId);
+    res.perms = std::move(perms);
+    return res;
 }
 
 
@@ -226,8 +243,14 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
     result.reserve(NConn) ;
     ptsX.reserve(n * 2) ;
     ptsY.reserve(n * 2) ;
+        
+    // std::cout << "perm: ";
+    // for(int j = 0; j < n; j++)
+    //     std::cout << order[j] << ", ";
+    // std::cout << std::endl;
 
     for(int i = 0; i < NConn; i++){
+
         ptsX[0] = 0;
         ptsY[0] = 0;
         ptsX[1] = sizeW[order[0]];
@@ -240,6 +263,8 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
         int srcH = sizeH[order[0]];
         int srcW = sizeW[order[0]];
 
+
+        int sum = 0;
         bool sucess = true;
         for(int j = 1; j < n && sucess; j++){
             const int pos = (n - j - 1) * 4;
@@ -279,7 +304,7 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
                 if(Iter::check_overlap(ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1])){
                     sucess = false;
                     const int diff = n - j - 1;
-                    i += (1 << (diff * 4)) - 1;
+                    sum = (1 << (diff * 4)) - 1;
                     break;
                 }
             }
@@ -289,11 +314,11 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
             result.push_back(i);
             CVHelper::showLayout(ptsX, ptsY, n);
         }
+        i += sum;
     }
 
     return result;
 }
-
 
 
 /*!
@@ -303,21 +328,29 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
     @param[in] n     number of rooms
     @return None
 */
-void Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
+PermLoopRes Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;
     for(int i = 0; i < n; i++)
         perm.push_back(i);
 
-    // const int NPerm = Factorial(n);
+    PermLoopRes res;
+    const int NPerm = Calculator::Factorial(n);
     const int NConn = Calculator::NConnections(n);
 
+    std::vector<std::vector<int>> perms;
+    std::vector<std::vector<int>> conns;
+    conns.reserve(NPerm);
+    perms.reserve(NPerm);
+
     // Cycle each permutation
-    int i = 0;
     do {
-        ConnLoop(perm, sizeH, sizeW, n, NConn);
-        i += 1;
-        // break;
+        perms.push_back(perm);
+        conns.push_back(ConnLoop(perm, sizeH, sizeW, n, NConn));
     } while (std::next_permutation(perm.begin(), perm.end()));
+
+    res.conns = std::move(conns);
+    res.perms = std::move(perms);
+    return res;
 }
 
 // // 0--1

@@ -53,7 +53,7 @@ void Storage::readConfigs(){
     int numOfRooms = 0;
 
     input_file.read((char*)&numOfRooms, sizeof(int));  
-    std::cout << "getConfigs numOfRooms: " << numOfRooms << std::endl;
+    // std::cout << "getConfigs numOfRooms: " << numOfRooms << std::endl;
     
     RoomConfig* rooms = (RoomConfig*)calloc(numOfRooms, sizeof(RoomConfig));
     
@@ -72,8 +72,8 @@ void Storage::readConfigs(){
     input_file.close();
     free(rooms);
 
-    for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
-        Log::print((RoomConfig)(*it));
+    // for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
+    //     Log::print((RoomConfig)(*it));
 
 }
 

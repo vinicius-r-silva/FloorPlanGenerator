@@ -31,6 +31,10 @@ public:
         @return (int) number of connections
     */
     static int NConnections(int n);
+    
+    static int NRoomSizes(const std::vector<RoomConfig>& rooms);
+    static int NCombination(int k, int n);
+    static void totalOfCombinations(const std::vector<RoomConfig>& setups, const int n);
 };
 
 #endif //CALCUALTOR

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "../lib/calculator.h"
 #include "../lib/globals.h"
+#include "../lib/iter.h"
 
 /** 
  * @brief Calculator Constructor
@@ -37,4 +38,55 @@ int Calculator::NConnections(int n){
         res *= 16;
 
     return res;
+}
+
+
+int Calculator::NCombination(int k, int n){
+    int res = 1;
+    int diff = k - n;
+
+    for(; k > n; k--)
+        res *= k;
+
+    for(; diff > 1; diff--)
+        res /= diff;    
+
+    return res;
+
+}
+
+int Calculator::NRoomSizes(const std::vector<RoomConfig>& rooms){
+    int res = 1;
+    const int lenght = rooms.size();
+    for(int i = 0; i < lenght; i++){
+        const int diffH = rooms[i].maxH - rooms[i].minH;
+        const int diffW = rooms[i].maxW - rooms[i].minW;
+        const int resH = ((diffH + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+        const int resW = ((diffW + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+
+        res *= resH * resW;
+    }
+
+    return res;
+}
+
+
+void Calculator::totalOfCombinations(const std::vector<RoomConfig>& setups, const int n){
+    std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);  
+
+    unsigned long res = 0;
+    const unsigned long NPerms = (unsigned long)Calculator::Factorial(n);
+    const unsigned long NConns = (unsigned long)Calculator::NConnections(n);
+    const unsigned long qtdPerSize = NPerms * NConns;
+    std::cout << "NPerms: " << NPerms << std::endl;
+    std::cout << "NConns: " << NConns << std::endl;
+    std::cout << "NCombs: " << allCombs.size() << std::endl;
+    // std::cout << "qtdPerSize: " << qtdPerSize << std::endl;
+  
+
+    for(std::size_t i = 0; i < allCombs.size(); i++){
+        res += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSize;
+    }
+    std::cout << "avg NSizes: " << res/(qtdPerSize * allCombs.size()) << std::endl;
+    std::cout << "totalOfCombinations: " << res << std::endl;
 }

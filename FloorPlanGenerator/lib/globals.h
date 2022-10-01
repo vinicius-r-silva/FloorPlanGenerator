@@ -10,7 +10,7 @@
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-#define OPENCV_ENABLED
+// #define OPENCV_ENABLED
 
 
 // #define N_ROOMS 3

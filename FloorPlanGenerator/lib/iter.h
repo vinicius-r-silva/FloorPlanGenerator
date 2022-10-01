@@ -4,6 +4,21 @@
 #include <globals.h>
 #include <vector>
 
+
+class PermLoopRes {
+    public:
+        // PermLoopRes() = default;
+        std::vector<std::vector<int>> perms;
+        std::vector<std::vector<int>> conns;
+};
+
+class SizeLoopRes {
+    public:
+        // PermLoopRes() = default;
+        std::vector<int> roomsId;
+        std::vector<PermLoopRes> perms;
+};
+
 /** 
  * @brief Handles all console's read/write
 */
@@ -53,7 +68,7 @@ public:
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return None
     */
-    static void SizeLoop(const std::vector<RoomConfig> rooms);
+    static SizeLoopRes SizeLoop(const std::vector<RoomConfig>& rooms);
 
     /*!
         @brief Iterate over every possible connection between the given rooms 
@@ -74,7 +89,7 @@ public:
         @param[in] n     number of rooms
         @return None
     */
-    static void roomPerm(const int *sizeH, const int *sizeW, const int n);
+    static PermLoopRes roomPerm(const int *sizeH, const int *sizeW, const int n);
 
 };
 
