@@ -346,6 +346,11 @@ PermLoopRes Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
 
     // Cycle each permutation
     do {
+        // for(int i = 0; i < (int)perm.size(); i++){
+        //     std::cout << perm[i] << ", ";
+        // }
+        // std::cout << std::endl;
+
         perms.push_back(perm);
         conns.push_back(ConnLoop(perm, sizeH, sizeW, n, NConn));
     } while (std::next_permutation(perm.begin(), perm.end()));

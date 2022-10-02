@@ -1,0 +1,17 @@
+######### opencv
+...
+
+######### doxygen
+    sudo apt install flex bison libc6 libc6-dev
+
+    https://doxygen.nl/manual/install.html
+    git clone https://github.com/doxygen/doxygen.git
+    cd doxygen
+    mkdir build
+    cd build
+    cmake -G "Unix Makefiles" ..
+    make
+
+######### sphinx
+    sudo apt-get install python3-sphinx
+    pip3 install sphinx_rtd_theme breathe insegel groundwork-sphinx-theme

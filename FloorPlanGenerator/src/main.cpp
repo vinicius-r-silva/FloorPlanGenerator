@@ -11,7 +11,14 @@
 #include "../lib/calculator.h"
 
 
-void totalOfCombinations();
+// https://stackoverflow.com/questions/11071116/i-got-omp-get-num-threads-always-return-1-in-gcc-works-in-icc
+int omp_thread_count() {
+    int n = 0;
+    #pragma omp parallel reduction(+:n)
+        n += 1;
+    
+    return n;
+}
 
 /*!
     @brief Main Function
@@ -19,22 +26,30 @@ void totalOfCombinations();
 */
 int main(){
     const int n = 3;
+    const int NThreads = omp_thread_count();
+
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     Calculator::totalOfCombinations(setups, n);
 
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
-    
-    std::vector<SizeLoopRes> sizes;
-    sizes.reserve(allCombs.size());
 
-    for(std::size_t i = 0; i < allCombs.size(); i++){
+    const int NCombs = allCombs.size();
+    SizeLoopRes *sizes = (SizeLoopRes*)calloc(NCombs, sizeof(SizeLoopRes));
+
+    #pragma omp parallel for num_threads(NThreads) default(none) shared(allCombs, sizes, NCombs)
+    for(int i = 0; i < NCombs; i++)
+    {
+        const int tid = omp_get_thread_num();
+        // printf("Thread: %d, i: %d\n", tid, i);
         // for(std::size_t k = 0; k < allCombs[i].size(); k++){
         //     std::cout << allCombs[i][k].name << ",  ";
         // }
         // std::cout << std::endl;
         
-        sizes.push_back(Iter::SizeLoop(allCombs[i]));
+        // std::cout << "i = " << i << std::endl;
+
+        sizes[i] = Iter::SizeLoop(allCombs[i]);
     }
     return 0;
 }

@@ -16,7 +16,7 @@ void writeRoom(RoomConfig room, std::ofstream& file){
 }
 
 void printRoom(RoomConfig room){
-    std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << "), : W (" << room.minW << " - " << room.maxW << "), E: " << room.numExtensions << std::endl;
+    std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << "), : W (" << room.minW << " - " << room.maxW << "), Ext: " << room.numExtensions << ", Step: " << room.step << std::endl;
 }
 
 int main(){
@@ -37,7 +37,7 @@ int main(){
     rooms[0].name[2] = 'l'; rooms[0].name[3] = 'a';
     rooms[0].minH = 30; rooms[0].maxH = 50;
     rooms[0].minW = 20; rooms[0].maxW = 40;
-    rooms[0].step = 1;
+    rooms[0].step = 4;
     
     rooms[1].id = 1 << 1;
     rooms[1].numExtensions = 0;
@@ -47,7 +47,7 @@ int main(){
     rooms[1].name[6] = 'r'; rooms[1].name[7] = 'o';
     rooms[1].minH = 8; rooms[1].maxH = 20;
     rooms[1].minW = 15; rooms[1].maxW = 30;
-    rooms[1].step = 1;
+    rooms[1].step = 4;
 
     rooms[2].id = 1 << 2;
     rooms[2].numExtensions = 1;
@@ -56,7 +56,7 @@ int main(){
     rooms[2].name[4] = 't'; rooms[2].name[5] = 'o';
     rooms[2].minH = 20; rooms[2].maxH = 40;
     rooms[2].minW = 20; rooms[2].maxW = 40;
-    rooms[2].step = 1;
+    rooms[2].step = 4;
     
     rooms[3].id = 1 << 3;
     rooms[3].numExtensions = 0;
@@ -66,7 +66,7 @@ int main(){
     rooms[3].name[6] = 'o'; rooms[3].name[7] = 'r';
     rooms[3].minH = 7; rooms[3].maxH = 15;
     rooms[3].minW = 7; rooms[3].maxW = 50;
-    rooms[3].step = 1;
+    rooms[3].step = 4;
     
     rooms[4].id = 1 << 4;
     rooms[4].numExtensions = 0;
@@ -76,7 +76,7 @@ int main(){
     rooms[4].name[6] = 'a';
     rooms[4].minH = 15; rooms[4].maxH = 25;
     rooms[4].minW = 15; rooms[4].maxW = 30;
-    rooms[4].step = 1;
+    rooms[4].step = 4;
     
     rooms[5].id = 1 << 5;
     rooms[5].numExtensions = 0;
@@ -87,7 +87,7 @@ int main(){
     rooms[5].name[8] = 'i'; rooms[5].name[9] = 'a';
     rooms[5].minH = 15; rooms[5].maxH = 25;
     rooms[5].minW = 15; rooms[5].maxW = 30;
-    rooms[5].step = 1;
+    rooms[5].step = 4;
 
     std::ofstream roomsConfigFile("../configs/rooms", std::ios::binary);
     roomsConfigFile.write((char*)&numOfRooms,  sizeof(int));
