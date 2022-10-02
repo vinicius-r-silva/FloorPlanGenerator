@@ -312,7 +312,9 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
 
         if(sucess){
             result.push_back(i);
+            #ifdef OPENCV_ENABLED
             CVHelper::showLayout(ptsX, ptsY, n);
+            #endif
         }
         i += sum;
     }

@@ -31,6 +31,6 @@ void CVHelper::showLayout(const std::vector<int> &ptsX, const std::vector<int> &
     cv::namedWindow("tela", cv::WINDOW_AUTOSIZE );
     cv::imshow("tela", fundo);
     cv::waitKey(1);
-    while(cv::waitKey(30) != 27);
+    // while(cv::waitKey(30) != 27);
 #endif
 }

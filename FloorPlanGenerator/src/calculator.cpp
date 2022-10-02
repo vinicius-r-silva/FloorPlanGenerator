@@ -80,13 +80,13 @@ void Calculator::totalOfCombinations(const std::vector<RoomConfig>& setups, cons
     const unsigned long qtdPerSize = NPerms * NConns;
     std::cout << "NPerms: " << NPerms << std::endl;
     std::cout << "NConns: " << NConns << std::endl;
-    std::cout << "NCombs: " << allCombs.size() << std::endl;
-    // std::cout << "qtdPerSize: " << qtdPerSize << std::endl;
   
 
     for(std::size_t i = 0; i < allCombs.size(); i++){
         res += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSize;
     }
     std::cout << "avg NSizes: " << res/(qtdPerSize * allCombs.size()) << std::endl;
+    std::cout << "NCombs: " << allCombs.size() << std::endl;
+    std::cout << "qtdPerComb: " << res/allCombs.size() << std::endl;
     std::cout << "totalOfCombinations: " << res << std::endl;
 }

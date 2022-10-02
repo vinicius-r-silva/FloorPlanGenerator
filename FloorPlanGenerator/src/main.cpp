@@ -21,7 +21,7 @@ int main(){
     const int n = 3;
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    // Calculator::totalOfCombinations(setups, n);
+    Calculator::totalOfCombinations(setups, n);
 
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
     
@@ -35,7 +35,6 @@ int main(){
         // std::cout << std::endl;
         
         sizes.push_back(Iter::SizeLoop(allCombs[i]));
-        break;
     }
     return 0;
 }
