@@ -41,6 +41,12 @@ int Calculator::NConnections(int n){
 }
 
 
+/*!
+    @brief Calculates the number of possible combination of n between k
+    @param[in] k number of the total of elements
+    @param[in] n number of the total of elements to select
+    @return (int) number of combination
+*/
 int Calculator::NCombination(int k, int n){
     int res = 1;
     int diff = k - n;
@@ -55,6 +61,12 @@ int Calculator::NCombination(int k, int n){
 
 }
 
+
+/*!
+    @brief Calculates the number of possible room's size combinations
+    @param[in] rooms vector with each room information
+    @return (int) number of room's size combinations
+*/
 int Calculator::NRoomSizes(const std::vector<RoomConfig>& rooms){
     int res = 1;
     const int lenght = rooms.size();
@@ -71,6 +83,12 @@ int Calculator::NRoomSizes(const std::vector<RoomConfig>& rooms){
 }
 
 
+/*!
+    @brief Calculates the total number of possible layouts considering combination, rooms sizes, etc
+    @param[in] setups every room configuration
+    @param[in] n number of rooms per layout
+    @return (int) number of possible layouts
+*/
 void Calculator::totalOfCombinations(const std::vector<RoomConfig>& setups, const int n){
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);  
 

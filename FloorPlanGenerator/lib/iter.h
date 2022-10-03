@@ -4,19 +4,27 @@
 #include <globals.h>
 #include <vector>
 
-
+/** 
+ * @brief save the results for each room permutation
+*/
 class PermLoopRes {
     public:
         // PermLoopRes() = default;
-        std::vector<std::vector<int>> perms;
-        std::vector<std::vector<int>> conns;
+        std::vector<std::vector<int>> perms; /**< room order */
+        std::vector<std::vector<int>> conns; /**< valid connection values  */
 };
 
+
+/** 
+ * @brief save the results for each room's size
+*/
 class SizeLoopRes {
     public:
-        // PermLoopRes() = default;
-        std::vector<int> roomsId;
-        std::vector<PermLoopRes> perms;
+        // SizeLoopRes() = default;
+        std::vector<int> roomsId;       /**< rooms used to loop for each size */
+        std::vector<PermLoopRes> perms; /**< permutation result  */
+        std::vector<std::vector<int>> sizeH; /**< Height values  */
+        std::vector<std::vector<int>> sizeW; /**< Width Values  */
 };
 
 /** 

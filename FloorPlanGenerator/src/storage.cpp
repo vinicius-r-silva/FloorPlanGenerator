@@ -71,10 +71,6 @@ void Storage::readConfigs(){
 
     input_file.close();
     free(rooms);
-
-    // for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
-    //     Log::print((RoomConfig)(*it));
-
 }
 
 /// @brief          Get the possible RoomConfig informations

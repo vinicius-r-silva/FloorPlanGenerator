@@ -24,13 +24,13 @@ void CVHelper::showLayout(const std::vector<int> &ptsX, const std::vector<int> &
 #ifdef OPENCV_ENABLED
     cv::Mat fundo = cv::Mat::zeros(cv::Size(600, 600), CV_8UC3);
     for(int i = 0; i < n; i++){
-        cv::Scalar color = cv::Scalar(35 + (220 * ((i + 1) & 0b1)), 35 + (220 * ((i + 1) & 0b10)), 35 + (220 * ((i + 1) & 0b100)));   
+        cv::Scalar color = cv::Scalar(55 + (200 * ((i + 1) & 0b1)), 55 + (200 * ((i + 1) & 0b10)), 55 + (200 * ((i + 1) & 0b100)));   
         cv::rectangle(fundo, cv::Point(ptsX[i*2]*5 + 240, ptsY[i*2]*5 + 240), cv::Point(ptsX[i*2 + 1]*5 + 240, ptsY[i*2 + 1]*5 + 240), color, 2, 8, 0);
     }
 
     cv::namedWindow("tela", cv::WINDOW_AUTOSIZE );
     cv::imshow("tela", fundo);
     cv::waitKey(1);
-    // while(cv::waitKey(30) != 27);
+    while(cv::waitKey(30) != 27);
 #endif
 }
