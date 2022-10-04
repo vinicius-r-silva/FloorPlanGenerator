@@ -19,4 +19,5 @@ Welcome to FloorPlanGenerator's documentation!
    storage
    log
    cvHelper
+   mpHelper
    calculator

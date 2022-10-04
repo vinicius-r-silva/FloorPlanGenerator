@@ -9,16 +9,7 @@
 #include "../lib/storage.h"
 #include "../lib/iter.h"
 #include "../lib/calculator.h"
-
-
-// https://stackoverflow.com/questions/11071116/i-got-omp-get-num-threads-always-return-1-in-gcc-works-in-icc
-int omp_thread_count() {
-    int n = 0;
-    #pragma omp parallel reduction(+:n)
-        n += 1;
-    
-    return n;
-}
+#include "../lib/mpHelper.h"
 
 /*!
     @brief Main Function
@@ -26,13 +17,7 @@ int omp_thread_count() {
 */
 int main(){
     const int n = 3;
-    #ifdef OPENCV_ENABLED
-    const int NThreads = 1;
-    #endif
-
-    #ifndef OPENCV_ENABLED
-    const int NThreads = omp_thread_count();
-    #endif
+    const int NThreads = MPHelper::omp_thread_count();
 
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
