@@ -180,7 +180,7 @@ bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
 /*!
     @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
-    @return None
+    @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> connection id
 */
 std::vector<std::vector<std::vector<int>>> Iter::SizeLoop(const std::vector<RoomConfig>& rooms){
     // SizeLoopRes res;
@@ -319,7 +319,7 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
     @param[in] sizeH Height value of each room setup
     @param[in] sizeW Width value of each room setup
     @param[in] n     number of rooms
-    @return None
+    @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> connection id
 */
 std::vector<std::vector<int>> Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;

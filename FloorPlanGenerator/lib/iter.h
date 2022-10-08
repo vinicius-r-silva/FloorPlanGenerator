@@ -4,29 +4,6 @@
 #include <globals.h>
 #include <vector>
 
-// /** 
-//  * @brief save the results for each room permutation
-// */
-// class PermLoopRes {
-//     public:
-//         // PermLoopRes() = default;
-//         std::vector<int> order; /**< room order */
-//         std::vector<std::vector<int>> conns; /**< valid connection values  */
-// };
-
-
-// /** 
-//  * @brief save the results for each room's size
-// */
-// class SizeLoopRes {
-//     public:
-//         // SizeLoopRes() = default;
-//         int comb;       /**< rooms used to loop for each size */
-//         std::vector<PermLoopRes> perms; /**< permutation result  */
-//         std::vector<std::vector<int>> sizeH; /**< Height values  */
-//         std::vector<std::vector<int>> sizeW; /**< Width Values  */
-// };
-
 /** 
  * @brief Handles all console's read/write
 */
@@ -74,7 +51,7 @@ public:
     /*!
         @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
-        @return None
+        @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> connection id
     */
     static std::vector<std::vector<std::vector<int>>> SizeLoop(const std::vector<RoomConfig>& rooms);
 
@@ -95,7 +72,7 @@ public:
         @param[in] sizeH Height value of each room setup
         @param[in] sizeW Width value of each room setup
         @param[in] n     number of rooms
-        @return None
+        @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> connection id
     */
     static std::vector<std::vector<int>> roomPerm(const int *sizeH, const int *sizeW, const int n);
 

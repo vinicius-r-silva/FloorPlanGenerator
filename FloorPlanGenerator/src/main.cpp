@@ -30,7 +30,9 @@ int main(){
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
     const int NCombs = allCombs.size();
 
+#ifdef MULTI_THREAD
     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs)
+#endif
     for(int i = 0; i < NCombs; i++)
     {
         const int tid = omp_get_thread_num();
