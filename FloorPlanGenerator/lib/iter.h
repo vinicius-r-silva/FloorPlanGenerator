@@ -4,28 +4,28 @@
 #include <globals.h>
 #include <vector>
 
-/** 
- * @brief save the results for each room permutation
-*/
-class PermLoopRes {
-    public:
-        // PermLoopRes() = default;
-        std::vector<std::vector<int>> perms; /**< room order */
-        std::vector<std::vector<int>> conns; /**< valid connection values  */
-};
+// /** 
+//  * @brief save the results for each room permutation
+// */
+// class PermLoopRes {
+//     public:
+//         // PermLoopRes() = default;
+//         std::vector<int> order; /**< room order */
+//         std::vector<std::vector<int>> conns; /**< valid connection values  */
+// };
 
 
-/** 
- * @brief save the results for each room's size
-*/
-class SizeLoopRes {
-    public:
-        // SizeLoopRes() = default;
-        std::vector<int> roomsId;       /**< rooms used to loop for each size */
-        std::vector<PermLoopRes> perms; /**< permutation result  */
-        std::vector<std::vector<int>> sizeH; /**< Height values  */
-        std::vector<std::vector<int>> sizeW; /**< Width Values  */
-};
+// /** 
+//  * @brief save the results for each room's size
+// */
+// class SizeLoopRes {
+//     public:
+//         // SizeLoopRes() = default;
+//         int comb;       /**< rooms used to loop for each size */
+//         std::vector<PermLoopRes> perms; /**< permutation result  */
+//         std::vector<std::vector<int>> sizeH; /**< Height values  */
+//         std::vector<std::vector<int>> sizeW; /**< Width Values  */
+// };
 
 /** 
  * @brief Handles all console's read/write
@@ -76,7 +76,7 @@ public:
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return None
     */
-    static SizeLoopRes SizeLoop(const std::vector<RoomConfig>& rooms);
+    static std::vector<std::vector<std::vector<int>>> SizeLoop(const std::vector<RoomConfig>& rooms);
 
     /*!
         @brief Iterate over every possible connection between the given rooms 
@@ -97,7 +97,7 @@ public:
         @param[in] n     number of rooms
         @return None
     */
-    static PermLoopRes roomPerm(const int *sizeH, const int *sizeW, const int n);
+    static std::vector<std::vector<int>> roomPerm(const int *sizeH, const int *sizeW, const int n);
 
 };
 

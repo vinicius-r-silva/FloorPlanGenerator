@@ -6,10 +6,15 @@
 #include "../lib/storage.h"
 #include "../lib/globals.h"
 #include "../lib/log.h"
+#include "../lib/iter.h"
+#include "../lib/calculator.h"
+
+// ls -la ../FloorPlanGenerator/storage/ --block-size=MB
 
 /// @brief          Storage Constructor
 /// @return         None
 Storage::Storage(){
+    updateProjectDir();
     readConfigs();
 }
 
@@ -17,9 +22,9 @@ Storage::Storage(){
 /** 
  * @brief get the project directory
  * @details returns the current executable directory until the first appearence of the folder "FloorPlanGenerator"
- * @return String of the current project directory
+ * @return None
 */
-std::string Storage::getProjectDir(){
+void Storage::updateProjectDir(){
     std::string res = ""; //Result string
     const std::filesystem::path currPath = std::filesystem::current_path();
     
@@ -39,7 +44,7 @@ std::string Storage::getProjectDir(){
     if(res.length() > 0)
         res.pop_back();
 
-    return res;
+    _projectDir = res;
 }
 
 /// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
@@ -47,7 +52,7 @@ std::string Storage::getProjectDir(){
 void Storage::readConfigs(){
     setups.clear();
 
-    std::string path = getProjectDir() + "/configs/rooms";
+    std::string path = _projectDir + "/configs/rooms";
     std::ifstream input_file(path, std::ios::binary);
     
     int numOfRooms = 0;
@@ -77,4 +82,81 @@ void Storage::readConfigs(){
 /// @return         RoomConfig vector
 std::vector<RoomConfig> Storage::getConfigs(){
     return setups;
+}
+
+inline void getSizeId(int k, const ulong n, const std::vector<ulong>& qtdSizesH, const std::vector<ulong>& qtdSizesW, ulong *idH, ulong *idW){
+    ulong resH = 0;
+    ulong resW = 0;
+    for(ulong i = 0; i < n; i++){
+        resH += (k % qtdSizesH[i]) << (i * 6);
+        k /= qtdSizesH[i];
+
+        resW += (k % qtdSizesW[i]) << (i * 6);
+        k /= qtdSizesW[i];
+    }
+    *idH = resH;
+    *idW = resW;
+}
+
+// layout: size -> order -> conn
+void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layouts, const std::vector<RoomConfig>& rooms, const int n){
+    
+    int combId  = 0;
+    for(int i = 0; i < n; i++){
+        combId += rooms[i].id;
+    }
+
+    std::vector<ulong> qtdSizesH; qtdSizesH.reserve(n);
+    std::vector<ulong> qtdSizesW; qtdSizesW.reserve(n);
+    for(int i = 0; i < n; i++){
+        const int diffH = rooms[i].maxH - rooms[i].minH;
+        const int diffW = rooms[i].maxW - rooms[i].minW;
+        qtdSizesH.push_back((diffH + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+        qtdSizesW.push_back((diffW + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+    }
+
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
+    std::ofstream outputFile(path, std::ios::out | std::ios::binary);
+
+    // std::cout << "path: " << path << std::endl;
+
+    ulong sizeH = 0, sizeW = 0;
+    const int NSizes = layouts.size();
+    const int NPerm = layouts[0].size();
+    const int NConns = Calculator::NConnections(n) / 2;
+    const int qtdSizesPerSave = 16384/(NConns * NPerm * 6);
+
+    // std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << std::endl;
+    // std::vector<int> res; res.reserve();
+    // int *sizesFile = (int*)calloc(NPerm*6, sizeof(int));
+    const int vectorSize = qtdSizesPerSave * NConns * NPerm * 6;
+    std::vector<int> sizesFile; sizesFile.reserve(vectorSize);
+
+    // int count = 0;
+    for(int i = 0; i < NSizes; i++){
+        getSizeId(i, n, qtdSizesH, qtdSizesW, &sizeH, &sizeW);
+        const int sizeH_1 = int(sizeH >> 32);
+        const int sizeH_2 = int(sizeH & 0b11111111111111111111111111111111);
+        const int sizeW_1 = int(sizeW >> 32);
+        const int sizeW_2 = int(sizeW & 0b11111111111111111111111111111111);
+        
+        for(int j = 0; j < NPerm; j++){
+            for(long unsigned int k = 0; k < layouts[i][j].size(); k++){
+                sizesFile.push_back(sizeH_1);
+                sizesFile.push_back(sizeH_2);
+                sizesFile.push_back(sizeW_1);
+                sizesFile.push_back(sizeW_2);
+                sizesFile.push_back(j);
+                sizesFile.push_back(layouts[i][j][k]);
+            }
+        }
+
+        if(i % qtdSizesPerSave == qtdSizesPerSave - 1){
+            outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(int));
+
+            sizesFile.clear(); 
+            sizesFile.reserve(vectorSize);
+        }
+    }
+    outputFile.close();
 }

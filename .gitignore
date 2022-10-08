@@ -40,6 +40,8 @@ docs/_build/
 docs/_static/
 docs/_templates/
 /logs/
+build/
+FloorPlanGenerator/storage/
 config.out
 
 calculator.py

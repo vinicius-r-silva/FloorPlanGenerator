@@ -182,30 +182,21 @@ bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return None
 */
-SizeLoopRes Iter::SizeLoop(const std::vector<RoomConfig>& rooms){
-    SizeLoopRes res;
+std::vector<std::vector<std::vector<int>>> Iter::SizeLoop(const std::vector<RoomConfig>& rooms){
+    // SizeLoopRes res;
     const int n = rooms.size();
-
-    std::vector<int> roomsId;
-    roomsId.reserve(n);
 
     //Create array with the current size of every room
     std::vector<int> sizeH; sizeH.reserve(n); // Height
     std::vector<int> sizeW; sizeW.reserve(n); // Width
     for(int i = 0; i < n; i++){
-        sizeH[i] = rooms[i].minH;
-        sizeW[i] = rooms[i].minW;
-
-        roomsId.push_back(rooms[i].id);
+        sizeH.push_back(rooms[i].minH);
+        sizeW.push_back(rooms[i].minW);
     }
 
     const int NSizes = Calculator::NRoomSizes(rooms);
-    std::vector<PermLoopRes> perms; perms.reserve(NSizes);
-    std::vector<std::vector<int>> allSizesH; allSizesH.reserve(NSizes);
-    std::vector<std::vector<int>> allSizesW; allSizesW.reserve(NSizes);
-
-    //Main loop
-    // int count = 0;
+    std::vector<std::vector<std::vector<int>>> perms; perms.reserve(NSizes);
+    
     do {
         // std::cout << "#########################" << std::endl << count << std::endl;
         // for(int i = 0; i < n; i++){
@@ -214,20 +205,9 @@ SizeLoopRes Iter::SizeLoop(const std::vector<RoomConfig>& rooms){
         // std::cout << "#########################" << std::endl << std::endl << std::endl;
 
         perms.push_back(roomPerm(&sizeH[0], &sizeW[0], n));
-        allSizesH.push_back(sizeH);
-        allSizesW.push_back(sizeW);
-        // count++;
-        // break;
     } while(Iter::nextRoomSize(rooms, &sizeH[0], &sizeW[0]));
 
-    // free(sizeH);
-    // free(sizeW);
-
-    res.roomsId = std::move(roomsId);
-    res.perms = std::move(perms);
-    res.sizeH = std::move(allSizesH);
-    res.sizeW = std::move(allSizesW);
-    return res;
+    return perms;
 }
 
 
@@ -275,6 +255,12 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
             const int pos = (n - j - 1) * 4;
             const int srcConn = (i >> pos) & 0b11;
             const int dstConn = ((i >> (pos + 2)) & 0b11);
+            if(srcConn == dstConn){
+                sucess = false;
+                const int diff = n - j - 1;
+                sum = (1 << (diff * 4)) - 1;
+                break;
+            }
             
             dstH = sizeH[order[j]];
             dstW = sizeW[order[j]];
@@ -335,34 +321,32 @@ std::vector<int> Iter::ConnLoop(const std::vector<int>& order, const int *sizeH,
     @param[in] n     number of rooms
     @return None
 */
-PermLoopRes Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
+std::vector<std::vector<int>> Iter::roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;
     for(int i = 0; i < n; i++)
         perm.push_back(i);
 
-    PermLoopRes res;
+    // PermLoopRes res;
     const int NPerm = Calculator::Factorial(n);
     const int NConn = Calculator::NConnections(n);
 
-    std::vector<std::vector<int>> perms;
-    std::vector<std::vector<int>> conns;
+    std::vector<std::vector<int>> conns; 
     conns.reserve(NPerm);
-    perms.reserve(NPerm);
 
     // Cycle each permutation
+    int i = 0;
     do {
         // for(int i = 0; i < (int)perm.size(); i++){
         //     std::cout << perm[i] << ", ";
         // }
         // std::cout << std::endl;
 
-        perms.push_back(perm);
         conns.push_back(ConnLoop(perm, sizeH, sizeW, n, NConn));
+
+        i++;
     } while (std::next_permutation(perm.begin(), perm.end()));
 
-    res.conns = std::move(conns);
-    res.perms = std::move(perms);
-    return res;
+    return conns;
 }
 
 // // 0--1

@@ -1,5 +1,7 @@
 #include "../lib/mpHelper.h"
+#include "../lib/globals.h"
 #include <omp.h>
+
 
 /** 
  * @brief Storage Constructor
