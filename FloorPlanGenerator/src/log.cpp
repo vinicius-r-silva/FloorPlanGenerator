@@ -14,8 +14,9 @@ Log::Log(){
  * @return None
 */
 void Log::print(RoomConfig s){
-    std::cout << s.id << " " << s.name << ": H (" << s.minH << 
-                 " - " << s.maxH << "), : W (" << s.minW << 
-                 " - " << s.maxW << "), E: " << s.numExtensions << 
-                 " step: " << s.step << std::endl;
+    std::cout << s.id << " " << s.name << ":\tH (" << s.minH << 
+                 " - " << s.maxH << "),\tW (" << s.minW << 
+                 " - " << s.maxW << "),\tE: " << s.numExtensions << 
+                 "\tstep: " << s.step <<
+                 "\tdepend: " << s.depend << std::endl;
 }

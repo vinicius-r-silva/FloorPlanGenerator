@@ -10,6 +10,7 @@
 #include "../lib/calculator.h"
 
 // ls -la ../FloorPlanGenerator/storage/ --block-size=MB
+// du -hs ../FloorPlanGenerator/storage/
 
 /// @brief          Storage Constructor
 /// @return         None
@@ -70,6 +71,7 @@ void Storage::readConfigs(){
         input_file.read((char*)&(rooms[i].maxH), sizeof(int));
         input_file.read((char*)&(rooms[i].minW), sizeof(int));
         input_file.read((char*)&(rooms[i].maxW), sizeof(int));
+        input_file.read((char*)&(rooms[i].depend), sizeof(long));
         input_file.read((char*)&(rooms[i].name), ROOM_NAME_SIZE * sizeof(char));
         setups.push_back(rooms[i]);
     }
@@ -118,15 +120,17 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
     std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
     std::ofstream outputFile(path, std::ios::out | std::ios::binary);
 
-    // std::cout << "path: " << path << std::endl;
+    std::cout << "path: " << path << std::endl;
 
     ulong sizeH = 0, sizeW = 0;
     const int NSizes = layouts.size();
     const int NPerm = layouts[0].size();
     const int NConns = Calculator::NConnections(n) / 2;
-    const int qtdSizesPerSave = 16384/(NConns * NPerm * 6);
+    
+    const int qtdSizesPerSave = (NConns * NPerm * 6 > 16384) ? 1 : 16384 / (NConns * NPerm * 6);
 
-    // std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << std::endl;
+
+    std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << std::endl;
     // std::vector<int> res; res.reserve();
     // int *sizesFile = (int*)calloc(NPerm*6, sizeof(int));
     const int vectorSize = qtdSizesPerSave * NConns * NPerm * 6;
@@ -159,4 +163,21 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
         }
     }
     outputFile.close();
+}
+
+std::vector<int> Storage::getSavedCombinations() {
+    std::vector<int> result;
+    std::string path = _projectDir + "/FloorPlanGenerator/storage";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string fileName = entry.path().stem();
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") == 0){
+            result.push_back(stoi(fileName));
+        }
+        // std::cout << fileName << "  " << extension <<std::endl;
+    }
+
+    return result;
 }

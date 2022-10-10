@@ -39,6 +39,21 @@ int Calculator::NConnections(int n){
 
     return res;
 }
+    
+
+/*!
+    @brief Calculates the number of possible connections given the quantity of rooms but removes combinations that are garantee to overlap
+    @param[in] k number of the total of elements
+    @param[in] n number of the total of elements to select
+    @return (int) number of combination
+*/
+int Calculator::NConnectionsReduced(int n){
+    int res = 1;
+    for(; n > 1; n--)
+        res *= 12;
+
+    return res;
+}
 
 
 /*!
@@ -93,18 +108,53 @@ void Calculator::totalOfCombinations(const std::vector<RoomConfig>& setups, cons
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);  
 
     unsigned long res = 0;
+    unsigned long resReduced = 0;
     const unsigned long NPerms = (unsigned long)Calculator::Factorial(n);
     const unsigned long NConns = (unsigned long)Calculator::NConnections(n);
+    const unsigned long NConnsReduced = (unsigned long)Calculator::NConnectionsReduced(n);
     const unsigned long qtdPerSize = NPerms * NConns;
+    const unsigned long qtdPerSizeReduced = NPerms * NConnsReduced;
+    std::cout << "N: " << n << std::endl;
     std::cout << "NPerms: " << NPerms << std::endl;
     std::cout << "NConns: " << NConns << std::endl;
+    std::cout << "NConnsReduced: " << NConnsReduced<< std::endl;
   
 
     for(std::size_t i = 0; i < allCombs.size(); i++){
         res += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSize;
+        resReduced += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSizeReduced;
     }
     std::cout << "avg NSizes: " << res/(qtdPerSize * allCombs.size()) << std::endl;
     std::cout << "NCombs: " << allCombs.size() << std::endl;
     std::cout << "qtdPerComb: " << res/allCombs.size() << std::endl;
     std::cout << "totalOfCombinations: " << res << std::endl;
+    std::cout << "totalOfCombinationsReduced: " << resReduced << std::endl;
 }
+
+
+// void Calculator::listOfCombinations(const std::vector<RoomConfig>& setups, const std::vector<int>& k){
+//     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);  
+
+//     unsigned long res = 0;
+//     unsigned long resReduced = 0;
+//     const unsigned long NPerms = (unsigned long)Calculator::Factorial(n);
+//     const unsigned long NConns = (unsigned long)Calculator::NConnections(n);
+//     const unsigned long NConnsReduced = (unsigned long)Calculator::NConnectionsReduced(n);
+//     const unsigned long qtdPerSize = NPerms * NConns;
+//     const unsigned long qtdPerSizeReduced = NPerms * NConnsReduced;
+//     std::cout << "N: " << n << std::endl;
+//     std::cout << "NPerms: " << NPerms << std::endl;
+//     std::cout << "NConns: " << NConns << std::endl;
+//     std::cout << "NConnsReduced: " << NConnsReduced<< std::endl;
+  
+
+//     for(std::size_t i = 0; i < allCombs.size(); i++){
+//         res += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSize;
+//         resReduced += (unsigned long)(Calculator::NRoomSizes(allCombs[i])) * qtdPerSizeReduced;
+//     }
+//     std::cout << "avg NSizes: " << res/(qtdPerSize * allCombs.size()) << std::endl;
+//     std::cout << "NCombs: " << allCombs.size() << std::endl;
+//     std::cout << "qtdPerComb: " << res/allCombs.size() << std::endl;
+//     std::cout << "totalOfCombinations: " << res << std::endl;
+//     std::cout << "totalOfCombinationsReduced: " << resReduced << std::endl;
+// }

@@ -39,6 +39,8 @@ public:
     std::vector<RoomConfig> getConfigs();
 
     void saveResult(const std::vector<std::vector<std::vector<int>>>& res, const std::vector<RoomConfig>& rooms, const int n);
+
+    std::vector<int> getSavedCombinations();
 };
 
 #endif //STORAGE

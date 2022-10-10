@@ -16,6 +16,7 @@ Welcome to FloorPlanGenerator's documentation!
    globals
    main
    iter
+   generate
    storage
    log
    cvHelper

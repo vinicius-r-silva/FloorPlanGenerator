@@ -34,6 +34,14 @@ public:
     
 
     /*!
+        @brief Calculates the number of possible connections given the quantity of rooms but removes combinations that are garantee to overlap
+        @param[in] n input to calculate the number of connections
+        @return (int) number of connections
+    */
+    static int NConnectionsReduced(int n);
+    
+
+    /*!
         @brief Calculates the number of possible room's size combinations
         @param[in] rooms vector with each room information
         @return (int) number of room's size combinations
