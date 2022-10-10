@@ -159,7 +159,7 @@ void normalConfig(){
     rooms[0].name[2] = 'l'; rooms[0].name[3] = 'a';
     rooms[0].minH = 30; rooms[0].maxH = 50;
     rooms[0].minW = 20; rooms[0].maxW = 40;
-    rooms[0].step = 5;
+    rooms[0].step = 10;
     rooms[0].depend = 0;
     
     rooms[1].id = 1 << 1;
@@ -170,7 +170,7 @@ void normalConfig(){
     rooms[1].name[6] = 'r'; rooms[1].name[7] = 'o';
     rooms[1].minH = 8; rooms[1].maxH = 20;
     rooms[1].minW = 15; rooms[1].maxW = 30;
-    rooms[1].step = 5;
+    rooms[1].step = 10;
     rooms[1].depend = 0;
 
     rooms[2].id = 1 << 2;
@@ -180,7 +180,7 @@ void normalConfig(){
     rooms[2].name[4] = 't'; rooms[2].name[5] = 'o';
     rooms[2].minH = 20; rooms[2].maxH = 40;
     rooms[2].minW = 20; rooms[2].maxW = 40;
-    rooms[2].step = 5;
+    rooms[2].step = 10;
     rooms[2].depend = 0;
     
     rooms[3].id = 1 << 3;
@@ -191,7 +191,7 @@ void normalConfig(){
     rooms[3].name[6] = 'o'; rooms[3].name[7] = 'r';
     rooms[3].minH = 7; rooms[3].maxH = 15;
     rooms[3].minW = 7; rooms[3].maxW = 50;
-    rooms[3].step = 5;
+    rooms[3].step = 10;
     rooms[3].depend = 0;
     
     rooms[4].id = 1 << 4;
@@ -202,7 +202,7 @@ void normalConfig(){
     rooms[4].name[6] = 'a';
     rooms[4].minH = 15; rooms[4].maxH = 25;
     rooms[4].minW = 15; rooms[4].maxW = 30;
-    rooms[4].step = 5;
+    rooms[4].step = 10;
     rooms[4].depend = 0;
     
     rooms[5].id = 1 << 5;
@@ -214,7 +214,7 @@ void normalConfig(){
     rooms[5].name[8] = 'i'; rooms[5].name[9] = 'a';
     rooms[5].minH = 15; rooms[5].maxH = 25;
     rooms[5].minW = 15; rooms[5].maxW = 30;
-    rooms[5].step = 5;
+    rooms[5].step = 10;
     rooms[5].depend = 0;
 
     std::ofstream roomsConfigFile("../configs/rooms", std::ios::binary);
@@ -286,7 +286,7 @@ void testConfig(){
 }
 
 int main(){
-    // normalConfig();
+    normalConfig();
     // testConfig();
-    extremeConfig();
+    // extremeConfig();
 }

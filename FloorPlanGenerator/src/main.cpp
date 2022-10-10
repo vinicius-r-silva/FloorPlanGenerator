@@ -20,9 +20,6 @@ void generateData() {
 
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    setups.pop_back();
-    setups.pop_back();
-    setups.pop_back();
 
     for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
         Log::print((RoomConfig)(*it));
