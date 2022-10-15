@@ -45,6 +45,8 @@ public:
         @return True if there is a next room size iteration, false otherwise
     */
     static bool nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW);
+
+    static std::vector<std::vector<int>> getFilesToCombine(std::vector<int> filesId, std::vector<RoomConfig> rooms);
 };
 
 #endif //ITER

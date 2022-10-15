@@ -41,6 +41,8 @@ public:
     void saveResult(const std::vector<std::vector<std::vector<int>>>& res, const std::vector<RoomConfig>& rooms, const int n);
 
     std::vector<int> getSavedCombinations();
+    
+    std::vector<int> readCoreData(int id);
 };
 
 #endif //STORAGE

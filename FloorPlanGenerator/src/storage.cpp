@@ -86,10 +86,10 @@ std::vector<RoomConfig> Storage::getConfigs(){
     return setups;
 }
 
-inline void getSizeId(int k, const ulong n, const std::vector<ulong>& qtdSizesH, const std::vector<ulong>& qtdSizesW, ulong *idH, ulong *idW){
-    ulong resH = 0;
-    ulong resW = 0;
-    for(ulong i = 0; i < n; i++){
+inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, const std::vector<int>& qtdSizesW, int *idH, int *idW){
+    int resH = 0;
+    int resW = 0;
+    for(int i = 0; i < n; i++){
         resH += (k % qtdSizesH[i]) << (i * 6);
         k /= qtdSizesH[i];
 
@@ -108,8 +108,8 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
         combId += rooms[i].id;
     }
 
-    std::vector<ulong> qtdSizesH; qtdSizesH.reserve(n);
-    std::vector<ulong> qtdSizesW; qtdSizesW.reserve(n);
+    std::vector<int> qtdSizesH; qtdSizesH.reserve(n);
+    std::vector<int> qtdSizesW; qtdSizesW.reserve(n);
     for(int i = 0; i < n; i++){
         const int diffH = rooms[i].maxH - rooms[i].minH;
         const int diffW = rooms[i].maxW - rooms[i].minW;
@@ -122,37 +122,42 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
 
     std::cout << "path: " << path << std::endl;
 
-    ulong sizeH = 0, sizeW = 0;
+    // int sizeH = 0, sizeW = 0;
+    const int sizeLayout = n*4;
     const int NSizes = layouts.size();
     const int NPerm = layouts[0].size();
     const int NConns = Calculator::NConnections(n) / 2;
     
-    const int qtdSizesPerSave = (NConns * NPerm * 6 > 16384) ? 1 : 16384 / (NConns * NPerm * 6);
+    const int qtdSizesPerSave = (NConns * NPerm * sizeLayout > 16384) ? 1 : 16384 / (NConns * NPerm * sizeLayout);
 
 
-    std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << std::endl;
+    std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << ", sizeLayout: " << sizeLayout << std::endl;
     // std::vector<int> res; res.reserve();
-    // int *sizesFile = (int*)calloc(NPerm*6, sizeof(int));
-    const int vectorSize = qtdSizesPerSave * NConns * NPerm * 6;
+    // int *sizesFile = (int*)calloc(NPerm*sizeLayout, sizeof(int));
+    const int vectorSize = qtdSizesPerSave * NConns * NPerm * sizeLayout;
     std::vector<int> sizesFile; sizesFile.reserve(vectorSize);
 
     // int count = 0;
     for(int i = 0; i < NSizes; i++){
-        getSizeId(i, n, qtdSizesH, qtdSizesW, &sizeH, &sizeW);
-        const int sizeH_1 = int(sizeH >> 32);
-        const int sizeH_2 = int(sizeH & 0b11111111111111111111111111111111);
-        const int sizeW_1 = int(sizeW >> 32);
-        const int sizeW_2 = int(sizeW & 0b11111111111111111111111111111111);
+        // getSizeId(i, n, qtdSizesH, qtdSizesW, &sizeH, &sizeW);
+        // const int sizeH_1 = int(sizeH >> 32);
+        // const int sizeH_2 = int(sizeH & 0b11111111111111111111111111111111);
+        // const int sizeW_1 = int(sizeW >> 32);
+        // const int sizeW_2 = int(sizeW & 0b11111111111111111111111111111111);
         
         for(int j = 0; j < NPerm; j++){
             for(long unsigned int k = 0; k < layouts[i][j].size(); k++){
-                sizesFile.push_back(sizeH_1);
-                sizesFile.push_back(sizeH_2);
-                sizesFile.push_back(sizeW_1);
-                sizesFile.push_back(sizeW_2);
-                sizesFile.push_back(j);
+                // sizesFile.push_back(sizeH_1);
+                // sizesFile.push_back(sizeH_2);
+                // sizesFile.push_back(sizeW_1);
+                // sizesFile.push_back(sizeW_2);
+                // sizesFile.push_back(sizeH);
+                // sizesFile.push_back(sizeW);
+                // sizesFile.push_back(j);
                 sizesFile.push_back(layouts[i][j][k]);
+                // std::cout << layouts[i][j][k] << ", "; 
             }
+            // std::cout << std::endl;
         }
 
         if(i % qtdSizesPerSave == qtdSizesPerSave - 1){
@@ -180,4 +185,26 @@ std::vector<int> Storage::getSavedCombinations() {
     }
 
     return result;
+}
+
+// https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
+std::vector<int> Storage::readCoreData(int id){
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(id) + ".dat";
+    
+    // open the file:
+    std::streampos fileSize;
+    std::ifstream file(filename, std::ios::binary);
+
+    // get its size:
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg() / sizeof(int);
+    file.seekg(0, std::ios::beg);
+
+
+
+    // read the data:
+    std::vector<int> fileData(fileSize);
+    file.read((char*) &fileData[0], fileSize * sizeof(int));
+
+    return fileData;
 }

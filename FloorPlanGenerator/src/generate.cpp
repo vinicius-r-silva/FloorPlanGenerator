@@ -113,12 +113,12 @@ std::vector<std::vector<std::vector<int>>> Generate::SizeLoop(const std::vector<
 */
 std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn){
     std::vector<int> result; 
-    std::vector<int> ptsX; 
-    std::vector<int> ptsY;
+    std::vector<int> ptsX(n * 2, 0); 
+    std::vector<int> ptsY(n * 2, 0);
 
-    result.reserve(NConn) ;
-    ptsX.reserve(n * 2) ;
-    ptsY.reserve(n * 2) ;
+    result.reserve(NConn*4*n);
+    // ptsX.reserve(n * 2) ;
+    // ptsY.reserve(n * 2) ;
         
     // std::cout << "perm: ";
     // for(int j = 0; j < n; j++)
@@ -193,9 +193,17 @@ std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *si
         }
 
         if(sucess){
-            result.push_back(i);
+            // result.insert(result.end(), ptsX.begin(), ptsX.end());
+            // result.insert(result.end(), ptsY.begin(), ptsY.end());
+            for(int j = 0; j < n; j++){
+                result.push_back(ptsX[2 * j]);
+                result.push_back(ptsY[2 * j]);
+                result.push_back(ptsX[2 * j + 1]);
+                result.push_back(ptsY[2 * j + 1]);
+            }
+            // result.push_back(i);
             #ifdef OPENCV_ENABLED
-            CVHelper::showLayout(ptsX, ptsY, n);
+            CVHelper::showLayout(ptsX, ptsY);
             #endif
         }
         i += sum;

@@ -5,6 +5,7 @@
 #include "../lib/globals.h"
 #include "../lib/calculator.h"
 #include "../lib/cvHelper.h"
+#include <unordered_map>
 
 
 /** 
@@ -138,4 +139,44 @@ bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
     }
 
     return flag < 2*n;
+}
+
+std::vector<std::vector<int>> Iter::getFilesToCombine(std::vector<int> filesId, std::vector<RoomConfig> rooms){
+    std::unordered_map<int, int> umap;
+    int fullId = 0;
+    for(RoomConfig setup : rooms){
+        fullId += setup.id;
+    }
+
+    std::vector<std::vector<int>> result;
+    result.reserve(filesId.size() / 2);
+
+    for(int i = 0; i < (int)filesId.size(); i++ ){
+        int fileId = filesId[i];
+        int missingPart = fullId & (~fileId);
+
+        if(umap.contains(fileId) || umap.contains(missingPart))
+            continue;
+
+        bool found = false;
+        for(int j = 0; j < (int)filesId.size(); j++ ){
+            if(filesId[j] == missingPart){
+                found = true;
+                break;
+            }
+        }
+
+        if(found){
+            umap.insert({fileId, 0});
+            umap.insert({missingPart, 0});
+
+            std::vector<int> combination;
+            combination.push_back(fileId);
+            combination.push_back(missingPart);
+
+            result.push_back(combination);
+        }
+    }
+
+    return result;
 }

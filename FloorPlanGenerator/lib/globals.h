@@ -4,15 +4,20 @@
 /**
  * Size of the char array for the RoomConfig Name field
  */
-#define ROOM_NAME_SIZE 30
+#define ROOM_NAME_SIZE 15
+#define SIZE_H_IDX 0
+#define SIZE_W_IDX 1
+#define PERM_ID_IDX 2
+#define CONN_ID_IDX 3
+
 
 /**
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-// #define OPENCV_ENABLED
+#define OPENCV_ENABLED
 
-#define MULTI_THREAD
+// #define MULTI_THREAD
 
 // #define N_ROOMS 3
 

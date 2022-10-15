@@ -19,12 +19,11 @@ public:
     
     /** 
      * @brief draw and show a layout
-     * @param[in] n qtd of rectangles
      * @param[in] ptsX x axis values
      * @param[in] ptsY y axis values
      * @return None
     */
-    static void showLayout(const std::vector<int> &ptsX, const std::vector<int> &ptsY, const int n);
+    static void showLayout(const std::vector<int> &ptsX, const std::vector<int> &ptsY);
 };
 
 #endif //OPENCV_HELPER

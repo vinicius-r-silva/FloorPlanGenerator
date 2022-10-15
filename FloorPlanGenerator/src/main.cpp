@@ -8,6 +8,7 @@
 #include "../lib/log.h"
 #include "../lib/storage.h"
 #include "../lib/iter.h"
+#include "../lib/combine.h"
 #include "../lib/generate.h"
 #include "../lib/calculator.h"
 #include "../lib/mpHelper.h"
@@ -58,11 +59,34 @@ void generateData() {
     }
 }
 
+static inline std::vector<RoomConfig> getConfigsById(const int layoutId, const std::vector<RoomConfig>& setups){
+    std::vector<RoomConfig> result;
+    for(int i = 0; i < (int)setups.size(); i++){
+        if(setups[i].id & layoutId){
+            result.push_back(setups[i]);
+        }
+    }
+
+    return result;
+}
+
 void combineData(){
-    const int n = 6;
     Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
-    
+    std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
+
+    for(std::vector<int> fileComb : filesCombs){
+        std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
+    }
+
+    std::vector<int> layout_a = hdd.readCoreData(filesCombs[0][0]);
+    std::vector<int> layout_b = hdd.readCoreData(filesCombs[0][1]);
+
+    std::vector<RoomConfig> setupsA = getConfigsById(filesCombs[0][0], setups);
+    std::vector<RoomConfig> setupsB = getConfigsById(filesCombs[0][1], setups);
+
+    Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
 
 }
 
@@ -71,7 +95,7 @@ void combineData(){
     @return if there are no erros returns 0 
 */
 int main(){
-    generateData();
-    // combineData();
+    // generateData();
+    combineData();
     return 0;
 }
