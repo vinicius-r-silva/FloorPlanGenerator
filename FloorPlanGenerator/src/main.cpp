@@ -12,7 +12,7 @@
 #include "../lib/generate.h"
 #include "../lib/calculator.h"
 #include "../lib/mpHelper.h"
-
+// #include "../cuda/helloWorld.h"
 
 void generateData() {
     const int n = 3;
@@ -78,16 +78,18 @@ void combineData(){
 
     for(std::vector<int> fileComb : filesCombs){
         std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
+        
+        std::vector<int> layout_a = hdd.readCoreData(fileComb[0]);
+        std::vector<int> layout_b = hdd.readCoreData(fileComb[1]);
+        
+        std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
+        std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+
+        std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
+        Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
+        break;
+        Combine::getValidLayoutCombs(layout_b, layout_a, setupsB.size(), setupsA.size());
     }
-
-    std::vector<int> layout_a = hdd.readCoreData(filesCombs[0][0]);
-    std::vector<int> layout_b = hdd.readCoreData(filesCombs[0][1]);
-
-    std::vector<RoomConfig> setupsA = getConfigsById(filesCombs[0][0], setups);
-    std::vector<RoomConfig> setupsB = getConfigsById(filesCombs[0][1], setups);
-
-    Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
-
 }
 
 /*!
@@ -96,6 +98,8 @@ void combineData(){
 */
 int main(){
     // generateData();
-    combineData();
+    // combineData();
+
+    // Cuda_test::launchGPU();
     return 0;
 }

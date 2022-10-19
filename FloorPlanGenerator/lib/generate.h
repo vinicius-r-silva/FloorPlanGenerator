@@ -23,7 +23,7 @@ public:
     /*!
         @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
-        @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> connection id
+        @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
     */
     static std::vector<std::vector<std::vector<int>>> SizeLoop(const std::vector<RoomConfig>& rooms);
 
@@ -34,7 +34,7 @@ public:
         @param[in] sizeW Width value of each room setup
         @param[in] n     number of rooms
         @param[in] NConn Number of possible connections
-        @return vector of every successful connection (int)
+        @return vector with layout points for every successful connection (n*4 int per layout)
     */
     static std::vector<int> ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn);
 
@@ -44,7 +44,7 @@ public:
         @param[in] sizeH Height value of each room setup
         @param[in] sizeW Width value of each room setup
         @param[in] n     number of rooms
-        @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> connection id
+        @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
     */
     static std::vector<std::vector<int>> roomPerm(const int *sizeH, const int *sizeW, const int n);
 

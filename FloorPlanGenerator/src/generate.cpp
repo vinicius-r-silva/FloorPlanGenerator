@@ -71,7 +71,7 @@ inline bool Generate::check_overlap(int a_left, int a_right, int a_up, int a_dow
 /*!
     @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
-    @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> connection id
+    @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
 */
 std::vector<std::vector<std::vector<int>>> Generate::SizeLoop(const std::vector<RoomConfig>& rooms){
     // SizeLoopRes res;
@@ -109,7 +109,7 @@ std::vector<std::vector<std::vector<int>>> Generate::SizeLoop(const std::vector<
     @param[in] sizeW Width value of each room setup
     @param[in] n     number of rooms
     @param[in] NConn Number of possible connections
-    @return vector of every successful connection (int)
+    @return vector with layout points for every successful connection (n*4 int per layout)
 */
 std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn){
     std::vector<int> result; 
@@ -218,7 +218,7 @@ std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *si
     @param[in] sizeH Height value of each room setup
     @param[in] sizeW Width value of each room setup
     @param[in] n     number of rooms
-    @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> connection id
+    @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
 */
 std::vector<std::vector<int>> Generate::roomPerm(const int *sizeH, const int *sizeW, const int n){
     std::vector<int> perm;

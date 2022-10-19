@@ -19,7 +19,7 @@ void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<i
     const int n_final = n_a + n_b;
     const int vectorOffset_a = n_a * 4;
     const int vectorOffset_b = n_b * 4;
-    std::cout << "n_a: " << n_a << ", n_b: " << n_b << std::endl;
+    // std::cout << "n_a: " << n_a << ", n_b: " << n_b << std::endl;
 
     std::vector<int> ptsX(n_final * 2, 0); 
     std::vector<int> ptsY(n_final * 2, 0);
@@ -29,6 +29,8 @@ void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<i
 
     for(int i = vectorOffset_a; i <= (int)a.size(); i += vectorOffset_a){
     
+        // if(i % 480 == 0)
+        //     std::cout << "i: " << i << std::endl;
         // std::cout << "a: ";
         // for(int j = i; j < i + n_a*4; j++)   
         //     std::cout << a[j] << ", ";
@@ -49,6 +51,9 @@ void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<i
             for(int k = 0; k < 16; k++){                
                 const int srcConn = k & 0b11;
                 const int dstConn = (k >> 2) & 0b11;
+
+                if(srcConn == dstConn)
+                    continue;
 
                 int dstX = 0;
                 int dstY = 0;
@@ -76,23 +81,6 @@ void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<i
 
                 const int diffX = srcX - dstX;
                 const int diffY = srcY - dstY;
-                if(j >=  (int)b.size() - vectorOffset_b && k == 15){
-                    std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
-                    std::cout << "a: ";
-                    for(int l = i; l < i + n_a*4; l++)   
-                        std::cout << a[l] << ", ";
-                    std::cout << std::endl;
-
-                    std::cout << "b: ";
-                    for(int l = j; l < j + n_b*4; l++)   
-                        std::cout << b[l] << ", ";
-                    std::cout << std::endl;
-
-                    std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
-                    std::cout << "dstX: " << dstX << ", dstY: " << dstY << std::endl;
-                    std::cout << "srcX: " << srcX << ", srcY: " << srcY << std::endl;
-                    std::cout << "diffX: " << diffX << ", diffY: " << diffY << std::endl;
-                }
 
                 for(int l = 0; l < ptsPerLayout_b; l++){
                     ptsX[l + ptsPerLayout_a] = b[j + l * 2] + diffX;
@@ -103,17 +91,10 @@ void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<i
                 // for(int l = 0; l < n_final; l++){
                 //     std::cout << "\t(" << ptsX[l * 2] << ", " << ptsY[l * 2] << "), (" << ptsX[l * 2 + 1] << ", " << ptsY[l * 2 + 1] << ")" << std::endl;
                 // }
-                // CVHelper::showLayout(ptsX, ptsY);
-            }
-            // CVHelper::showLayout(ptsX, ptsY);
-            
+                CVHelper::showLayout(ptsX, ptsY);
+            }            
             // break;
         }
-        for(int l = 0; l < n_final; l++){
-            std::cout << "\t(" << ptsX[l * 2] << ", " << ptsY[l * 2] << "), (" << ptsX[l * 2 + 1] << ", " << ptsY[l * 2 + 1] << ")" << std::endl;
-        }
-        std::cout << std::endl << std::endl;
-        CVHelper::showLayout(ptsX, ptsY);
         // break;
     }
 }
