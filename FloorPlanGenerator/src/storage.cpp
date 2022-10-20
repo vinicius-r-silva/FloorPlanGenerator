@@ -60,18 +60,19 @@ void Storage::readConfigs(){
 
     input_file.read((char*)&numOfRooms, sizeof(int));  
     // std::cout << "getConfigs numOfRooms: " << numOfRooms << std::endl;
+    RoomConfig tempRoom;
     
     RoomConfig* rooms = (RoomConfig*)calloc(numOfRooms, sizeof(RoomConfig));
     
     for(int i = 0; i < numOfRooms; i++){
-        input_file.read((char*)&(rooms[i].id), sizeof(long));
-        input_file.read((char*)&(rooms[i].step), sizeof(int));
-        input_file.read((char*)&(rooms[i].numExtensions), sizeof(int));
-        input_file.read((char*)&(rooms[i].minH), sizeof(int));
-        input_file.read((char*)&(rooms[i].maxH), sizeof(int));
-        input_file.read((char*)&(rooms[i].minW), sizeof(int));
-        input_file.read((char*)&(rooms[i].maxW), sizeof(int));
-        input_file.read((char*)&(rooms[i].depend), sizeof(long));
+        input_file.read((char*)&(rooms[i].id), sizeof(tempRoom.id));
+        input_file.read((char*)&(rooms[i].step), sizeof(tempRoom.step));
+        input_file.read((char*)&(rooms[i].numExtensions), sizeof(tempRoom.numExtensions));
+        input_file.read((char*)&(rooms[i].minH), sizeof(tempRoom.minH));
+        input_file.read((char*)&(rooms[i].maxH), sizeof(tempRoom.maxH));
+        input_file.read((char*)&(rooms[i].minW), sizeof(tempRoom.minW));
+        input_file.read((char*)&(rooms[i].maxW), sizeof(tempRoom.maxW));
+        input_file.read((char*)&(rooms[i].depend), sizeof(tempRoom.depend));
         input_file.read((char*)&(rooms[i].name), ROOM_NAME_SIZE * sizeof(char));
         setups.push_back(rooms[i]);
     }
@@ -101,21 +102,21 @@ inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, con
 }
 
 // layout: size -> order -> conn
-void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layouts, const std::vector<RoomConfig>& rooms, const int n){
+void Storage::saveResult(const std::vector<std::vector<std::vector<int16_t>>>& layouts, const std::vector<RoomConfig>& rooms, const int n){
     
     int combId  = 0;
     for(int i = 0; i < n; i++){
         combId += rooms[i].id;
     }
 
-    std::vector<int> qtdSizesH; qtdSizesH.reserve(n);
-    std::vector<int> qtdSizesW; qtdSizesW.reserve(n);
-    for(int i = 0; i < n; i++){
-        const int diffH = rooms[i].maxH - rooms[i].minH;
-        const int diffW = rooms[i].maxW - rooms[i].minW;
-        qtdSizesH.push_back((diffH + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
-        qtdSizesW.push_back((diffW + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
-    }
+    // std::vector<int> qtdSizesH; qtdSizesH.reserve(n);
+    // std::vector<int> qtdSizesW; qtdSizesW.reserve(n);
+    // for(int i = 0; i < n; i++){
+    //     const int diffH = rooms[i].maxH - rooms[i].minH;
+    //     const int diffW = rooms[i].maxW - rooms[i].minW;
+    //     qtdSizesH.push_back((diffH + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+    //     qtdSizesW.push_back((diffW + rooms[i].step  + rooms[i].step - 1) / rooms[i].step);
+    // }
 
     std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
     std::ofstream outputFile(path, std::ios::out | std::ios::binary);
@@ -123,7 +124,8 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
     std::cout << "path: " << path << std::endl;
 
     // int sizeH = 0, sizeW = 0;
-    const int sizeLayout = n*4;
+    size_t sizeElem = sizeof(layouts[0][0][0]);
+    const int sizeLayout = n * sizeElem;
     const int NSizes = layouts.size();
     const int NPerm = layouts[0].size();
     const int NConns = Calculator::NConnections(n) / 2;
@@ -135,7 +137,7 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
     // std::vector<int> res; res.reserve();
     // int *sizesFile = (int*)calloc(NPerm*sizeLayout, sizeof(int));
     const int vectorSize = qtdSizesPerSave * NConns * NPerm * sizeLayout;
-    std::vector<int> sizesFile; sizesFile.reserve(vectorSize);
+    std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
 
     // int count = 0;
     for(int i = 0; i < NSizes; i++){
@@ -161,7 +163,7 @@ void Storage::saveResult(const std::vector<std::vector<std::vector<int>>>& layou
         }
 
         if(i % qtdSizesPerSave == qtdSizesPerSave - 1){
-            outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(int));
+            outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(sizesFile[0]));
 
             sizesFile.clear(); 
             sizesFile.reserve(vectorSize);
@@ -188,7 +190,7 @@ std::vector<int> Storage::getSavedCombinations() {
 }
 
 // https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
-std::vector<int> Storage::readCoreData(int id){
+std::vector<int16_t> Storage::readCoreData(int id){
     const std::string filename = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(id) + ".dat";
     
     // open the file:
@@ -197,14 +199,14 @@ std::vector<int> Storage::readCoreData(int id){
 
     // get its size:
     file.seekg(0, std::ios::end);
-    fileSize = file.tellg() / sizeof(int);
+    fileSize = file.tellg() / sizeof(int16_t);
     file.seekg(0, std::ios::beg);
 
 
 
     // read the data:
-    std::vector<int> fileData(fileSize);
-    file.read((char*) &fileData[0], fileSize * sizeof(int));
+    std::vector<int16_t> fileData(fileSize);
+    file.read((char*) &fileData[0], fileSize * sizeof(int16_t));
 
     return fileData;
 }

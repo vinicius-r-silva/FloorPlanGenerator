@@ -16,7 +16,7 @@ public:
     Combine();
 
 
-    static void getValidLayoutCombs(const std::vector<int>& a, const std::vector<int>& b, const int n_a, const int n_b);
+    static void getValidLayoutCombs(const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b);
 };
 
 #endif //COMBINE

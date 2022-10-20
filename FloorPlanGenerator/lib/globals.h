@@ -1,6 +1,8 @@
 #ifndef GLOBALS
 #define GLOBALS
 
+#include <stdint.h>
+
 /**
  * Size of the char array for the RoomConfig Name field
  */
@@ -15,9 +17,9 @@
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-#define OPENCV_ENABLED
+// #define OPENCV_ENABLED
 
-// #define MULTI_THREAD
+#define MULTI_THREAD
 
 // #define N_ROOMS 3
 
@@ -28,11 +30,11 @@ typedef struct{
     /*@{*/
     long id;                        /**< Unique Id. Every Id is a factor of two (1, 2, 4, 8, ....)  */
     long depend;                    /**< Reference to another setup unique id, where this current setup only exist if the another one also exists */
-    int step;                       /**< int step for iterate to every possible room size */
-    int minH;                       /**< minimum Height */
-    int maxH;                       /**< maximum Height */
-    int minW;                       /**< minimum Width */
-    int maxW;                       /**< maximum Width */
+    int16_t step;                   /**< int step for iterate to every possible room size */
+    int16_t minH;                   /**< minimum Height */
+    int16_t maxH;                   /**< maximum Height */
+    int16_t minW;                   /**< minimum Width */
+    int16_t maxW;                   /**< maximum Width */
     int minRepetitions;             /**< minimum number of repetitions */
     char name[ROOM_NAME_SIZE];      /**< room name */
     

@@ -14,15 +14,15 @@ Combine::Combine(){
 
 // }
 
-void Combine::getValidLayoutCombs(const std::vector<int>& a, const std::vector<int>& b, const int n_a, const int n_b){
+void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b){
 
     const int n_final = n_a + n_b;
     const int vectorOffset_a = n_a * 4;
     const int vectorOffset_b = n_b * 4;
     // std::cout << "n_a: " << n_a << ", n_b: " << n_b << std::endl;
 
-    std::vector<int> ptsX(n_final * 2, 0); 
-    std::vector<int> ptsY(n_final * 2, 0);
+    std::vector<int16_t> ptsX(n_final * 2, 0); 
+    std::vector<int16_t> ptsY(n_final * 2, 0);
 
     const int ptsPerLayout_a = n_a * 2;
     const int ptsPerLayout_b = n_b * 2;

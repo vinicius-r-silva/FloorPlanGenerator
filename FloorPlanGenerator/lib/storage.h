@@ -1,7 +1,11 @@
 #ifndef STORAGE
 #define STORAGE
 
+// ls -la ../FloorPlanGenerator/storage/ --block-size=MB
+// du -hs ../FloorPlanGenerator/storage/
+
 #include "globals.h"
+#include <stdint.h>
 #include <vector>
 #include <string>
 
@@ -38,11 +42,11 @@ public:
     /// @return         RoomConfig vector
     std::vector<RoomConfig> getConfigs();
 
-    void saveResult(const std::vector<std::vector<std::vector<int>>>& res, const std::vector<RoomConfig>& rooms, const int n);
+    void saveResult(const std::vector<std::vector<std::vector<int16_t>>>& res, const std::vector<RoomConfig>& rooms, const int n);
 
     std::vector<int> getSavedCombinations();
     
-    std::vector<int> readCoreData(int id);
+    std::vector<int16_t> readCoreData(int id);
 };
 
 #endif //STORAGE

@@ -44,7 +44,7 @@ public:
         @param[out] sizeW rooms Width size
         @return True if there is a next room size iteration, false otherwise
     */
-    static bool nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW);
+    static bool nextRoomSize(std::vector<RoomConfig> rooms, int16_t *sizeH, int16_t *sizeW);
 
     static std::vector<std::vector<int>> getFilesToCombine(std::vector<int> filesId, std::vector<RoomConfig> rooms);
 };

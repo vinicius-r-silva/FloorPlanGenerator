@@ -5,14 +5,14 @@
 #include "../FloorPlanGenerator/lib/globals.h"
 
 void writeRoom(RoomConfig room, std::ofstream& file){
-    file.write((char*)&(room.id), sizeof(long));
-    file.write((char*)&(room.step), sizeof(int));
-    file.write((char*)&(room.numExtensions), sizeof(int));
-    file.write((char*)&(room.minH), sizeof(int));
-    file.write((char*)&(room.maxH), sizeof(int));
-    file.write((char*)&(room.minW), sizeof(int));
-    file.write((char*)&(room.maxW), sizeof(int));
-    file.write((char*)&(room.depend), sizeof(long));
+    file.write((char*)&(room.id), sizeof(room.id));
+    file.write((char*)&(room.step), sizeof(room.step));
+    file.write((char*)&(room.numExtensions), sizeof(room.numExtensions));
+    file.write((char*)&(room.minH), sizeof(room.minH));
+    file.write((char*)&(room.maxH), sizeof(room.maxH));
+    file.write((char*)&(room.minW), sizeof(room.minW));
+    file.write((char*)&(room.maxW), sizeof(room.maxW));
+    file.write((char*)&(room.depend), sizeof(room.depend));
     file.write((char*)&(room.name), ROOM_NAME_SIZE * sizeof(char));
 }
 

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-project( FloorPlanGenerator )
+project( FloorPlanGenerator LANGUAGES CXX CUDA)
 find_package( OpenCV REQUIRED )
-find_package(CUDA QUIET REQUIRED)
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -16,20 +15,29 @@ endif()
 set(
     CUDA_NVCC_FLAGS
     ${CUDA_NVCC_FLAGS};
-    -O3 -gencode arch=compute_60,code=sm_60 -gencode arch=compute_86,code=sm_86
+    -O3
 )
 
+include(FindCUDA/select_compute_arch)
+CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+set(CUDA_NVCC_FLAGS -std=c++20 -Xcompiler -O3)
 
 include (CTest)
 include_directories(lib)
 
-
 # set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
 
+set(cuda_headers "./cuda/helper.h"  "./cuda/combine.h" )
+set(cuda_codes   "./cuda/helper.cu" "./cuda/combine.cu")
 set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/globals.h") 
 set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/main.cpp")
-add_executable(FloorPlanGenerator ${headers} ${codes}) 
-target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra -Wpedantic)
-# add_executable( storage src/storage.cpp )
+
+add_executable(FloorPlanGenerator ${headers} ${codes} ${cuda_headers} ${cuda_codes}) 
+
+target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra)
 target_link_libraries( FloorPlanGenerator PUBLIC OpenMP::OpenMP_CXX ${OpenCV_LIBS} )

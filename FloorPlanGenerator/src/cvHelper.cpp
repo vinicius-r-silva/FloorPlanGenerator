@@ -19,7 +19,7 @@ CVHelper::CVHelper(){
  * @param[in] ptsY y axis values
  * @return None
 */
-void CVHelper::showLayout(const std::vector<int> &ptsX, const std::vector<int> &ptsY){
+void CVHelper::showLayout(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY){
 #ifdef OPENCV_ENABLED
     int scale = 5;
     const int screenH = 600;

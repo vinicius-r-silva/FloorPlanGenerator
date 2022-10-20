@@ -73,20 +73,20 @@ inline bool Generate::check_overlap(int a_left, int a_right, int a_up, int a_dow
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
 */
-std::vector<std::vector<std::vector<int>>> Generate::SizeLoop(const std::vector<RoomConfig>& rooms){
+std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(const std::vector<RoomConfig>& rooms){
     // SizeLoopRes res;
     const int n = rooms.size();
 
     //Create array with the current size of every room
-    std::vector<int> sizeH; sizeH.reserve(n); // Height
-    std::vector<int> sizeW; sizeW.reserve(n); // Width
+    std::vector<int16_t> sizeH; sizeH.reserve(n); // Height
+    std::vector<int16_t> sizeW; sizeW.reserve(n); // Width
     for(int i = 0; i < n; i++){
         sizeH.push_back(rooms[i].minH);
         sizeW.push_back(rooms[i].minW);
     }
 
     const int NSizes = Calculator::NRoomSizes(rooms);
-    std::vector<std::vector<std::vector<int>>> perms; perms.reserve(NSizes);
+    std::vector<std::vector<std::vector<int16_t>>> perms; perms.reserve(NSizes);
     
     do {
         // std::cout << "#########################" << std::endl << count << std::endl;
@@ -111,10 +111,10 @@ std::vector<std::vector<std::vector<int>>> Generate::SizeLoop(const std::vector<
     @param[in] NConn Number of possible connections
     @return vector with layout points for every successful connection (n*4 int per layout)
 */
-std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *sizeH, const int *sizeW, const int n, const int NConn){
-    std::vector<int> result; 
-    std::vector<int> ptsX(n * 2, 0); 
-    std::vector<int> ptsY(n * 2, 0);
+std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int16_t *sizeH, const int16_t *sizeW, const int n, const int NConn){
+    std::vector<int16_t> result; 
+    std::vector<int16_t> ptsX(n * 2, 0); 
+    std::vector<int16_t> ptsY(n * 2, 0);
 
     result.reserve(NConn*4*n);
     // ptsX.reserve(n * 2) ;
@@ -220,7 +220,7 @@ std::vector<int> Generate::ConnLoop(const std::vector<int>& order, const int *si
     @param[in] n     number of rooms
     @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
 */
-std::vector<std::vector<int>> Generate::roomPerm(const int *sizeH, const int *sizeW, const int n){
+std::vector<std::vector<int16_t>> Generate::roomPerm(const int16_t *sizeH, const int16_t *sizeW, const int n){
     std::vector<int> perm;
     for(int i = 0; i < n; i++)
         perm.push_back(i);
@@ -229,7 +229,7 @@ std::vector<std::vector<int>> Generate::roomPerm(const int *sizeH, const int *si
     const int NPerm = Calculator::Factorial(n);
     const int NConn = Calculator::NConnections(n);
 
-    std::vector<std::vector<int>> conns; 
+    std::vector<std::vector<int16_t>> conns; 
     conns.reserve(NPerm);
 
     // Cycle each permutation

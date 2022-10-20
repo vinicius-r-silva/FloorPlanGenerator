@@ -111,7 +111,7 @@ std::vector<std::vector<RoomConfig>> Iter::getAllComb(std::vector<RoomConfig> se
     @param[out] sizeW rooms Width size
     @return True if there is a next room size iteration, false otherwise
 */
-bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int *sizeH, int *sizeW){
+bool Iter::nextRoomSize(std::vector<RoomConfig> rooms, int16_t *sizeH, int16_t *sizeW){
     int n = rooms.size();
     int flag = 0;
     for(int i = 0; i < n; i++){

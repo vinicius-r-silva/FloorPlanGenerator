@@ -12,7 +12,7 @@
 #include "../lib/generate.h"
 #include "../lib/calculator.h"
 #include "../lib/mpHelper.h"
-// #include "../cuda/helloWorld.h"
+#include "../cuda/combine.h"
 
 void generateData() {
     const int n = 3;
@@ -79,8 +79,8 @@ void combineData(){
     for(std::vector<int> fileComb : filesCombs){
         std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
         
-        std::vector<int> layout_a = hdd.readCoreData(fileComb[0]);
-        std::vector<int> layout_b = hdd.readCoreData(fileComb[1]);
+        std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
+        std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
@@ -97,9 +97,9 @@ void combineData(){
     @return if there are no erros returns 0 
 */
 int main(){
-    // generateData();
+    generateData();
     // combineData();
-
-    // Cuda_test::launchGPU();
+    // std::vector<int> a;
+    // Cuda_Combine::launchGPU(a, a, 0, 0);
     return 0;
 }
