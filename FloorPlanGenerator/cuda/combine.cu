@@ -10,12 +10,19 @@
 #define __SIZE_B 12		// n_b * 4
 #define __SIZE_RES 24	// n_res * 4
 
+
+	// const int num_a = 1024;
+	// const int num_threads = 1024;
+	// const int num_blocks = (qtd_b + num_threads -1) / num_threads;
+	// dim3 grid(num_blocks, num_a, 12);
+	// dim3 threads(num_threads, 1, 1);
+
 __global__ 
 void printHelloGPU(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, const int qtd_b) {
 	const int k = blockIdx.z + 1 + blockIdx.z/4;
 	const int a_idx = blockIdx.y;
 	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x;
-	const int res_idx =  blockIdx.z * qtd_b * __SIZE_RES +  b_idx * __SIZE_RES;
+	const int res_idx = ((a_idx * blockDim.z + blockIdx.z) * qtd_b + b_idx) * __SIZE_RES;
 
 	if(b_idx >= qtd_b || a_idx >= qtd_a)
 		return;
@@ -66,10 +73,11 @@ void printHelloGPU(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, 
 	for(int i = 0; i < __SIZE_A; i++){
 		d_res[res_idx + i] = a[i];
 	}
-	for(int i = 0; i < __SIZE_B; i++){
-		d_res[res_idx + i + __SIZE_A] = b[i];
-	}
+	// for(int i = 0; i < __SIZE_B; i++){
+	// 	d_res[res_idx + i + __SIZE_A] = b[i];
+	// }
 
+	printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tk: %d\n", a_idx, b_idx, res_idx, k);
 	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tk: %d,\tsrcX: %d,\tsrcY: %d,\tdstX: %d,\tdstY: %d,\tdiffX: %d,\tdiffY: %d\n", a_idx, b_idx, res_idx, k, srcX, srcY, dstX, dstY, diffX, diffY);
 }
 
@@ -78,16 +86,15 @@ int Cuda_Combine::launchGPU(const std::vector<int16_t>& a, const std::vector<int
 	// const int n_b = __SIZE_B / 4;
 	const int qtd_a = a.size() / __SIZE_A;
 	const int qtd_b = b.size() / __SIZE_B;
-	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
-	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b << std::endl;
-	findCudaDevice();
+	findCudaDevice();	
 
+	const int num_a = 1024;
 	const int aLayoutSize = sizeof(int16_t) * __SIZE_A;
 	const int bLayoutSize = sizeof(int16_t) * __SIZE_B;
 	const int resLayoutSize = sizeof(int16_t) * __SIZE_RES;
 	const unsigned int mem_size_a = aLayoutSize * qtd_a;
 	const unsigned int mem_size_b = bLayoutSize * qtd_b;
-	const unsigned int mem_size_res = resLayoutSize * qtd_b; //resLayoutSize * 12 * qtd_a * qtd_b
+	const unsigned int mem_size_res = num_a * 12 * qtd_b * resLayoutSize; //resLayoutSize * 12 * qtd_a * qtd_b
 	
 	// allocate host memory
 	int16_t *h_a = (int16_t *)(&a[0]);
@@ -105,19 +112,23 @@ int Cuda_Combine::launchGPU(const std::vector<int16_t>& a, const std::vector<int
 	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
 
 	// setup execution parameters
-	// const int num_threads = 1024;
-	// const int num_blocks = (qtd_b + num_threads -1) / num_threads;
-	const int num_threads = 6;
-	const int num_blocks = 1;
-	dim3 grid(num_blocks, 1, 12);
+	const int num_threads = 1024;
+	const int num_blocks = (qtd_b + num_threads -1) / num_threads;
+	// const int num_threads = 6;
+	// const int num_blocks = 1;
+	dim3 grid(num_blocks, num_a, 12);
 	dim3 threads(num_threads, 1, 1);
-	
-	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
 
-
-	// printHelloGPU<<<grid, threads>>>(d_a, d_b, d_res, qtd_a, qtd_b);
-	printHelloGPU<<<grid, threads>>>(d_a, d_b, d_res, 1, 6);
+	printHelloGPU<<<grid, threads>>>(d_a, d_b, d_res, qtd_a, qtd_b);
+	// printHelloGPU<<<grid, threads>>>(d_a, d_b, d_res, 1, 6);
 	cudaDeviceSynchronize();	
+
+	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
+	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b << std::endl;
+
+	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
+	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << std::endl;
+	std::cout << "mem_size_a (MB): " << ((float)mem_size_a)/1024.0/1024.0 << ", mem_size_b (MB): " << ((float)mem_size_b)/1024.0/1024.0 << ", mem_size_res (MB): " << ((float)mem_size_res)/1024.0/1024.0 << std::endl;
 
 	// check if kernel execution generated and error
 	getLastCudaError("Kernel execution failed");
@@ -149,15 +160,15 @@ int Cuda_Combine::launchGPU(const std::vector<int16_t>& a, const std::vector<int
 	// 	std::cout << std::endl;
 	// }
 
-	std::vector<int16_t> PtsX(__SIZE_RES/2, 0);
-	std::vector<int16_t> PtsY(__SIZE_RES/2, 0);
-	for(int i = 0; i < mem_size_res / __SIZE_RES; i+=__SIZE_RES){
-		for(int j = 0; j < __SIZE_RES; j+=2){
-			PtsX[j/2] = h_res[i + j];
-			PtsY[j/2] = h_res[i + j + 1];
-		}
-		CVHelper::showLayout(PtsX, PtsY);
-	}
+	// std::vector<int16_t> PtsX(__SIZE_RES/2, 0);
+	// std::vector<int16_t> PtsY(__SIZE_RES/2, 0);
+	// for(int i = 0; i < mem_size_res / __SIZE_RES; i+=__SIZE_RES){
+	// 	for(int j = 0; j < __SIZE_RES; j+=2){
+	// 		PtsX[j/2] = h_res[i + j];
+	// 		PtsY[j/2] = h_res[i + j + 1];
+	// 	}
+	// 	CVHelper::showLayout(PtsX, PtsY);
+	// }
 
 
 	// cleanup memory
