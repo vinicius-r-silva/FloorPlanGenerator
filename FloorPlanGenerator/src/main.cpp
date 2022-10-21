@@ -92,13 +92,35 @@ void combineData(){
     }
 }
 
+void combineDataGPU(){
+    Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
+    std::vector<int> savedCombs = hdd.getSavedCombinations();
+    std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
+
+    for(std::vector<int> fileComb : filesCombs){
+        std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
+        
+        std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
+        std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
+        
+        std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
+        std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+
+        std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
+        Cuda_Combine::launchGPU(layout_a, layout_b);
+        break;
+    }
+}
+
 /*!
     @brief Main Function
     @return if there are no erros returns 0 
 */
 int main(){
-    generateData();
+    // generateData();
     // combineData();
+    combineDataGPU();
     // std::vector<int> a;
     // Cuda_Combine::launchGPU(a, a, 0, 0);
     return 0;
