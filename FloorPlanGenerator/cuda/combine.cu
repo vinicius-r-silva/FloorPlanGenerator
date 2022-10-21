@@ -22,7 +22,8 @@ void printHelloGPU(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, 
 	const int k = blockIdx.z + 1 + blockIdx.z/4;
 	const int a_idx = blockIdx.y;
 	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x;
-	const int res_idx = ((a_idx * blockDim.z + blockIdx.z) * qtd_b + b_idx) * __SIZE_RES;
+	const int res_idx = blockIdx.z * qtd_a * qtd_b * __SIZE_RES + a_idx * qtd_b * __SIZE_RES +  b_idx * __SIZE_RES;
+	// const int res_idx = ((a_idx * blockDim.z + blockIdx.z) * qtd_b + b_idx) * __SIZE_RES;
 
 	if(b_idx >= qtd_b || a_idx >= qtd_a)
 		return;
@@ -73,22 +74,25 @@ void printHelloGPU(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, 
 	for(int i = 0; i < __SIZE_A; i++){
 		d_res[res_idx + i] = a[i];
 	}
-	// for(int i = 0; i < __SIZE_B; i++){
-	// 	d_res[res_idx + i + __SIZE_A] = b[i];
-	// }
+	for(int i = 0; i < __SIZE_B; i++){
+		d_res[res_idx + i + __SIZE_A] = b[i];
+	}
 
-	printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tk: %d\n", a_idx, b_idx, res_idx, k);
+	// if(res_idx > 80000000)
+	printf("k: %d,\ta_idx: %d,\tb_idx: %d,\tres_idx: %d\n", blockIdx.z, a_idx, b_idx, res_idx);
 	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tk: %d,\tsrcX: %d,\tsrcY: %d,\tdstX: %d,\tdstY: %d,\tdiffX: %d,\tdiffY: %d\n", a_idx, b_idx, res_idx, k, srcX, srcY, dstX, dstY, diffX, diffY);
 }
 
 int Cuda_Combine::launchGPU(const std::vector<int16_t>& a, const std::vector<int16_t>& b) {
 	// const int n_a = __SIZE_A / 4;
 	// const int n_b = __SIZE_B / 4;
-	const int qtd_a = a.size() / __SIZE_A;
-	const int qtd_b = b.size() / __SIZE_B;
+	// const int qtd_a = a.size() / __SIZE_A;
+	// const int qtd_b = b.size() / __SIZE_B;
+	const int qtd_a = 3;
+	const int qtd_b = 3;
 	findCudaDevice();	
 
-	const int num_a = 1024;
+	const int num_a = 2;
 	const int aLayoutSize = sizeof(int16_t) * __SIZE_A;
 	const int bLayoutSize = sizeof(int16_t) * __SIZE_B;
 	const int resLayoutSize = sizeof(int16_t) * __SIZE_RES;
