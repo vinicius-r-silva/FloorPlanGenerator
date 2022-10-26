@@ -32,7 +32,7 @@
 ################################################################################
 
 # Location of the CUDA Toolkit
-CUDA_PATH ?= /usr/local/cuda
+CUDA_PATH ?= /usr/lib/nvidia-cuda-toolkit
 
 ##############################
 # start deprecated interface #
@@ -160,7 +160,7 @@ HOST_COMPILER ?= g++
 NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
 
 # internal flags
-NVCCFLAGS   := -m${TARGET_SIZE}
+NVCCFLAGS   := -m${TARGET_SIZE} -Xptxas=-v
 CCFLAGS     :=
 LDFLAGS     :=
 

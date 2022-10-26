@@ -44,7 +44,7 @@ add_executable(
     cpu.cpp
 )
 
-target_compile_options(gpu PRIVATE -Wall -Wextra -Wpedantic)
+target_compile_options(gpu PRIVATE -Wall -Wextra $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas=-v)
 
 # add_executable(
 #     cpu

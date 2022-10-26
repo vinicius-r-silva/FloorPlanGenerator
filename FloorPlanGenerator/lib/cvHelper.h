@@ -24,6 +24,9 @@ public:
      * @return None
     */
     static void showLayout(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
+
+    static int showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
+
 };
 
 #endif //OPENCV_HELPER

@@ -45,3 +45,6 @@ FloorPlanGenerator/storage/
 config.out
 
 calculator.py
+
+nsight/
+nsightCompute/
