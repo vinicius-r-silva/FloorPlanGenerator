@@ -1,14 +1,14 @@
-#ifndef CUDA_COMBINE
-#define CUDA_COMBINE
+#ifndef GPU_HANDLER
+#define GPU_HANDLER
 
 #include <vector>
 
-class Cuda_Combine
+class gpuHandler
 {
 
 public:
-    Cuda_Combine();
-    static void launchGPU(const std::vector<int16_t>& a, const std::vector<int16_t>& b);
+    gpuHandler();
+    static void createPts(const std::vector<int16_t>& a, const std::vector<int16_t>& b);
 };
 
-#endif //HELLOWORLD_CUDA
+#endif //GPU_HANDLER

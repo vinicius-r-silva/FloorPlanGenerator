@@ -108,7 +108,7 @@ void combineDataGPU(){
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
-        Cuda_Combine::launchGPU(layout_a, layout_b);
+        gpuHandler::createPts(layout_a, layout_b);
         break;
     }
 }
