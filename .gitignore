@@ -48,3 +48,5 @@ calculator.py
 
 nsight/
 nsightCompute/
+
+*.ods#

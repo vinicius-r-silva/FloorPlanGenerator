@@ -113,6 +113,23 @@ void launchKernel(){
 }
 
 
+// __global__ 
+// void fitness(int16_t *d_in, int16_t *d_out){
+// 	__shared__ int16_t a[__SIZE_A];
+// 	if(threadIdx.x < __SIZE_A){
+// 		a[threadIdx.x] = d_in[threadIdx.x];
+// 	}
+//   	__syncthreads();
+
+// 	const int idx = threadIdx.x * __SIZE_A;
+// 	for(int i = 0; i < __SIZE_A; i++){
+// 		d_out[idx + i] = a[i];
+// 	}
+
+// 	printf("threadIdx.x: %d,\tidx: %d\n", threadIdx.x, idx);
+// }
+
+
 int main()
 {
 	// launchKernel();
