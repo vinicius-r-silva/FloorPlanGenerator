@@ -35,6 +35,7 @@ typedef struct{
     int16_t maxH;                   /**< maximum Height */
     int16_t minW;                   /**< minimum Width */
     int16_t maxW;                   /**< maximum Width */
+    int rPlannyId;                  /**< rPlanny Id */
     int minRepetitions;             /**< minimum number of repetitions */
     char name[ROOM_NAME_SIZE];      /**< room name */
     

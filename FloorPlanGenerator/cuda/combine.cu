@@ -278,9 +278,9 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int8_t *d_nbr, cons
 	d_res[res_idx + 3] = minH;
 	d_res[res_idx + 4] = minW;
 
-	// for(int i = 0; i < __SIZE_NBR; i++){
-	// 	d_nbr[i + nbr_idx] = Neighbors[i];
-	// }
+	for(int i = 0; i < __SIZE_NBR; i++){
+		d_nbr[i + nbr_idx] = Neighbors[i];
+	}
 	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d\n", a_idx, b_idx, res_idx, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x);
 	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d,\tdiffX: %d,\tdiffY: %d,\ta[0]: %d,\ta[1]: %d\n", a_idx, b_idx, res_idx - __SIZE_A, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, diffX, diffY, a[0], a[1]);
 }
@@ -342,7 +342,7 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 	checkCudaErrors(cudaMalloc((void **)&d_b, mem_size_b));
 	// checkCudaErrors(cudaMalloc((void **)&d_pts, mem_size_pts));
 	checkCudaErrors(cudaMalloc((void **)&d_res, mem_size_res));
-	checkCudaErrors(cudaMalloc((void **)&d_nbr, mem_size_nbr));
+	// checkCudaErrors(cudaMalloc((void **)&d_nbr, mem_size_nbr));
 
 	// copy host data to device
   	checkCudaErrors(cudaEventRecord(start));
@@ -353,10 +353,10 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 		int diff = qtd_a - i;
 		if(diff < num_a){
 			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_nbr, diff, qtd_b, i);
-			cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
+			// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
 		} else {
 			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_nbr, num_a, qtd_b, i);
-			cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
+			// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
 		}
 	}
 
@@ -397,6 +397,7 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 	checkCudaErrors(cudaFree(d_b));
 	// checkCudaErrors(cudaFree(d_pts));
 	checkCudaErrors(cudaFree(d_res));
+	// checkCudaErrors(cudaFree(d_nbr));
 
 
 	// std::cout << "A: " << std::endl;
