@@ -20,6 +20,11 @@ class Storage
       Vector for all informations baout the rooms setups
     */ 
     std::vector<RoomConfig> setups;
+
+    /**
+      Vector with multiplicaiton value for each adjcency
+    */ 
+    std::vector<int> adj_values;
     
     /** 
      * @brief get the project directory
@@ -31,6 +36,10 @@ class Storage
     /// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
     /// @return         None
     void readConfigs();
+
+    /// @brief          Loads the adj file and set the private vector "adj_values"
+    /// @return         None
+    void readAdjValues();
 
 public:
 

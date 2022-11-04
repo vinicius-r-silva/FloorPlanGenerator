@@ -8,8 +8,7 @@
 #include <math.h> 
 #include <filesystem>
 
-enum RPlannyIds
-{
+enum RPlannyIds {
     LIVING_ROOM = 0,
     MASTER_ROOM = 1,
     KITCHEN = 2,
@@ -29,32 +28,6 @@ enum RPlannyIds
     INTERIOR_WALL = 16,
     INTERIOR_DOOR = 17
 };
-
-
-// std::map<std::string, int> getrPlannyMap(){
-//     std::map<std::string, int> mapRPlannyId;
-
-//     mapRPlannyId.insert(std::pair<std::string, int>("Living room",  0));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Master room",  1));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Kitchen",  2));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Bathroom",  3));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Dining room",  4));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Child room",  5));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Study room",  6));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Second room",  7));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Guest room",  8));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Balcony",  9));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Entrance",  10));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Storage",  11));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Wall-in",  12));
-//     mapRPlannyId.insert(std::pair<std::string, int>("External area",  13));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Exterior wall",  14));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Front door",  15));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Interior wall",  16));
-//     mapRPlannyId.insert(std::pair<std::string, int>("Interior door",  17));
-
-//     return mapRPlannyId;
-// }
 
 
 // returns the current executable directory until the first appearence of the folder "FloorPlanGenerator"
