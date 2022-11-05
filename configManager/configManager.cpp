@@ -376,7 +376,7 @@ std::map<int, int> saveRplannyAdj(std::string projectPath){
         mapRplannyId.insert(std::pair<int, int>(srcId, i));
         
         // // for (csv::CSVField& field: row) {
-        for(int j = i + 1; j < n_cols; j++){
+        for(int j = i + 2; j < n_cols; j++){
             csv::CSVField field = row[j];
 
             double dValue = std::stod(field.get<>());
@@ -397,10 +397,10 @@ std::map<int, int> saveRplannyAdj(std::string projectPath){
     }
     adjConfigFile.close();
 
-    // for(int val : adjValues){
-    //     std::cout << val << ", ";
-    // }
-    // std::cout << "\n";
+    for(int val : adjValues){
+        std::cout << val << ", ";
+    }
+    std::cout << "\n";
 
     // for(auto it = mapRplannyId.cbegin(); it != mapRplannyId.cend(); ++it)
     // {

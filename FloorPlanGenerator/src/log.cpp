@@ -18,5 +18,6 @@ void Log::print(RoomConfig s){
                  " - " << s.maxH << "),\tW (" << s.minW << 
                  " - " << s.maxW << "),\tE: " << s.numExtensions << 
                  "\tstep: " << s.step <<
-                 "\tdepend: " << s.depend << std::endl;
+                 "\tdepend: " << s.depend << 
+                 "\tPlannyId: " << s.rPlannyId << std::endl;
 }

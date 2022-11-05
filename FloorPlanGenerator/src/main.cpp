@@ -14,12 +14,12 @@
 #include "../lib/mpHelper.h"
 #include "../cuda/combine.h"
 
-void generateData() {
-    const int n = 3;
+void generateData(const int n) {
     const int NThreads = MPHelper::omp_thread_count();
     std::cout << "NThreads: " << NThreads << std::endl;
 
     Storage hdd = Storage();
+    std::vector<int> adjValues = hdd.getAdjValues();
     std::vector<RoomConfig> setups = hdd.getConfigs();
 
     for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
@@ -36,7 +36,8 @@ void generateData() {
 #ifdef MULTI_THREAD
     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs)
 #endif
-    for(int i = 0; i < NCombs; i++)
+    // for(int i = 0; i < NCombs; i++)
+    for(int i = 1; i < NCombs; i++)
     {
         const int tid = omp_get_thread_num();
         printf("Thread: %d, i: %d\n", tid, i);
@@ -51,7 +52,7 @@ void generateData() {
         
         // std::cout << "i = " << i << std::endl;
 
-        hdd.saveResult(Generate::SizeLoop(allCombs[i]), allCombs[i], n);
+        hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
         // Generate::SizeLoop(allCombs[i]);
         
 
@@ -118,9 +119,9 @@ void combineDataGPU(){
     @return if there are no erros returns 0 
 */
 int main(){
-    // generateData();
+    generateData(3);
     // combineData();
-    combineDataGPU();
+    // combineDataGPU();
     // std::vector<int> a;
     // Cuda_Combine::launchGPU(a, a, 0, 0);
     return 0;

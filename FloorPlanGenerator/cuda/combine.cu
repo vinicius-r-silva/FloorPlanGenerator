@@ -122,6 +122,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int8_t *d_nbr, cons
 		b[i] = d_b[b_idx*__SIZE_B + i];
 	}
 
+	// TODO: doenst have to be 9, only 3 + 2 + 1
 	int8_t Neighbors[__SIZE_NBR];
 	
 	const int srcConn = k & 0b11;

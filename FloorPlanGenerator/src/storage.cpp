@@ -109,6 +109,12 @@ std::vector<RoomConfig> Storage::getConfigs(){
     return setups;
 }
 
+/// @brief          Get the adjacency values
+/// @return         int vector
+std::vector<int> Storage::getAdjValues(){
+    return adj_values;
+}
+
 inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, const std::vector<int>& qtdSizesW, int *idH, int *idW){
     int resH = 0;
     int resW = 0;

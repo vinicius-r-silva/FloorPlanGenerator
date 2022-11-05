@@ -51,6 +51,10 @@ public:
     /// @return         RoomConfig vector
     std::vector<RoomConfig> getConfigs();
 
+    /// @brief          Get the adjacency values
+    /// @return         int vector
+    std::vector<int> getAdjValues();
+
     void saveResult(const std::vector<std::vector<std::vector<int16_t>>>& res, const std::vector<RoomConfig>& rooms, const int n);
 
     std::vector<int> getSavedCombinations();
