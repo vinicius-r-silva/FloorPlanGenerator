@@ -75,6 +75,7 @@ void Storage::readConfigs(){
         input_file.read((char*)&(rooms[i].maxW), sizeof(tempRoom.maxW));
         input_file.read((char*)&(rooms[i].depend), sizeof(tempRoom.depend));
         input_file.read((char*)&(rooms[i].rPlannyId), sizeof(tempRoom.rPlannyId));
+        input_file.read((char*)&(rooms[i].nameId), sizeof(tempRoom.nameId));
         input_file.read((char*)&(rooms[i].name), ROOM_NAME_SIZE * sizeof(char));
         setups.push_back(rooms[i]);
     }
@@ -103,6 +104,31 @@ void Storage::readAdjValues(){
     input_file.close();
 }
 
+/// @brief          Loads the adj file and set the private vector "adj_values"
+/// @return         None
+void Storage::readReqAdjValues(){
+    reqadj_values.clear();
+
+    std::string path = _projectDir + "/configs/reqadj";
+    std::ifstream input_file(path, std::ios::binary);
+    
+    int arraySize = 0;
+    input_file.read((char*)&arraySize, sizeof(int));      
+
+    if(arraySize != _NAME_IDS_COUNT * _NAME_IDS_COUNT){
+        std::cout << "! invalid size for req adj matrix" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    for(int i = 0; i < arraySize; i++){
+        int value = 0;
+        input_file.read((char*)&value, sizeof(value));
+        reqadj_values.push_back(value);
+    }
+
+    input_file.close();
+}
+
 /// @brief          Get the possible RoomConfig informations
 /// @return         RoomConfig vector
 std::vector<RoomConfig> Storage::getConfigs(){
@@ -113,6 +139,12 @@ std::vector<RoomConfig> Storage::getConfigs(){
 /// @return         int vector
 std::vector<int> Storage::getAdjValues(){
     return adj_values;
+}
+
+/// @brief          Get the adjacency values
+/// @return         int vector
+std::vector<int> Storage::getReqAdjValues(){
+    return reqadj_values;
 }
 
 inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, const std::vector<int>& qtdSizesW, int *idH, int *idW){

@@ -9,24 +9,24 @@
 #include <filesystem>
 
 enum RPlannyIds {
-    LIVING_ROOM = 0,
-    MASTER_ROOM = 1,
-    KITCHEN = 2,
-    BATHROOM = 3,
-    DINING_ROOM = 4,
-    CHILD_ROOM = 5,
-    STUDY_ROOM = 6,
-    SECOND_ROOM = 7,
-    GUEST_ROOM = 8,
-    BALCONY = 9,
-    ENTRANCE = 10,
-    STORAGE = 11,
-    WALL_IN = 12,
-    EXTERNAL_AREA = 13,
-    EXTERIOR_WALL = 14,
-    FRONT_DOOR = 15,
-    INTERIOR_WALL = 16,
-    INTERIOR_DOOR = 17
+    _LIVING_ROOM = 0,
+    _MASTER_ROOM = 1,
+    _KITCHEN = 2,
+    _BATHROOM = 3,
+    _DINING_ROOM = 4,
+    _CHILD_ROOM = 5,
+    _STUDY_ROOM = 6,
+    _SECOND_ROOM = 7,
+    _GUEST_ROOM = 8,
+    _BALCONY = 9,
+    _ENTRANCE = 10,
+    _STORAGE = 11,
+    _WALL_IN = 12,
+    _EXTERNAL_AREA = 13,
+    _EXTERIOR_WALL = 14,
+    _FRONT_DOOR = 15,
+    _INTERIOR_WALL = 16,
+    _INTERIOR_DOOR = 17
 };
 
 
@@ -64,13 +64,15 @@ void writeRoom(RoomConfig room, std::ofstream& file){
     file.write((char*)&(room.maxW), sizeof(room.maxW));
     file.write((char*)&(room.depend), sizeof(room.depend));
     file.write((char*)&(room.rPlannyId), sizeof(room.rPlannyId));
+    file.write((char*)&(room.nameId), sizeof(room.nameId));
     file.write((char*)&(room.name), ROOM_NAME_SIZE * sizeof(char));
 }
 
 void printRoom(RoomConfig room){
     std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << 
     "), : W (" << room.minW << " - " << room.maxW << "), Ext: " << room.numExtensions << 
-    ", Step: " << room.step << ", Depend: " << room.depend << ", RPlannyId: " << room.rPlannyId << std::endl;
+    ", Step: " << room.step << ", Depend: " << room.depend << ", RPlannyId: " << room.rPlannyId  << 
+    ", nameId: " << room.nameId << std::endl;
 }
 
 void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
@@ -95,7 +97,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[0].minW = 20; rooms[0].maxW = 40;
     rooms[0].step = 5;
     rooms[0].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[0].nameId = _ID_SALA;
+    rooms[0].rPlannyId = mapRplannyId[_LIVING_ROOM];
 
     
     rooms[1].id = 1 << 1;
@@ -108,7 +111,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[1].minW = 15; rooms[1].maxW = 30;
     rooms[1].step = 5;
     rooms[1].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[BATHROOM];
+    rooms[1].nameId = _ID_BANHEIRO;
+    rooms[1].rPlannyId = mapRplannyId[_BATHROOM];
 
     rooms[2].id = 1 << 2;
     rooms[2].numExtensions = 1;
@@ -119,7 +123,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[2].minW = 20; rooms[2].maxW = 40;
     rooms[2].step = 5;
     rooms[2].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[MASTER_ROOM];
+    rooms[2].nameId = _ID_QUARTO;
+    rooms[2].rPlannyId = mapRplannyId[_MASTER_ROOM];
     
     rooms[3].id = 1 << 3;
     rooms[3].numExtensions = 0;
@@ -131,7 +136,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[3].minW = 7; rooms[3].maxW = 50;
     rooms[3].step = 5;
     rooms[3].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[3].nameId = _ID_SALA;
+    rooms[3].rPlannyId = mapRplannyId[_LIVING_ROOM];
     
     rooms[4].id = 1 << 4;
     rooms[4].numExtensions = 0;
@@ -143,7 +149,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[4].minW = 15; rooms[4].maxW = 30;
     rooms[4].step = 5;
     rooms[4].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[KITCHEN];
+    rooms[4].nameId = _ID_COZINHA;
+    rooms[4].rPlannyId = mapRplannyId[_KITCHEN];
     
     rooms[5].id = 1 << 5;
     rooms[5].numExtensions = 0;
@@ -156,7 +163,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[5].minW = 15; rooms[5].maxW = 30;
     rooms[5].step = 5;
     rooms[5].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[KITCHEN];
+    rooms[5].nameId = _ID_LAVANDERIA;
+    rooms[5].rPlannyId = mapRplannyId[_KITCHEN];
 
     rooms[6].id = 1 << 6;
     rooms[6].numExtensions = 1;
@@ -168,7 +176,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[6].minW = 20; rooms[6].maxW = 40;
     rooms[6].step = 5;
     rooms[6].depend = 1 << 2;
-    rooms[0].rPlannyId = mapRplannyId[SECOND_ROOM];
+    rooms[6].nameId = _ID_QUARTO_2;
+    rooms[6].rPlannyId = mapRplannyId[_SECOND_ROOM];
 
     rooms[7].id = 1 << 7;
     rooms[7].numExtensions = 1;
@@ -180,7 +189,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[7].minW = 20; rooms[7].maxW = 40;
     rooms[7].step = 5;
     rooms[7].depend = 1 << 6;
-    rooms[0].rPlannyId = mapRplannyId[SECOND_ROOM];
+    rooms[7].nameId = _ID_QUARTO_2;
+    rooms[7].rPlannyId = mapRplannyId[_SECOND_ROOM];
     
     rooms[8].id = 1 << 8;
     rooms[8].numExtensions = 0;
@@ -193,7 +203,8 @@ void extremeConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[8].minW = 15; rooms[8].maxW = 30;
     rooms[8].step = 5;
     rooms[8].depend = 1 << 1;
-    rooms[0].rPlannyId = mapRplannyId[BATHROOM];
+    rooms[8].nameId = _ID_BANHEIRO;
+    rooms[8].rPlannyId = mapRplannyId[_BATHROOM];
 
     std::ofstream roomsConfigFile(projectPath + "/configs/rooms", std::ios::binary);
     roomsConfigFile.write((char*)&numOfRooms,  sizeof(int));
@@ -224,7 +235,8 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[0].minW = 20; rooms[0].maxW = 40;
     rooms[0].step = 100;
     rooms[0].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[0].nameId = _ID_SALA;
+    rooms[0].rPlannyId = mapRplannyId[_LIVING_ROOM];
     
     rooms[1].id = 1 << 1;
     rooms[1].numExtensions = 0;
@@ -236,7 +248,8 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[1].minW = 15; rooms[1].maxW = 30;
     rooms[1].step = 100;
     rooms[1].depend = 0;
-    rooms[1].rPlannyId = mapRplannyId[BATHROOM];
+    rooms[1].nameId = _ID_BANHEIRO;
+    rooms[1].rPlannyId = mapRplannyId[_BATHROOM];
 
     rooms[2].id = 1 << 2;
     rooms[2].numExtensions = 1;
@@ -247,7 +260,8 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[2].minW = 20; rooms[2].maxW = 40;
     rooms[2].step = 100;
     rooms[2].depend = 0;
-    rooms[2].rPlannyId = mapRplannyId[MASTER_ROOM];
+    rooms[2].nameId = _ID_QUARTO;
+    rooms[2].rPlannyId = mapRplannyId[_MASTER_ROOM];
     
     rooms[3].id = 1 << 3;
     rooms[3].numExtensions = 0;
@@ -259,7 +273,8 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[3].minW = 7; rooms[3].maxW = 50;
     rooms[3].step = 100;
     rooms[3].depend = 0;
-    rooms[3].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[3].nameId = _ID_SALA;
+    rooms[3].rPlannyId = mapRplannyId[_LIVING_ROOM];
     
     rooms[4].id = 1 << 4;
     rooms[4].numExtensions = 0;
@@ -271,7 +286,8 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[4].minW = 15; rooms[4].maxW = 30;
     rooms[4].step = 100;
     rooms[4].depend = 0;
-    rooms[4].rPlannyId = mapRplannyId[KITCHEN];
+    rooms[4].nameId = _ID_COZINHA;
+    rooms[4].rPlannyId = mapRplannyId[_KITCHEN];
     
     rooms[5].id = 1 << 5;
     rooms[5].numExtensions = 0;
@@ -284,10 +300,11 @@ void normalConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[5].minW = 16; rooms[5].maxW = 30;
     rooms[5].step = 100;
     rooms[5].depend = 0;
-    rooms[5].rPlannyId = mapRplannyId[KITCHEN];
+    rooms[5].nameId = _ID_LAVANDERIA;
+    rooms[5].rPlannyId = mapRplannyId[_KITCHEN];
 
 
-    std::cout << "LIVING_ROOM: " << mapRplannyId[LIVING_ROOM] << ", BATHROOM: " << mapRplannyId[BATHROOM] << ", MASTER_ROOM: " << mapRplannyId[MASTER_ROOM] << ", KITCHEN: " << mapRplannyId[KITCHEN] << std::endl;
+    std::cout << "LIVING_ROOM: " << mapRplannyId[_LIVING_ROOM] << ", BATHROOM: " << mapRplannyId[_BATHROOM] << ", MASTER_ROOM: " << mapRplannyId[_MASTER_ROOM] << ", KITCHEN: " << mapRplannyId[_KITCHEN] << std::endl;
 
     std::ofstream roomsConfigFile(projectPath + "/configs/rooms", std::ios::binary);
     roomsConfigFile.write((char*)&numOfRooms,  sizeof(int));
@@ -315,7 +332,8 @@ void testConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[0].minW = 5; rooms[0].maxW = 5;
     rooms[0].step = 10;
     rooms[0].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[0].nameId = _ID_SALA;
+    rooms[0].rPlannyId = mapRplannyId[_LIVING_ROOM];
     
     rooms[1].id = 1 << 1;
     rooms[1].numExtensions = 0;
@@ -327,7 +345,8 @@ void testConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[1].minW = 10; rooms[1].maxW = 10;
     rooms[1].step = 10;
     rooms[1].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[BATHROOM];
+    rooms[1].nameId = _ID_BANHEIRO;
+    rooms[1].rPlannyId = mapRplannyId[_BATHROOM];
 
     rooms[2].id = 1 << 2;
     rooms[2].numExtensions = 0;
@@ -338,7 +357,8 @@ void testConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[2].minW = 20; rooms[2].maxW = 20;
     rooms[2].step = 10;
     rooms[2].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[MASTER_ROOM];
+    rooms[2].nameId = _ID_QUARTO;
+    rooms[2].rPlannyId = mapRplannyId[_MASTER_ROOM];
     
     rooms[3].id = 1 << 3;
     rooms[3].numExtensions = 0;
@@ -350,7 +370,8 @@ void testConfig(std::string projectPath, std::map<int, int> mapRplannyId){
     rooms[3].minW = 40; rooms[3].maxW = 40;
     rooms[3].step = 10;
     rooms[3].depend = 0;
-    rooms[0].rPlannyId = mapRplannyId[LIVING_ROOM];
+    rooms[3].nameId = _ID_SALA;
+    rooms[3].rPlannyId = mapRplannyId[_LIVING_ROOM];
 
     std::ofstream roomsConfigFile(projectPath + "/configs/rooms", std::ios::binary);
     roomsConfigFile.write((char*)&numOfRooms,  sizeof(int));
@@ -410,8 +431,64 @@ std::map<int, int> saveRplannyAdj(std::string projectPath){
     return mapRplannyId;
 }
 
+void saveReqAdj(std::string projectPath){
+    int reqAdj[_NAME_IDS_COUNT][_NAME_IDS_COUNT];
+    reqAdj[_ID_SALA][_ID_SALA]       = 1000; 
+    reqAdj[_ID_SALA][_ID_COZINHA]    = 1000; 
+    reqAdj[_ID_SALA][_ID_LAVANDERIA] = 0; 
+    reqAdj[_ID_SALA][_ID_QUARTO]     = 1000; 
+    reqAdj[_ID_SALA][_ID_QUARTO_2]   = 1000; 
+    reqAdj[_ID_SALA][_ID_BANHEIRO]   = 1; 
+
+    reqAdj[_ID_COZINHA][_ID_SALA]       = 1000; 
+    reqAdj[_ID_COZINHA][_ID_COZINHA]    = 0; 
+    reqAdj[_ID_COZINHA][_ID_LAVANDERIA] = 1000; 
+    reqAdj[_ID_COZINHA][_ID_QUARTO]     = 0; 
+    reqAdj[_ID_COZINHA][_ID_QUARTO_2]   = 0; 
+    reqAdj[_ID_COZINHA][_ID_BANHEIRO]   = 0; 
+
+    reqAdj[_ID_LAVANDERIA][_ID_SALA]       = 0; 
+    reqAdj[_ID_LAVANDERIA][_ID_COZINHA]    = 1000; 
+    reqAdj[_ID_LAVANDERIA][_ID_LAVANDERIA] = 0; 
+    reqAdj[_ID_LAVANDERIA][_ID_QUARTO]     = 0; 
+    reqAdj[_ID_LAVANDERIA][_ID_QUARTO_2]   = 0; 
+    reqAdj[_ID_LAVANDERIA][_ID_BANHEIRO]   = 0; 
+
+    reqAdj[_ID_QUARTO][_ID_SALA]       = 1000; 
+    reqAdj[_ID_QUARTO][_ID_COZINHA]    = 0; 
+    reqAdj[_ID_QUARTO][_ID_LAVANDERIA] = 0; 
+    reqAdj[_ID_QUARTO][_ID_QUARTO]     = 0; 
+    reqAdj[_ID_QUARTO][_ID_QUARTO_2]   = 0; 
+    reqAdj[_ID_QUARTO][_ID_BANHEIRO]   = 0; 
+
+    reqAdj[_ID_QUARTO_2][_ID_SALA]       = 1000; 
+    reqAdj[_ID_QUARTO_2][_ID_COZINHA]    = 0; 
+    reqAdj[_ID_QUARTO_2][_ID_LAVANDERIA] = 0; 
+    reqAdj[_ID_QUARTO_2][_ID_QUARTO]     = 0; 
+    reqAdj[_ID_QUARTO_2][_ID_QUARTO_2]   = 0; 
+    reqAdj[_ID_QUARTO_2][_ID_BANHEIRO]   = 0; 
+
+    reqAdj[_ID_BANHEIRO][_ID_SALA]       = 1; 
+    reqAdj[_ID_BANHEIRO][_ID_COZINHA]    = 0; 
+    reqAdj[_ID_BANHEIRO][_ID_LAVANDERIA] = 0; 
+    reqAdj[_ID_BANHEIRO][_ID_QUARTO]     = 0; 
+    reqAdj[_ID_BANHEIRO][_ID_QUARTO_2]   = 0; 
+    reqAdj[_ID_BANHEIRO][_ID_BANHEIRO]   = 0; 
+
+    int arraySize = _NAME_IDS_COUNT * _NAME_IDS_COUNT;
+    std::ofstream outFile(projectPath + "/configs/reqadj", std::ios::binary);
+    outFile.write((char*)&arraySize,  sizeof(arraySize));
+    for(int i = 0; i < _NAME_IDS_COUNT; i++){
+        for(int j = 0; j < _NAME_IDS_COUNT; j++){
+            outFile.write((char*)&reqAdj[i][j],  sizeof(reqAdj[i][j]));
+        }
+    }
+    outFile.close();
+}
+
 int main(){
     std::string projectPath = getProjectDir();
+    saveReqAdj(projectPath);
     std::map<int, int> mapRplannyId = saveRplannyAdj(projectPath);
     normalConfig(projectPath, mapRplannyId);
     // testConfig();

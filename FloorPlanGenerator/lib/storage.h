@@ -25,6 +25,11 @@ class Storage
       Vector with multiplicaiton value for each adjcency
     */ 
     std::vector<int> adj_values;
+
+    /**
+      Vector with multiplicaiton value for each adjcency
+    */ 
+    std::vector<int> reqadj_values;
     
     /** 
      * @brief get the project directory
@@ -41,6 +46,10 @@ class Storage
     /// @return         None
     void readAdjValues();
 
+    /// @brief          Loads the adj file and set the private vector "adj_values"
+    /// @return         None
+    void readReqAdjValues();
+
 public:
 
     /// @brief          Storage Constructor
@@ -54,6 +63,10 @@ public:
     /// @brief          Get the adjacency values
     /// @return         int vector
     std::vector<int> getAdjValues();
+
+    /// @brief          Get the adjacency values
+    /// @return         int vector
+    std::vector<int> getReqAdjValues();
 
     void saveResult(const std::vector<std::vector<std::vector<int16_t>>>& res, const std::vector<RoomConfig>& rooms, const int n);
 
