@@ -36,10 +36,11 @@ typedef struct{
     int16_t minW;                   /**< minimum Width */
     int16_t maxW;                   /**< maximum Width */
     int rPlannyId;                  /**< rPlanny Id */
-    int nameId;                     /**< name Id */
+    // int nameId;                     /**< name Id */
     int minRepetitions;             /**< minimum number of repetitions */
     char name[ROOM_NAME_SIZE];      /**< room name */
     
+
     /**
      * number of "outbound" rectangles attached to the room 
      * (every normal room is rectangular, this "attachments" make
@@ -49,14 +50,16 @@ typedef struct{
     /*@}*/
 } RoomConfig;
 
+#define REQ_ALL -1
+#define REQ_ANY -2
 
-enum roomNameIds {
-    _ID_SALA = 0,
-    _ID_BANHEIRO = 1,
-    _ID_COZINHA = 2,
-    _ID_LAVANDERIA = 3,
-    _ID_QUARTO = 4,
-    _ID_QUARTO_2 = 5,
-    _NAME_IDS_COUNT = 6
-};
+// enum roomNameIds {
+//     _ID_SALA = 0,
+//     _ID_BANHEIRO = 1,
+//     _ID_COZINHA = 2,
+//     _ID_LAVANDERIA = 3,
+//     _ID_QUARTO = 4,
+//     _ID_QUARTO_2 = 5,
+//     _NAME_IDS_COUNT = 6
+// };
 #endif //GLOBALS

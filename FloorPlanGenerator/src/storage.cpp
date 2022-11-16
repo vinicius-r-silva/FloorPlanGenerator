@@ -75,7 +75,7 @@ void Storage::readConfigs(){
         input_file.read((char*)&(rooms[i].maxW), sizeof(tempRoom.maxW));
         input_file.read((char*)&(rooms[i].depend), sizeof(tempRoom.depend));
         input_file.read((char*)&(rooms[i].rPlannyId), sizeof(tempRoom.rPlannyId));
-        input_file.read((char*)&(rooms[i].nameId), sizeof(tempRoom.nameId));
+        // input_file.read((char*)&(rooms[i].nameId), sizeof(tempRoom.nameId));
         input_file.read((char*)&(rooms[i].name), ROOM_NAME_SIZE * sizeof(char));
         setups.push_back(rooms[i]);
     }
