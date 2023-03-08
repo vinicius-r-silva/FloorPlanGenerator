@@ -1,6 +1,6 @@
 ,0,1,2,3,7
-0,all,all,cozinha,any,all
-1,,,,,
-2,,,all,,
-3,,,,,
-7,,,,,
+0,all,any,any,any,any
+1,all,all,0,all,0
+2,any,0,all,0,0
+3,any,any,0,0,0
+7,all,0,0,0,0

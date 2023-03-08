@@ -50,8 +50,9 @@ typedef struct{
     /*@}*/
 } RoomConfig;
 
-#define REQ_ALL -1
-#define REQ_ANY -2
+#define REQ_NONE 0
+#define REQ_ANY 1
+#define REQ_ALL 2
 
 // enum roomNameIds {
 //     _ID_SALA = 0,

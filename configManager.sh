@@ -1,2 +1,1 @@
-cd configManager && make
-./config.out
+cd configManager && make && ./config.out
