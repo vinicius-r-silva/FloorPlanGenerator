@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <string>
 #include <cmath>
-#include <boost/numeric/ublas/matrix.hpp>
 #include "../lib/storage.h"
 #include "../lib/globals.h"
 #include "../lib/log.h"
