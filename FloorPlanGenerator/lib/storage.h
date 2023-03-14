@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+// #include <boost/numeric/ublas/matrix.hpp>
 
 /**
   Handles all file managing (read/write) for the project
@@ -30,6 +31,7 @@ class Storage
       Vector with multiplicaiton value for each adjcency
     */ 
     std::vector<int> reqadj_values;
+    // boost::numeric::ublas::matrix<int> reqadj_values;
     
     /** 
      * @brief get the project directory
@@ -67,6 +69,7 @@ public:
     /// @brief          Get the adjacency values
     /// @return         int vector
     std::vector<int> getReqAdjValues();
+    // boost::numeric::ublas::matrix<int> getReqAdjValues();
 
     void saveResult(const std::vector<std::vector<std::vector<int16_t>>>& res, const std::vector<RoomConfig>& rooms, const int n);
 

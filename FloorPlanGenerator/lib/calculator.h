@@ -47,6 +47,14 @@ public:
         @return (int) number of room's size combinations
     */
     static int NRoomSizes(const std::vector<RoomConfig>& rooms);
+
+
+    /*!
+        @brief Calculates the size of the upper (or lower) half of a matrix of size n
+        @param[in] n size of matrix
+        @return (int) lenght of upper half of matrix
+    */
+    static int lenghtHalfMatrix(const int n);
     
 
     /*!

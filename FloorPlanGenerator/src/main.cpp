@@ -4,6 +4,9 @@
 #include <omp.h>
 #include <string> 
 #include <stdlib.h>
+#include <cmath>
+// #include <boost/numeric/ublas/matrix.hpp>
+// #include <boost/numeric/ublas/io.hpp>
 // #include <sstream>   
 #include "../lib/log.h"
 #include "../lib/storage.h"
@@ -14,24 +17,42 @@
 #include "../lib/mpHelper.h"
 #include "../cuda/combine.h"
 
+/*!
+    @brief create data
+    @param[in] n number of rooms per layout
+*/
 void generateData(const int n) {
     const int NThreads = MPHelper::omp_thread_count();
     std::cout << "NThreads: " << NThreads << std::endl;
 
     Storage hdd = Storage();
-    std::vector<int> adjValues = hdd.getAdjValues();
+    // std::vector<int> adj = hdd.getAdjValues();
     std::vector<RoomConfig> setups = hdd.getConfigs();
 
-    for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it)
-        Log::print((RoomConfig)(*it));
+    std::vector<int> allReq = hdd.getReqAdjValues();
+    // std::cout << "allReq" << std::endl << allReq << std::endl << std::endl;
 
+    const int reqSize = sqrt(allReq.size());
+    
+    // counts how many rooms of each class is included in the final layout
+    std::vector<int> allReqCount(reqSize, -1);
+    for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it){
+        RoomConfig room = (RoomConfig)(*it);
+        Log::print(room);
+        if(allReqCount[room.rPlannyId] == -1)
+            allReqCount[room.rPlannyId] = 0;
+
+        allReqCount[room.rPlannyId] += 1;
+    }
 
     Calculator::totalOfCombinations(setups, n);
-    // return;
 
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
     const int NCombs = allCombs.size();
-    printf("main NCombs: %d\n", NCombs);
+    printf("main NCombs: %d\n\n", NCombs);
+    
+    const int NReqs = Calculator::lenghtHalfMatrix(n);
+    std::vector<int> req(NReqs, 0);
 
 #ifdef MULTI_THREAD
     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs)
@@ -41,22 +62,21 @@ void generateData(const int n) {
     {
         const int tid = omp_get_thread_num();
         printf("Thread: %d, i: %d\n", tid, i);
-        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
-        //    printf("%s, ", allCombs[i][k].name);
-        // }
-        // printf("\n");
-        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
-        //     std::cout << allCombs[i][k].name << ",  ";
-        // }
-        // std::cout << std::endl;
+
+        for(std::size_t k = 0; k < allCombs[i].size(); k++){
+           printf("%s, ", allCombs[i][k].name);
+        }
+        printf("\n");
+        for(std::size_t k = 0; k < allCombs[i].size(); k++){
+            std::cout << allCombs[i][k].name << ",  ";
+        }
+        std::cout << std::endl;
         
         // std::cout << "i = " << i << std::endl;
 
-        hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
-        // Generate::SizeLoop(allCombs[i]);
-        
-
-        // break;
+        // hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
+        Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
+        break;
     }
 }
 

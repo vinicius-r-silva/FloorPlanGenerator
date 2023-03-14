@@ -1,8 +1,8 @@
 #ifndef LOG
 #define LOG
 
-#include "log.h"
 #include "globals.h"
+#include <vector>
 
 /** 
  * @brief Handles all console's read/write
@@ -22,6 +22,13 @@ public:
      * @return None
     */
     static void print(RoomConfig setup);
+
+    /** 
+    * @brief console print 1D vector
+    * @return None
+    */
+    template <typename T>
+    static void printVector1D(std::vector<T> arr);
 };
 
 #endif //LOG

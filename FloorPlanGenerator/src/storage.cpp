@@ -3,6 +3,8 @@
 #include <vector>
 #include <filesystem>
 #include <string>
+#include <cmath>
+#include <boost/numeric/ublas/matrix.hpp>
 #include "../lib/storage.h"
 #include "../lib/globals.h"
 #include "../lib/log.h"
@@ -18,6 +20,7 @@ Storage::Storage(){
     updateProjectDir();
     readConfigs();
     readAdjValues();
+    readReqAdjValues();
 }
 
     
@@ -74,6 +77,7 @@ void Storage::readConfigs(){
         input_file.read((char*)&(rooms[i].minW), sizeof(tempRoom.minW));
         input_file.read((char*)&(rooms[i].maxW), sizeof(tempRoom.maxW));
         input_file.read((char*)&(rooms[i].depend), sizeof(tempRoom.depend));
+        input_file.read((char*)&(rooms[i].familyIds), sizeof(tempRoom.familyIds));
         input_file.read((char*)&(rooms[i].rPlannyId), sizeof(tempRoom.rPlannyId));
         // input_file.read((char*)&(rooms[i].nameId), sizeof(tempRoom.nameId));
         input_file.read((char*)&(rooms[i].name), ROOM_NAME_SIZE * sizeof(char));
@@ -114,11 +118,21 @@ void Storage::readReqAdjValues(){
     
     int arraySize = 0;
     input_file.read((char*)&arraySize, sizeof(int));      
-
-    if(arraySize != _NAME_IDS_COUNT * _NAME_IDS_COUNT){
-        std::cout << "! invalid size for req adj matrix" << std::endl;
+    const int length = sqrt(arraySize);
+    
+    if(length * length != arraySize){
+        std::cout << "! ERROR. Req Adj MAtrix not square" << std::endl;
         exit(EXIT_FAILURE);
     }
+    
+    // int value = 0;
+    // reqadj_values = boost::numeric::ublas::matrix<int>(length, length);
+    // for(int i = 0; i < length; i++){
+    //     for(int j = 0; j < length; j++){
+    //         input_file.read((char*)&value, sizeof(value));
+    //         reqadj_values(i,j) = value;
+    //     }
+    // }
 
     for(int i = 0; i < arraySize; i++){
         int value = 0;

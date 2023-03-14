@@ -10,43 +10,95 @@
 class Generate
 {
 private:
+    /*!
+        @brief Given two squares, returns if there is a overleap between the two
+        @param[in] a_left   left side of square A (smallest value of the x axis)
+        @param[in] a_right  right side of square A (biggest value of the x axis)
+        @param[in] a_up     up side of square A (smallest value of the y axis)
+        @param[in] a_down   down side of square A (biggest value of the y axis)
+        @param[in] b_left   left side of square B (smallest value of the x axis)
+        @param[in] b_right  right side of square B (biggest value of the x axis)
+        @param[in] b_up     up side of square B (smallest value of the y axis)
+        @param[in] b_down   down side of square B (biggest value of the y axis)
+        @return (bool) true if there is a overleap, false otherwise
+    */
     inline static bool check_overlap(int a_left, int a_right, int a_up, int a_down, int b_left, int b_right, int b_up, int b_down);
+
+    /*!
+        @brief Given two squares, returns true if one square touchs another
+        @param[in] a_left   left side of square A (smallest value of the x axis)
+        @param[in] a_right  right side of square A (biggest value of the x axis)
+        @param[in] a_up     up side of square A (smallest value of the y axis)
+        @param[in] a_down   down side of square A (biggest value of the y axis)
+        @param[in] b_left   left side of square B (smallest value of the x axis)
+        @param[in] b_right  right side of square B (biggest value of the x axis)
+        @param[in] b_up     up side of square B (smallest value of the y axis)
+        @param[in] b_down   down side of square B (biggest value of the y axis)
+        @return (bool) true share of a same edge (even if it is partially), false otherwise
+    */
+    inline static bool check_adjacency(int a_left, int a_right, int a_up, int a_down, int b_left, int b_right, int b_up, int b_down); 
 
 
 public:
     /** 
-     * @brief Generate Constructor
+     * @brief Generated Constructor
      * @return None
     */
     Generate();
 
     /*!
         @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
+        @param[in] reqSize lengh of required matrix
+        @param[in] allReq required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+        @param[in] allReqCount required rooms ajacency count of how many rules are related to each room class
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
     */
-    static std::vector<std::vector<std::vector<int16_t>>> SizeLoop(const std::vector<RoomConfig>& rooms, const std::vector<int>& adjValues);
+    static std::vector<std::vector<std::vector<int16_t>>> SizeLoop(
+        const int reqSize,
+        std::vector<int> allReq,
+        std::vector<int> allReqCount,
+        const std::vector<RoomConfig>& rooms);
 
     /*!
         @brief Iterate over every possible connection between the given rooms 
-        @param[in] order, specify the order of the rooms to connect
-        @param[in] sizeH Height value of each room setup
-        @param[in] sizeW Width value of each room setup
         @param[in] n     number of rooms
         @param[in] NConn Number of possible connections
+        @param[in] reqSize lengh of required matrix
+        @param[in] sizeH Height value of each room setup
+        @param[in] sizeW Width value of each room setup
+        @param[in] order, specify the order of the rooms to connect
+        @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+        @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return vector with layout points for every successful connection (n*4 int per layout)
     */
-    static std::vector<int16_t> ConnLoop(const std::vector<int>& order, const int16_t *sizeH, const int16_t *sizeW, const int n, const int NConn, const std::vector<int>& adjValues, std::vector<int16_t> adjId);
-
+    static std::vector<int16_t> ConnLoop(
+        const int n, 
+        const int NConn, 
+        const int reqSize,
+        const int16_t *sizeH, 
+        const int16_t *sizeW, 
+        const std::vector<int>& order, 
+        const std::vector<int>& reqAdj,
+        const std::vector<RoomConfig>& rooms);
 
     /*!
         @brief Iterate over every room permutation
+        @param[in] n number of rooms
+        @param[in] reqSize lengh of required matrix
         @param[in] sizeH Height value of each room setup
         @param[in] sizeW Width value of each room setup
-        @param[in] n     number of rooms
+        @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+        @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
     */
-    static std::vector<std::vector<int16_t>> roomPerm(const int16_t *sizeH, const int16_t *sizeW, const int n, const std::vector<int>& adjValues, std::vector<int16_t> adjId);
+    static std::vector<std::vector<int16_t>> roomPerm(
+        const int n, 
+        const int reqSize,
+        const int16_t *sizeH, 
+        const int16_t *sizeW, 
+        const std::vector<int>& reqAdj,
+        const std::vector<RoomConfig>& rooms);
 
 };
 

@@ -99,6 +99,16 @@ int Calculator::NRoomSizes(const std::vector<RoomConfig>& rooms){
 
 
 /*!
+    @brief Calculates the size of the upper (or lower) half of a matrix of size n
+    @param[in] n size of matrix
+    @return (int) lenght of upper half of matrix
+*/
+int Calculator::lenghtHalfMatrix(const int n){
+    return ((n*n) + n) / 2;
+}
+
+
+/*!
     @brief Calculates the total number of possible layouts considering combination, rooms sizes, etc
     @param[in] setups every room configuration
     @param[in] n number of rooms per layout

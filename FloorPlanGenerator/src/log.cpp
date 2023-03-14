@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include "../lib/log.h"
 #include "../lib/globals.h"
 
@@ -21,3 +22,17 @@ void Log::print(RoomConfig s){
                  "\tdepend: " << s.depend << 
                  "\tPlannyId: " << s.rPlannyId << std::endl;
 }
+    
+/** 
+ * @brief console print 1D vector
+ * @return None
+*/
+template <typename T>
+void Log::printVector1D(std::vector<T> arr){
+    for(T val : arr){
+        std::cout << val << ", ";
+    }
+   std::cout <<  std::endl;
+}
+
+template void Log::printVector1D<int>(std::vector<int>);

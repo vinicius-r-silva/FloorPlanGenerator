@@ -69,11 +69,47 @@ inline bool Generate::check_overlap(int a_left, int a_right, int a_up, int a_dow
 
 
 /*!
+    @brief Given two squares, returns true if one square touchs another
+    @param[in] a_left   left side of square A (smallest value of the x axis)
+    @param[in] a_right  right side of square A (biggest value of the x axis)
+    @param[in] a_up     up side of square A (smallest value of the y axis)
+    @param[in] a_down   down side of square A (biggest value of the y axis)
+    @param[in] b_left   left side of square B (smallest value of the x axis)
+    @param[in] b_right  right side of square B (biggest value of the x axis)
+    @param[in] b_up     up side of square B (smallest value of the y axis)
+    @param[in] b_down   down side of square B (biggest value of the y axis)
+    @return (bool) true share of a same edge (even if it is partially), false otherwise
+*/
+inline bool Generate::check_adjacency(int a_left, int a_right, int a_up, int a_down, int b_left, int b_right, int b_up, int b_down){  
+    if((a_down == b_up || a_up == b_down) &&
+        ((a_right > b_left && a_right <= b_right) ||
+        (a_left < b_right && a_left >= b_left)))
+            return true;   
+
+    if((a_left == b_right || a_right == b_left) &&
+        ((a_down > b_up && a_down <= b_down) ||
+        (a_up < b_down && a_up >= b_up)))
+            return true; 
+
+    return false;
+}
+
+
+/*!
     @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
+    @param[in] reqSize lengh of required matrix
+    @param[in] allReq required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+    @param[in] allReqCount required rooms ajacency count of how many rules are related to each room class
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
 */
-std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(const std::vector<RoomConfig>& rooms, const std::vector<int>& adjValues){
+std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(
+    const int reqSize,
+    std::vector<int> allReq,
+    std::vector<int> allReqCount,
+    const std::vector<RoomConfig>& rooms)
+    {
+    
     // SizeLoopRes res;
     const int n = rooms.size();
 
@@ -84,15 +120,36 @@ std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(const std::vec
         sizeH.push_back(rooms[i].minH);
         sizeW.push_back(rooms[i].minW);
     }
+    
+    for(const RoomConfig room : rooms)
+        allReqCount[room.rPlannyId] -= 1;
 
-    std::vector<int16_t> adjIds; adjIds.reserve(n);
-    for(int i = 0; i < n; i++){
-        adjIds.push_back(rooms[i].rPlannyId);
+    std::vector<int> req(allReq.size(), 0);
+    for(int i = 0; i < reqSize; i++){
+        for(int j = 0; j < reqSize; j++){
+            if(allReqCount[i] != 0){
+                allReq[i*reqSize + j] = REQ_NONE;
+                allReq[j*reqSize + i] = REQ_NONE;
+            }
+        }
     }
+
+    // for(int i = 0; i < allReqCount.size(); i++){
+    //     if(allReqCount[i] == 0){
+
+    //     }
+    // }
+
+    // //Create array withr RPlanny Id of each room
+    // std::vector<int16_t> rIds; rIds.reserve(n);
+    // for(int i = 0; i < n; i++){
+    //     rIds.push_back(rooms[i].rPlannyId);
+    // }
 
     const int NSizes = Calculator::NRoomSizes(rooms);
     std::vector<std::vector<std::vector<int16_t>>> perms; perms.reserve(NSizes);
     
+    // iterate over each room size combination
     do {
         std::cout << "#########################" << std::endl;
         for(int i = 0; i < n; i++){
@@ -100,7 +157,8 @@ std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(const std::vec
         }
         std::cout << "#########################" << std::endl << std::endl << std::endl;
 
-        perms.push_back(roomPerm(&sizeH[0], &sizeW[0], n, adjValues, adjIds));
+        perms.push_back(roomPerm(n, reqSize, &sizeH[0], &sizeW[0], allReq, rooms));
+        break;
     } while(Iter::nextRoomSize(rooms, &sizeH[0], &sizeW[0]));
 
     return perms;
@@ -109,17 +167,31 @@ std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(const std::vec
 
 /*!
     @brief Iterate over every possible connection between the given rooms 
-    @param[in] order, specify the order of the rooms to connect
-    @param[in] sizeH Height value of each room setup
-    @param[in] sizeW Width value of each room setup
     @param[in] n     number of rooms
     @param[in] NConn Number of possible connections
+    @param[in] reqSize lengh of required matrix
+    @param[in] sizeH Height value of each room setup
+    @param[in] sizeW Width value of each room setup
+    @param[in] order, specify the order of the rooms to connect
+    @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+    @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return vector with layout points for every successful connection (n*4 int per layout)
 */
-std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int16_t *sizeH, const int16_t *sizeW, const int n, const int NConn, const std::vector<int>& adjValues, std::vector<int16_t> adjIds){
+std::vector<int16_t> Generate::ConnLoop(
+    const int n, 
+    const int NConn, 
+    const int reqSize,
+    const int16_t *sizeH, 
+    const int16_t *sizeW, 
+    const std::vector<int>& order, 
+    const std::vector<int>& reqAdj,
+    const std::vector<RoomConfig>& rooms)
+    {
+        
     std::vector<int16_t> result; 
     std::vector<int16_t> ptsX(n * 2, 0); 
     std::vector<int16_t> ptsY(n * 2, 0);
+    std::vector<int> adj(reqAdj.size()); 
 
     result.reserve(NConn*4*n);
     // ptsX.reserve(n * 2) ;
@@ -132,18 +204,20 @@ std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int
 
     for(int i = 0; i < NConn; i++){
 
+        const int init_idx = order[0];
         ptsX[0] = 0;
         ptsY[0] = 0;
-        ptsX[1] = sizeW[order[0]];
-        ptsY[1] = sizeH[order[0]];
+        ptsX[1] = sizeW[init_idx];
+        ptsY[1] = sizeH[init_idx];
         
         int dstX = 0;
         int dstY = 0;
-        int dstH = sizeH[order[0]];
-        int dstW = sizeW[order[0]];
-        int srcH = sizeH[order[0]];
-        int srcW = sizeW[order[0]];
+        int dstH = sizeH[init_idx];
+        int dstW = sizeW[init_idx];
+        int srcH = sizeH[init_idx];
+        int srcW = sizeW[init_idx];
 
+        std::fill(adj.begin(), adj.end(), 0);
 
         int sum = 0;
         bool sucess = true;
@@ -158,8 +232,9 @@ std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int
                 break;
             }
             
-            dstH = sizeH[order[j]];
-            dstW = sizeW[order[j]];
+            const int j_idx = order[j];
+            dstH = sizeH[j_idx];
+            dstW = sizeW[j_idx];
             if(srcConn == 1)
                 dstX += srcW;
             else if(srcConn == 2)
@@ -188,11 +263,24 @@ std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int
             srcW = dstW;
             
             for(int k = 0; k < j; k++){
-                if(Generate::check_overlap(ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1])){
+                if(Generate::check_overlap(
+                    ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], 
+                    ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1]))
+                {
                     sucess = false;
                     const int diff = n - j - 1;
                     sum = (1 << (diff * 4)) - 1;
                     break;
+                }
+
+                
+                if(Generate::check_adjacency(
+                    ptsX[k*2], ptsX[k*2 + 1], ptsY[k*2], ptsY[k*2 + 1], 
+                    ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1]))
+                {
+                    const int k_idx = order[k];
+                    adj[j_idx*reqSize + k_idx] |= 1 << rooms[j_idx].id;
+                    adj[k_idx*reqSize + j_idx] |= 1 << rooms[k_idx].id;
                 }
             }
         }
@@ -200,16 +288,31 @@ std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int
         if(sucess){
             // result.insert(result.end(), ptsX.begin(), ptsX.end());
             // result.insert(result.end(), ptsY.begin(), ptsY.end());
-            for(int j = 0; j < n; j++){
-                result.push_back(ptsX[2 * j]);
-                result.push_back(ptsY[2 * j]);
-                result.push_back(ptsX[2 * j + 1]);
-                result.push_back(ptsY[2 * j + 1]);
+            int pos = 0;
+            int sucessReq = 1;
+            for(int j = 0; j < reqSize; j++ && sucessReq){
+                for(int k = 0; k < reqSize; k++ && sucessReq){
+                    if(reqAdj[pos] == REQ_ALL)
+                        sucessReq = rooms[j].familyIds & adj[pos];
+                    if(reqAdj[pos] == REQ_ANY)
+                        sucessReq = rooms[j].familyIds | adj[pos];
+
+                    pos++;
+                }
             }
-            // result.push_back(i);
-            #ifdef OPENCV_ENABLED
-            CVHelper::showLayout(ptsX, ptsY);
-            #endif
+
+            if(sucessReq){
+                for(int j = 0; j < n; j++){
+                    result.push_back(ptsX[2 * j]);
+                    result.push_back(ptsY[2 * j]);
+                    result.push_back(ptsX[2 * j + 1]);
+                    result.push_back(ptsY[2 * j + 1]);
+                }
+                // result.push_back(i);
+                #ifdef OPENCV_ENABLED
+                CVHelper::showLayout(ptsX, ptsY);
+                #endif
+            }
         }
         i += sum;
     }
@@ -220,12 +323,23 @@ std::vector<int16_t> Generate::ConnLoop(const std::vector<int>& order, const int
 
 /*!
     @brief Iterate over every room permutation
+    @param[in] n number of rooms
+    @param[in] reqSize lengh of required matrix
     @param[in] sizeH Height value of each room setup
     @param[in] sizeW Width value of each room setup
-    @param[in] n     number of rooms
+    @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+    @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
 */
-std::vector<std::vector<int16_t>> Generate::roomPerm(const int16_t *sizeH, const int16_t *sizeW, const int n, const std::vector<int>& adjValues, std::vector<int16_t> adjIds){
+std::vector<std::vector<int16_t>> Generate::roomPerm(
+    const int n, 
+    const int reqSize,
+    const int16_t *sizeH, 
+    const int16_t *sizeW, 
+    const std::vector<int>& reqAdj,
+    const std::vector<RoomConfig>& rooms)
+    {
+
     std::vector<int> perm;
     for(int i = 0; i < n; i++)
         perm.push_back(i);
@@ -238,16 +352,14 @@ std::vector<std::vector<int16_t>> Generate::roomPerm(const int16_t *sizeH, const
     conns.reserve(NPerm);
 
     // Cycle each permutation
-    int i = 0;
     do {
         // for(int i = 0; i < (int)perm.size(); i++){
         //     std::cout << perm[i] << ", ";
         // }
         // std::cout << std::endl;
 
-        conns.push_back(ConnLoop(perm, sizeH, sizeW, n, NConn, adjValues, adjIds));
-
-        i++;
+        conns.push_back(ConnLoop(n, NConn, reqSize, sizeH, sizeW, perm, reqAdj, rooms));
+        break;
     } while (std::next_permutation(perm.begin(), perm.end()));
 
     return conns;

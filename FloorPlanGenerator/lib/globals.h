@@ -17,7 +17,7 @@
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-#define OPENCV_ENABLED
+// #define OPENCV_ENABLED
 
 // #define MULTI_THREAD
 
@@ -35,9 +35,10 @@ typedef struct{
     int16_t maxH;                   /**< maximum Height */
     int16_t minW;                   /**< minimum Width */
     int16_t maxW;                   /**< maximum Width */
+    int familyIds;
     int rPlannyId;                  /**< rPlanny Id */
     // int nameId;                     /**< name Id */
-    int minRepetitions;             /**< minimum number of repetitions */
+    // int minRepetitions;             /**< minimum number of repetitions */
     char name[ROOM_NAME_SIZE];      /**< room name */
     
 
@@ -53,6 +54,10 @@ typedef struct{
 #define REQ_NONE 0
 #define REQ_ANY 1
 #define REQ_ALL 2
+
+// #define REQ_TYPE 13
+// #define REQ_AND 0
+// #define REQ_OR  1
 
 // enum roomNameIds {
 //     _ID_SALA = 0,

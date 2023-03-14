@@ -32,18 +32,6 @@ enum RPlannyIds {
     _COUNT_RPLANNY_IDS = 18
 };
 
-// enum MyIds {
-//     _SALA = 0,
-//     _BANHEIRO = 1,
-//     _QUARTO = 2,
-//     _CORREDOR = 3,
-//     _COZINHA = 4,
-//     _LAVANDERIA = 5,
-//     _QUARTO_2 = 6,
-//     _QUARTO_3 = 7,
-//     _BANHEIRO_2 = 8
-// };
-
 template <typename T>
 void printVector1D(std::vector<T> arr){
     for(T val : arr){
@@ -93,6 +81,7 @@ void writeRoom(RoomConfig room, std::ofstream& file){
     file.write((char*)&(room.minW), sizeof(room.minW));
     file.write((char*)&(room.maxW), sizeof(room.maxW));
     file.write((char*)&(room.depend), sizeof(room.depend));
+    file.write((char*)&(room.familyIds), sizeof(room.familyIds));
     file.write((char*)&(room.rPlannyId), sizeof(room.rPlannyId));
     // file.write((char*)&(room.nameId), sizeof(room.nameId));
     file.write((char*)&(room.name), ROOM_NAME_SIZE * sizeof(char));
@@ -109,6 +98,12 @@ void printRoom(RoomConfig room){
 
 bool setContains(std::set<int> set, int value){
     return !set.emplace(value).second;
+}
+
+
+template <typename T, typename V>
+bool mapContains(const std::set<T, V> map, T key){
+    return map.count(key) != 0;
 }
 
 
@@ -174,7 +169,7 @@ std::map<int, int> saveRplannyAdj(std::string projectPath, std::set<int> rPlanny
 
     int arraySize = (int)adjValues.size();
     std::ofstream adjConfigFile(projectPath + "/configs/adj", std::ios::binary);
-    adjConfigFile.write((char*)&arraySize,  sizeof(arraySize));
+    adjConfigFile.write((char*)&arraySize,  sizeof(int));
     for(int i = 0; i < arraySize; i++)
         adjConfigFile.write((char*)&adjValues[i],  sizeof(adjValues[i]));
         
@@ -211,73 +206,6 @@ std::vector<std::string> stringToVector(std::string s, char delimiter){
     // printVector1D<std::string>(words);
     return words;
 }
-
-// int roomReqNameToValue(std::string reqNames, RoomConfig* rooms, int n){
-//     int res = 0;
-//     // reqNames.erase(std::remove_if(reqNames.begin(), reqNames.end(), isspace), reqNames.end());
-//     std::vector<std::string> namesArr = stringToVector(reqNames, ' ');
-//     if(namesArr.size() == 0)
-//         return 0;
-
-//     std::vector<RoomConfig *> reqRooms(namesArr.size(), nullptr);
-
-//     for(std::string name : namesArr){
-//         std::transform(name.begin(), name.end(), name.begin(), asciitolower);
-//         if(name == "all" )
-//             return REQ_ALL;
-
-//         else 
-//             return REQ_ANY
-
-//         for(int i = 0; i < n; i++){
-//             if (name == rooms[i].name) {
-//                 res |= rooms[i].id;
-//                 reqRooms.push_back(&(rooms[i]));
-//             }
-//         }
-//     }
-
-//     //check if all req rooms are from the same family
-//     std::set<int> reqRoomsId;
-//     std::set<int> reqRoomsRPId;
-//     for(RoomConfig * roomPtr : reqRooms){
-//         reqRoomsId.insert(roomPtr->id);
-//         reqRoomsRPId.insert(roomPtr->rPlannyId);
-//     }
-//     if(reqRoomsRPId.size() != 1){
-//         std::cout << std::endl << "!! ERROR, room req with different families" << std::endl;
-//         exit(EXIT_FAILURE);
-//     }
-
-//     //get the not requerid room ids
-//     int familyId = *(reqRoomsRPId.begin());
-//     std::set<int> notReqRoomsId;
-//     for(int i = 0; i < n; i++){
-//         if (rooms[i].rPlannyId == familyId && setContains(reqRoomsId, rooms[i].id)) {
-//             notReqRoomsId.insert(rooms[i].id);
-//         }
-//     }
-
-//     //check if the lowestd id for the req room if bigger than the biggest id of the not req id in the same family
-//     int biggestNotReq = -1;
-//     for(int val : notReqRoomsId){
-//         if(val > biggestNotReq)
-//             biggestNotReq = val;
-//     }
-
-//     int lowestReq = 1 << 31;
-//     for(int val : reqRoomsId){
-//         if(val < lowestReq)
-//             lowestReq = val;
-//     }
-
-//     if(lowestReq < biggestNotReq){
-//         std::cout << std::endl << "!! ERROR, biggestNotReq bigger than lowestReq" << std::endl;
-//         exit(EXIT_FAILURE);
-//     }
-
-//     return res;
-// }
 
 
 std::vector<std::vector<std::string>> getReqAdjMatrix(std::string projectPath, std::map<int, int> mapRplannyId){
@@ -322,7 +250,7 @@ std::vector<std::vector<std::string>> getReqAdjMatrix(std::string projectPath, s
     }
 
     if(usedIds.size() != mapRplannyId.size()){
-        std::cout << std::endl << "ERROR, Adj CSV does not contain all necessary informations" << std::endl;
+        std::cout << std::endl << "ERROR, req Adj CSV does not contain all necessary informations" << std::endl;
 
         std::cout << "expected ids: " << std::endl;
         for (auto const &pair: mapRplannyId) 
@@ -349,6 +277,17 @@ void saveReqAdj(std::string projectPath, std::map<int, int> mapRplannyId, RoomCo
     int adjReqSize = adjReqNameMatrix.size();
     std::vector<std::vector<int>> adjReqMatrix (adjReqSize, std::vector<int>(adjReqSize, 0));
 
+    // std::map<int, int> mapRIdToRooms;
+    // for(int i = 0; i < n; i++){
+    //     const int key = rooms[n].rPlannyId;
+    //     int val = 0;
+    //     if(mapRIdToRooms.count(key) == 0)
+    //         val = mapRIdToRooms[key];
+
+    //     val |= 1 << rooms[n].id;
+    //     mapRIdToRooms[key] = val;
+    // }
+    
     for(int i = 0; i < adjReqSize; i++){
         for(int j = 0; j < adjReqSize; j++){
             if(adjReqNameMatrix[i][j].compare("all") == 0)
@@ -366,7 +305,7 @@ void saveReqAdj(std::string projectPath, std::map<int, int> mapRplannyId, RoomCo
 
     int arraySize = adjReqSize * adjReqSize;
     std::ofstream adjReqConfigFile(projectPath + "/configs/reqadj", std::ios::binary);
-    adjReqConfigFile.write((char*)&arraySize,  sizeof(arraySize));
+    adjReqConfigFile.write((char*)&arraySize,  sizeof(int));
     for(int i = 0; i < adjReqSize; i++){
         for(int j = 0; j < adjReqSize; j++){
             adjReqConfigFile.write((char*)&(adjReqMatrix[i][j]),  sizeof(adjReqMatrix[i][j]));
@@ -598,6 +537,7 @@ void normalConfig(std::string projectPath){
     rooms[lavanderia].step = 100;
     rooms[lavanderia].depend = 0;
     rooms[lavanderia].rPlannyId = _KITCHEN;
+    rooms[lavanderia].rPlannyId = _SECOND_ROOM;
 
     std::set<int> rPlannyIds;
     for(int i = 0; i < numOfRooms; i++)
@@ -608,10 +548,40 @@ void normalConfig(std::string projectPath){
         rooms[i].rPlannyId = mapRplannyId[rooms[i].rPlannyId];
     
     std::cout << "LIVING_ROOM: " << mapRplannyId[_LIVING_ROOM] << ", BATHROOM: " << mapRplannyId[_BATHROOM] << ", MASTER_ROOM: " << mapRplannyId[_MASTER_ROOM] << ", KITCHEN: " << mapRplannyId[_KITCHEN] << std::endl;
+    
+    std::map<int, int> mapRIdToRooms;
+    for(int i = 0; i < numOfRooms; i++){
+        const int key = rooms[i].rPlannyId;
+        int val = 0;
+        if(mapRIdToRooms.count(key) == 0)
+            val = mapRIdToRooms[key];
+
+        val |= 1 << rooms[i].id;
+        mapRIdToRooms[key] = val;
+    }
+    
+    for(int i = 0; i < numOfRooms; i++)
+        rooms[i].familyIds = mapRIdToRooms[rooms[i].rPlannyId];
+
+    // std::unordered_map<int, std::vector<int>> mapRIdToRoomIds;
+    // for(int i = 0; i < n; i++){
+    //     std::vector<int> ids = mapRIdToRoomIds[rooms[i].RPlannyId];
+    //     ids.push_back(rooms[i].id);
+    // }
+
+    // for(int i = 0; i < numOfRooms; i++){
+    //     std::vector<int> ids = mapRIdToRoomIds[rooms[i].RPlannyId];
+
+    //     int val = 0;
+    //     for(int id : ids)
+    //         val |= id;
+
+    //     room[i].familyIds = val;
+    // }
 
     int arrSize = numOfRooms;
     std::ofstream roomsConfigFile(projectPath + "/configs/rooms", std::ios::binary);
-    roomsConfigFile.write((char*)&arrSize,  sizeof(arrSize));
+    roomsConfigFile.write((char*)&arrSize,  sizeof(int));
     for(int i = 0; i < numOfRooms; i++){
         printRoom(rooms[i]);
         writeRoom(rooms[i], roomsConfigFile);
@@ -692,25 +662,8 @@ void normalConfig(std::string projectPath){
 //     roomsConfigFile.close();
 // }
 
-
-// void saveReqAdj(std::string projectPath, std::map<const char*, int>, RoomConfig *rooms){
-//     int reqAdj[_NAME_IDS_COUNT][_NAME_IDS_COUNT];
-
-//     int arraySize = _NAME_IDS_COUNT * _NAME_IDS_COUNT;
-//     std::ofstream outFile(projectPath + "/configs/reqadj", std::ios::binary);
-//     outFile.write((char*)&arraySize,  sizeof(arraySize));
-//     for(int i = 0; i < _NAME_IDS_COUNT; i++){
-//         for(int j = 0; j < _NAME_IDS_COUNT; j++){
-//             outFile.write((char*)&reqAdj[i][j],  sizeof(reqAdj[i][j]));
-//         }
-//     }
-//     outFile.close();
-// }
-
 int main(){
     std::string projectPath = getProjectDir();
-    // saveReqAdj(projectPath);
-    // std::map<int, int> mapRplannyId = saveRplannyAdj(projectPath);
     normalConfig(projectPath);
     // testConfig();
     // extremeConfig();
