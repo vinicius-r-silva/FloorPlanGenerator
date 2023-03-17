@@ -1,0 +1,14 @@
+           0-living  1-master  2-kitchen  3-bathroom  4-second
+0-living   all       any       any        any         any
+1-master   all       all       0          all         0
+2-kitchen  any       0         all        0           0
+3-bathroom any       any       0          0           0
+4-second   all       0         0          0           0
+
+
+           0-living  1-master  2-kitchen  3-bathroom  4-second
+0-living   0         1         2          3           4
+1-master   5         6         7          8           9
+2-kitchen  10        11        12         13          14
+3-bathroom 15        16        17         18          19
+4-second   20        21        22         23          24

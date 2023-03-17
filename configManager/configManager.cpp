@@ -556,7 +556,7 @@ void normalConfig(std::string projectPath){
         if(mapRIdToRooms.count(key) == 0)
             val = mapRIdToRooms[key];
 
-        val |= 1 << rooms[i].id;
+        val |= rooms[i].id;
         mapRIdToRooms[key] = val;
     }
     

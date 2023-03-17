@@ -30,8 +30,8 @@ set(CUDA_NVCC_FLAGS -std=c++20  -Xcompiler -O3)
 include (CTest)
 include_directories(lib)
 
-# set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Release)
 
 set(cuda_headers "./cuda/combine.h" "./cuda/helper.h")
 set(cuda_codes   "./cuda/combine.cu")

@@ -197,10 +197,10 @@ std::vector<int16_t> Generate::ConnLoop(
     // ptsX.reserve(n * 2) ;
     // ptsY.reserve(n * 2) ;
         
-    // std::cout << "perm: ";
-    // for(int j = 0; j < n; j++)
-    //     std::cout << order[j] << ", ";
-    // std::cout << std::endl;
+    std::cout << std::endl << std::endl << std::endl << "perm: ";
+    for(int j = 0; j < n; j++)
+        std::cout << order[j] << ", ";
+    std::cout << std::endl;
 
     for(int i = 0; i < NConn; i++){
 
@@ -225,6 +225,7 @@ std::vector<int16_t> Generate::ConnLoop(
             const int pos = (n - j - 1) * 4;
             const int srcConn = (i >> pos) & 0b11;
             const int dstConn = ((i >> (pos + 2)) & 0b11);
+            std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
             if(srcConn == dstConn){
                 sucess = false;
                 const int diff = n - j - 1;
@@ -279,8 +280,9 @@ std::vector<int16_t> Generate::ConnLoop(
                     ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1]))
                 {
                     const int k_idx = order[k];
-                    adj[j_idx*reqSize + k_idx] |= 1 << rooms[j_idx].id;
-                    adj[k_idx*reqSize + j_idx] |= 1 << rooms[k_idx].id;
+                    adj[j_idx*reqSize + k_idx] |= rooms[j_idx].id;
+                    adj[k_idx*reqSize + j_idx] |= rooms[k_idx].id;
+                    std::cout << " ";
                 }
             }
         }
@@ -353,11 +355,6 @@ std::vector<std::vector<int16_t>> Generate::roomPerm(
 
     // Cycle each permutation
     do {
-        // for(int i = 0; i < (int)perm.size(); i++){
-        //     std::cout << perm[i] << ", ";
-        // }
-        // std::cout << std::endl;
-
         conns.push_back(ConnLoop(n, NConn, reqSize, sizeH, sizeW, perm, reqAdj, rooms));
         break;
     } while (std::next_permutation(perm.begin(), perm.end()));
