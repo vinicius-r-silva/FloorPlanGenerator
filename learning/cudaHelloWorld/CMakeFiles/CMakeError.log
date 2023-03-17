@@ -1,0 +1,350 @@
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ rm tmp/a_dlink.reg.c
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "tmp/CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags:  -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "/tmp/tmpxft_0000a3e9_00000000-9_CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ rm tmp/a_dlink.reg.c
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "tmp/CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags:  -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "/tmp/tmpxft_0000a3f5_00000000-9_CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+nvcc fatal   : No input files specified; use option --help for more information
+Detecting CUDA compiler ABI info failed to compile with the following output:
+Change Dir: /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_b0faf/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_b0faf.dir/build.make CMakeFiles/cmTC_b0faf.dir/build
+gmake[1]: Entering directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_b0faf.dir/CMakeCUDACompilerABI.cu.o
+/usr/lib/cuda/bin/nvcc      -c /usr/share/cmake-3.22/Modules/CMakeCUDACompilerABI.cu -o CMakeFiles/cmTC_b0faf.dir/CMakeCUDACompilerABI.cu.o
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_b0faf.dir/build.make:78: CMakeFiles/cmTC_b0faf.dir/CMakeCUDACompilerABI.cu.o] Error 1
+gmake[1]: Leaving directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_b0faf/fast] Error 2
+
+
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_a465a/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_a465a.dir/build.make CMakeFiles/cmTC_a465a.dir/build
+gmake[1]: Entering directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_a465a.dir/main.cu.o
+/usr/lib/cuda/bin/nvcc      -c /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_a465a.dir/main.cu.o
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_a465a.dir/build.make:78: CMakeFiles/cmTC_a465a.dir/main.cu.o] Error 1
+gmake[1]: Leaving directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_a465a/fast] Error 2
+
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ rm tmp/a_dlink.reg.c
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "tmp/CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags:  -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "/tmp/tmpxft_0000c7f5_00000000-9_CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags: --keep;--keep-dir;tmp -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ rm tmp/a_dlink.reg.c
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "tmp/CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Compiling the CUDA compiler identification source file "CMakeCUDACompilerId.cu" failed.
+Compiler: /usr/lib/cuda/bin/nvcc 
+Build flags: 
+Id flags:  -v
+
+The output was:
+1
+#$ _NVVM_BRANCH_=nvvm
+#$ _SPACE_= 
+#$ _CUDART_=cudart
+#$ _HERE_=/usr/lib/cuda/bin
+#$ _THERE_=/usr/lib/cuda/bin
+#$ _TARGET_SIZE_=
+#$ _TARGET_DIR_=
+#$ _TARGET_DIR_=targets/x86_64-linux
+#$ TOP=/usr/lib/cuda/bin/..
+#$ NVVMIR_LIBRARY_DIR=/usr/lib/cuda/bin/../nvvm/libdevice
+#$ LD_LIBRARY_PATH=/usr/lib/cuda/bin/../lib:
+#$ PATH=/usr/lib/cuda/bin/../nvvm/bin:/usr/lib/cuda/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/home/ribeiro/sfdx/bin:/home/ribeiro/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/usr/lib/cuda/bin:/usr/lib/cuda/bin:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools:/home/ribeiro/Downloads/flutter/bin:/home/ribeiro/Android/Sdk/platform-tools
+#$ INCLUDES="-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"  
+#$ LIBRARIES=  "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib/stubs" "-L/usr/lib/cuda/bin/../targets/x86_64-linux/lib"
+#$ CUDAFE_FLAGS=
+#$ PTXAS_FLAGS=
+#$ gcc -D__CUDA_ARCH__=520 -E -x c++  -DCUDA_DOUBLE_MATH_FUNCTIONS -D__CUDACC__ -D__NVCC__  "-I/usr/lib/cuda/bin/../targets/x86_64-linux/include"    -D__CUDACC_VER_MAJOR__=11 -D__CUDACC_VER_MINOR__=2 -D__CUDACC_VER_BUILD__=67 -D__CUDA_API_VER_MAJOR__=11 -D__CUDA_API_VER_MINOR__=2 -include "cuda_runtime.h" -m64 "CMakeCUDACompilerId.cu" -o "/tmp/tmpxft_0000c801_00000000-9_CMakeCUDACompilerId.cpp1.ii" 
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+# --error 0x1 --
+
+
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is NVIDIA using "" did not match "nvcc: NVIDIA \(R\) Cuda compiler driver":
+nvcc fatal   : No input files specified; use option --help for more information
+Checking whether the CUDA compiler is Clang using "" did not match "(clang version)":
+nvcc fatal   : No input files specified; use option --help for more information
+Detecting CUDA compiler ABI info failed to compile with the following output:
+Change Dir: /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_5fb9c/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_5fb9c.dir/build.make CMakeFiles/cmTC_5fb9c.dir/build
+gmake[1]: Entering directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_5fb9c.dir/CMakeCUDACompilerABI.cu.o
+/usr/lib/cuda/bin/nvcc      -c /usr/share/cmake-3.22/Modules/CMakeCUDACompilerABI.cu -o CMakeFiles/cmTC_5fb9c.dir/CMakeCUDACompilerABI.cu.o
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_5fb9c.dir/build.make:78: CMakeFiles/cmTC_5fb9c.dir/CMakeCUDACompilerABI.cu.o] Error 1
+gmake[1]: Leaving directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_5fb9c/fast] Error 2
+
+
+
+
+Determining if the CUDA compiler works failed with the following output:
+Change Dir: /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_c1cf0/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_c1cf0.dir/build.make CMakeFiles/cmTC_c1cf0.dir/build
+gmake[1]: Entering directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+Building CUDA object CMakeFiles/cmTC_c1cf0.dir/main.cu.o
+/usr/lib/cuda/bin/nvcc      -c /home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp/main.cu -o CMakeFiles/cmTC_c1cf0.dir/main.cu.o
+In file included from /usr/lib/cuda/bin/../targets/x86_64-linux/include/cuda_runtime.h:83,
+                 from <command-line>:
+/usr/lib/cuda/bin/../targets/x86_64-linux/include/crt/host_config.h:139:2: error: #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+  139 | #error -- unsupported GNU version! gcc versions later than 10 are not supported! The nvcc flag '-allow-unsupported-compiler' can be used to override this version check; however, using an unsupported host compiler may cause compilation failure or incorrect run time execution. Use at your own risk.
+      |  ^~~~~
+gmake[1]: *** [CMakeFiles/cmTC_c1cf0.dir/build.make:78: CMakeFiles/cmTC_c1cf0.dir/main.cu.o] Error 1
+gmake[1]: Leaving directory '/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/CMakeTmp'
+gmake: *** [Makefile:127: cmTC_c1cf0/fast] Error 2
+
+
+
