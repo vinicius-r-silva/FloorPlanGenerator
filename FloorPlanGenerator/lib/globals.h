@@ -19,7 +19,7 @@
  */
 // #define OPENCV_ENABLED
 
-// #define MULTI_THREAD
+#define MULTI_THREAD
 
 // #define N_ROOMS 3
 

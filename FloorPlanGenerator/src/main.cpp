@@ -55,7 +55,7 @@ void generateData(const int n) {
     std::vector<int> req(NReqs, 0);
 
 #ifdef MULTI_THREAD
-    #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs)
+    #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs, allReqCount, allReq, reqSize, n)
 #endif
     // for(int i = 0; i < NCombs; i++)
     for(int i = 1; i < NCombs; i++)
