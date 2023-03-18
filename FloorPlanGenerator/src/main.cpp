@@ -76,7 +76,7 @@ void generateData(const int n) {
 
         // hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
         Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
-        break;
+        // break;
     }
 }
 

@@ -90,7 +90,8 @@ void writeRoom(RoomConfig room, std::ofstream& file){
 void printRoom(RoomConfig room){
     std::cout << room.id << " " << room.name << ": H (" << room.minH << " - " << room.maxH << 
     "), : W (" << room.minW << " - " << room.maxW << "), Ext: " << room.numExtensions << 
-    ", Step: " << room.step << ", Depend: " << room.depend << ", RPlannyId: " << room.rPlannyId  <<  std::endl;
+    ", Step: " << room.step << ", Depend: " << room.depend << ", familyIds: " << room.familyIds << 
+    ", RPlannyId: " << room.rPlannyId  <<", RPlannyId: " << room.rPlannyId  <<  std::endl;
     
     // ", nameId: " << room.nameId << std::endl;
 }
@@ -297,6 +298,20 @@ void saveReqAdj(std::string projectPath, std::map<int, int> mapRplannyId, RoomCo
             else
                 adjReqMatrix[i][j] = REQ_NONE;
         }
+    }
+
+    for(int i = 0; i < adjReqSize; i++){
+        if(adjReqMatrix[i][i] == REQ_NONE)
+            continue;
+
+        int count = 0;
+        for(int j = 0; j < n; j++){
+            if(rooms[j].rPlannyId == i)
+                count++;
+        }
+
+        if(count < 2)
+            adjReqMatrix[i][i] = REQ_NONE;
     }
     
     std::cout << "adjReqMatrix" << std::endl;
@@ -553,7 +568,7 @@ void normalConfig(std::string projectPath){
     for(int i = 0; i < numOfRooms; i++){
         const int key = rooms[i].rPlannyId;
         int val = 0;
-        if(mapRIdToRooms.count(key) == 0)
+        if(mapRIdToRooms.count(key) != 0)
             val = mapRIdToRooms[key];
 
         val |= rooms[i].id;

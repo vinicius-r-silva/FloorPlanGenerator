@@ -83,12 +83,14 @@ inline bool Generate::check_overlap(int a_left, int a_right, int a_up, int a_dow
 inline bool Generate::check_adjacency(int a_left, int a_right, int a_up, int a_down, int b_left, int b_right, int b_up, int b_down){  
     if((a_down == b_up || a_up == b_down) &&
         ((a_right > b_left && a_right <= b_right) ||
-        (a_left < b_right && a_left >= b_left)))
+        (a_left < b_right && a_left >= b_left) ||
+        (a_left <= b_left && a_right >= b_right)))
             return true;   
 
     if((a_left == b_right || a_right == b_left) &&
         ((a_down > b_up && a_down <= b_down) ||
-        (a_up < b_down && a_up >= b_up)))
+        (a_up < b_down && a_up >= b_up) ||
+        (a_up <= b_up && a_down >= b_down)))
             return true; 
 
     return false;
@@ -151,14 +153,14 @@ std::vector<std::vector<std::vector<int16_t>>> Generate::SizeLoop(
     
     // iterate over each room size combination
     do {
-        std::cout << "#########################" << std::endl;
-        for(int i = 0; i < n; i++){
-            std::cout << rooms[i].name << ": " << sizeW[i] << ", " << sizeH[i] << std::endl;
-        }
-        std::cout << "#########################" << std::endl << std::endl << std::endl;
+        // std::cout << "#########################" << std::endl;
+        // for(int i = 0; i < n; i++){
+        //     std::cout << rooms[i].name << ": " << sizeW[i] << ", " << sizeH[i] << std::endl;
+        // }
+        // std::cout << "#########################" << std::endl << std::endl << std::endl;
 
         perms.push_back(roomPerm(n, reqSize, &sizeH[0], &sizeW[0], allReq, rooms));
-        break;
+        // break;
     } while(Iter::nextRoomSize(rooms, &sizeH[0], &sizeW[0]));
 
     return perms;
@@ -197,10 +199,11 @@ std::vector<int16_t> Generate::ConnLoop(
     // ptsX.reserve(n * 2) ;
     // ptsY.reserve(n * 2) ;
         
-    std::cout << std::endl << std::endl << std::endl << "perm: ";
-    for(int j = 0; j < n; j++)
-        std::cout << order[j] << ", ";
-    std::cout << std::endl;
+    // std::cout << std::endl << std::endl << std::endl << "perm: ";
+    // std::cout << "perm: ";
+    // for(int j = 0; j < n; j++)
+    //     std::cout << order[j] << ", ";
+    // std::cout << std::endl;
 
     for(int i = 0; i < NConn; i++){
 
@@ -225,7 +228,7 @@ std::vector<int16_t> Generate::ConnLoop(
             const int pos = (n - j - 1) * 4;
             const int srcConn = (i >> pos) & 0b11;
             const int dstConn = ((i >> (pos + 2)) & 0b11);
-            std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
+            // std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
             if(srcConn == dstConn){
                 sucess = false;
                 const int diff = n - j - 1;
@@ -257,7 +260,10 @@ std::vector<int16_t> Generate::ConnLoop(
             const int dstIndex = j*2;
             ptsX[dstIndex] = dstX; ptsY[dstIndex] = dstY;
             ptsX[dstIndex + 1] = dstX + dstW; ptsY[dstIndex + 1] = dstY + dstH;
-            
+
+            // std::cout << "srcH: " << srcH << ", srcW: " << srcW << std::endl;
+            // std::cout << "dstH: " << dstH << ", dstW: " << dstW << std::endl << std::endl;
+
             dstX = ptsX[dstIndex];
             dstY = ptsY[dstIndex];
             srcH = dstH;
@@ -280,9 +286,10 @@ std::vector<int16_t> Generate::ConnLoop(
                     ptsX[dstIndex], ptsX[dstIndex + 1], ptsY[dstIndex], ptsY[dstIndex + 1]))
                 {
                     const int k_idx = order[k];
-                    adj[j_idx*reqSize + k_idx] |= rooms[j_idx].id;
-                    adj[k_idx*reqSize + j_idx] |= rooms[k_idx].id;
-                    std::cout << " ";
+                    const int idx_1 = rooms[j_idx].rPlannyId;
+                    const int idx_2 = rooms[k_idx].rPlannyId;
+                    adj[idx_1*reqSize + idx_2] |= rooms[j_idx].id;
+                    adj[idx_2*reqSize + idx_1] |= rooms[k_idx].id;
                 }
             }
         }
@@ -290,18 +297,32 @@ std::vector<int16_t> Generate::ConnLoop(
         if(sucess){
             // result.insert(result.end(), ptsX.begin(), ptsX.end());
             // result.insert(result.end(), ptsY.begin(), ptsY.end());
+
             int pos = 0;
             int sucessReq = 1;
-            for(int j = 0; j < reqSize; j++ && sucessReq){
-                for(int k = 0; k < reqSize; k++ && sucessReq){
+            for(int j = 0; j < n && sucessReq; j++){
+                for(int k = 0; k < n && sucessReq; k++){
+                    pos = rooms[j].rPlannyId * reqSize + rooms[k].rPlannyId ;
                     if(reqAdj[pos] == REQ_ALL)
-                        sucessReq = rooms[j].familyIds & adj[pos];
+                        sucessReq = rooms[j].familyIds == adj[pos];
                     if(reqAdj[pos] == REQ_ANY)
-                        sucessReq = rooms[j].familyIds | adj[pos];
-
-                    pos++;
+                        sucessReq = rooms[j].familyIds & adj[pos];
                 }
             }
+
+            // for(int j = 0; j < reqSize && sucessReq; j++){
+            //     for(int k = 0; k < reqSize && sucessReq; k++){
+            //         std::cout << "j: " << j << std::endl;
+            //         if(j > 2)
+            //             while(true);
+            //         if(reqAdj[pos] == REQ_ALL)
+            //             sucessReq = rooms[j].familyIds == adj[pos];
+            //         if(reqAdj[pos] == REQ_ANY)
+            //             sucessReq = rooms[j].familyIds & adj[pos];
+
+            //         pos++;
+            //     }
+            // }
 
             if(sucessReq){
                 for(int j = 0; j < n; j++){
@@ -356,7 +377,7 @@ std::vector<std::vector<int16_t>> Generate::roomPerm(
     // Cycle each permutation
     do {
         conns.push_back(ConnLoop(n, NConn, reqSize, sizeH, sizeW, perm, reqAdj, rooms));
-        break;
+        // break;
     } while (std::next_permutation(perm.begin(), perm.end()));
 
     return conns;
