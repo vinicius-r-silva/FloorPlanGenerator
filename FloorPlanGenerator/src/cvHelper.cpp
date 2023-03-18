@@ -65,6 +65,8 @@ void CVHelper::showLayout(const std::vector<int16_t> &ptsX, const std::vector<in
     cv::imshow("tela", fundo);
     cv::waitKey(1);
     while(cv::waitKey(30) != 27);
+#else
+    std::cout << ptsX[0] << ptsY[0] << std::endl;
 #endif
 }
 
@@ -126,5 +128,8 @@ int CVHelper::showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector
         }
     }
     // while(cv::waitKey(30) != 27);
+#else
+    std::cout << ptsX[0] << ptsY[0] << std::endl;
+    return 1;
 #endif
 }

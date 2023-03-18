@@ -63,19 +63,20 @@ void generateData(const int n) {
         const int tid = omp_get_thread_num();
         printf("Thread: %d, i: %d\n", tid, i);
 
-        for(std::size_t k = 0; k < allCombs[i].size(); k++){
-           printf("%s, ", allCombs[i][k].name);
-        }
-        printf("\n");
-        for(std::size_t k = 0; k < allCombs[i].size(); k++){
-            std::cout << allCombs[i][k].name << ",  ";
-        }
-        std::cout << std::endl;
+        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
+        //    printf("%s, ", allCombs[i][k].name);
+        // }
+        // printf("\n");
+        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
+        //     std::cout << allCombs[i][k].name << ",  ";
+        // }
+        // std::cout << std::endl;
         
         // std::cout << "i = " << i << std::endl;
 
         // hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
-        Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
+        hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
+        // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
         // break;
     }
 }

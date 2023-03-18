@@ -71,7 +71,7 @@ public:
     std::vector<int> getReqAdjValues();
     // boost::numeric::ublas::matrix<int> getReqAdjValues();
 
-    void saveResult(const std::vector<std::vector<std::vector<int16_t>>>& res, const std::vector<RoomConfig>& rooms, const int n);
+    void saveResult(const std::vector<int16_t>& res, const std::vector<RoomConfig>& rooms, const int n);
 
     std::vector<int> getSavedCombinations();
     

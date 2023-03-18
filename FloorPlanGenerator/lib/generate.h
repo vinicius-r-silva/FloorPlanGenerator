@@ -54,7 +54,7 @@ public:
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return vector of vector of vector of layout combination. result[a][b][c] = d, a -> room size id, b -> permutation id, d -> layout points
     */
-    static std::vector<std::vector<std::vector<int16_t>>> SizeLoop(
+    static std::vector<int16_t> SizeLoop(
         const int reqSize,
         std::vector<int> allReq,
         std::vector<int> allReqCount,
@@ -72,7 +72,7 @@ public:
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return vector with layout points for every successful connection (n*4 int per layout)
     */
-    static std::vector<int16_t> ConnLoop(
+    static void ConnLoop(
         const int n, 
         const int NConn, 
         const int reqSize,
@@ -80,6 +80,7 @@ public:
         const int16_t *sizeW, 
         const std::vector<int>& order, 
         const std::vector<int>& reqAdj,
+        std::vector<int16_t>& result,
         const std::vector<RoomConfig>& rooms);
 
     /*!
@@ -92,12 +93,13 @@ public:
         @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
         @return  vector of vector of layout combination. result[a][b] = c, a -> permutation id, c -> layout points
     */
-    static std::vector<std::vector<int16_t>> roomPerm(
+    static void roomPerm(
         const int n, 
         const int reqSize,
         const int16_t *sizeH, 
         const int16_t *sizeW, 
         const std::vector<int>& reqAdj,
+        std::vector<int16_t>& result,
         const std::vector<RoomConfig>& rooms);
 
 };
