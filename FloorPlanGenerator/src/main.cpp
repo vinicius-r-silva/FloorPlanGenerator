@@ -74,7 +74,6 @@ void generateData(const int n) {
         
         // std::cout << "i = " << i << std::endl;
 
-        // hdd.saveResult(Generate::SizeLoop(allCombs[i], adjValues), allCombs[i], n);
         hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
         // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
         // break;

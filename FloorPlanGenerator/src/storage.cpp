@@ -185,13 +185,12 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
     std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
     std::ofstream outputFile(path, std::ios::out | std::ios::binary);
 
-    std::cout << "path: " << path << std::endl;
 
-    const int qtdLayouts = layouts.size();
+    const int qtdPts = layouts.size();
     const int pageSize = 4096;
     const int vectorSize = pageSize / sizeof(layouts[0]);
     std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
-    for(int i = 0; i < qtdLayouts; i++){
+    for(int i = 0; i < qtdPts; i++){
         sizesFile.push_back(layouts[i]);
 
         if(i % vectorSize == vectorSize - 1){
@@ -201,6 +200,8 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
             sizesFile.reserve(vectorSize);
         }
     }
+
+    std::cout << qtdPts << " pts (" << qtdPts / (n*4) << " layouts) at path: " << path << std::endl;
 
     // size_t sizeElem = sizeof(layouts[0]);
     // const int sizeLayout = n * sizeElem;
