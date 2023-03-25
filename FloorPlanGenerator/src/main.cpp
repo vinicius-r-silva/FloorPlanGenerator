@@ -128,6 +128,18 @@ void combineDataGPU(){
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
+        std::cout << "setupsA (" << fileComb[0] << "): ";
+        for(RoomConfig room : setupsA){
+            // Log.print(room);
+            std::cout << room.name << ", ";
+        }
+        std::cout << std::endl << "setupsB (" << fileComb[1] << "): ";
+        for(RoomConfig room : setupsB){
+            // Log.print(room);
+            std::cout << room.name << ", ";
+        }
+        std::cout << std::endl;
+
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         gpuHandler::createPts(layout_a, layout_b);
         break;
@@ -139,9 +151,9 @@ void combineDataGPU(){
     @return if there are no erros returns 0 
 */
 int main(){
-    generateData(3);
+    // generateData(3);
     // combineData();
-    // combineDataGPU();
+    combineDataGPU();
     // std::vector<int> a;
     // Cuda_Combine::launchGPU(a, a, 0, 0);
     return 0;

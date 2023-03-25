@@ -25,7 +25,8 @@ Storage::Storage(){
     
 /** 
  * @brief get the project directory
- * @details returns the current executable directory until the first appearence of the folder "FloorPlanGenerator"
+ * @details updates the private var "_projectDir" with the current project directory.
+ * Iterates over the current executable directory until the first appearence of the folder "FloorPlanGenerator"
  * @return None
 */
 void Storage::updateProjectDir(){
