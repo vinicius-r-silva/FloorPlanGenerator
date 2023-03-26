@@ -100,188 +100,190 @@
 __global__ 
 void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int8_t *d_nbr, const int qtd_a, const int qtd_b, const int a_offset) {
 	const int k = blockIdx.z + 1 + blockIdx.z/4;
-	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A;
-	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x;
+	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A;  //A layout index, just one per block
+	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //B layout index
 	// int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_PTS;
 	int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
-	const int nbr_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_NBR;
+	// const int nbr_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_NBR;
 
-	if(b_idx >= qtd_b || blockIdx.y >= qtd_a)
-		return;
+	printf("Hello World. \n\t blockDim.x: %d, blockDim.y: %d, blockDim.z: %d\n\t blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d\n\t threadIdx.x: %d, threadIdx.y: %d, threadIdx.z: %d\n\t k: %d, a_idx: %d, b_idx: %d\n", blockDim.x, blockDim.y, blockDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, k, a_idx, b_idx);
 
-	__shared__ int16_t a[__SIZE_A];
-	if(threadIdx.x < __SIZE_A){
-		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
-	}
-  	__syncthreads();
+	// if(b_idx >= qtd_b || blockIdx.y >= qtd_a)
+	// 	return;
 
-	int16_t b[__SIZE_B];
-	for(int i = 0; i < __SIZE_B; i++){
-		b[i] = d_b[b_idx*__SIZE_B + i];
-	}
-
-	// TODO: doenst have to be 9, only 3 + 2 + 1
-	int8_t Neighbors[__SIZE_NBR];
-	
-	const int srcConn = k & 0b11;
-	const int dstConn = (k >> 2) & 0b11;
-	
-	int dst = 0;
-	int src = 0;
-	if(dstConn == 0 || dstConn == 2)
-		dst = b[0];
-	else 
-		dst = b[2];
-
-	if(srcConn == 0 || srcConn == 2)
-		src = a[__SIZE_A - 4];
-	else 
-		src = a[__SIZE_A - 2];
-
-	const int diffX = src - dst;
-	for(int i = 0; i < __SIZE_B; i+=2){
-		b[i] += diffX;
-	}
-
-	if(dstConn == 0 || dstConn == 1)
-		dst = b[1];
-	else 
-		dst = b[3];
-		
-	if(srcConn == 0 || srcConn == 1)
-		src = a[__SIZE_A - 3];
-	else 
-		src = a[__SIZE_A - 1];
-
-	const int diffY = src - dst;
-	for(int i = 1; i < __SIZE_B; i+=2){
-		b[i] += diffY;
-	}
-
-	// for(int i = 0; i < __SIZE_A; i++){
-	// 	d_pts[res_idx + i] = a[i];
+	// __shared__ int16_t a[__SIZE_A];
+	// if(threadIdx.x < __SIZE_A){
+	// 	a[threadIdx.x] = d_a[a_idx + threadIdx.x];
 	// }
+  	// __syncthreads();
 
-	int16_t minH = 5000, maxH = -5000;
-	int16_t minW = 5000, maxW = -5000;
-	for(int i = 0; i < __SIZE_B; i+=4){
-		if(b[i + __UP] < minH)
-			maxH = b[i + __UP];
-		if(b[i + __DOWN] > maxH)
-			maxH = b[i + __DOWN];
-		if(b[i] < minW)
-			minW = b[i];
-		if(b[i + __RIGHT] > maxW)
-			maxW = b[i + __RIGHT];
-	}
-
-	// res_idx += __SIZE_A;
+	// int16_t b[__SIZE_B];
 	// for(int i = 0; i < __SIZE_B; i++){
-	// 	d_pts[res_idx + i] = b[i];
+	// 	b[i] = d_b[b_idx*__SIZE_B + i];
 	// }
 
-	//left, up, right, down
-	int8_t notOverlap = 1;
-	for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
-		const int a_left = a[i];
-		const int a_up = a[i + __UP];
-		const int a_down = a[i + __DOWN];
-		const int a_right = a[i + __RIGHT];
+	// // TODO: doenst have to be 9, only 3 + 2 + 1
+	// int8_t Neighbors[__SIZE_NBR];
+	
+	// const int srcConn = k & 0b11;
+	// const int dstConn = (k >> 2) & 0b11;
+	
+	// int dst = 0;
+	// int src = 0;
+	// if(dstConn == 0 || dstConn == 2)
+	// 	dst = b[0];
+	// else 
+	// 	dst = b[2];
 
-		if(a_up < minH)
-			maxH = a_up;
-		if(a_down > maxH)
-			maxH = a_down;
-		if(a_left < minW)
-			minW = a_left;
-		if(a_right > maxW)
-			maxW = a_right;
+	// if(srcConn == 0 || srcConn == 2)
+	// 	src = a[__SIZE_A - 4];
+	// else 
+	// 	src = a[__SIZE_A - 2];
 
-		for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
-			const int b_left = b[j];
-			const int b_up = b[j + __UP];
-			const int b_down = b[j + __DOWN];
-			const int b_right = b[j + __RIGHT];
-			// if(idx > 27){
-			// 	printf("idx: %d, i: %d, j: %d,\ta_down: %d, a_up: %d, a_left: %d, a_right: %d, b_down: %d, b_up: %d, b_left: %d, b_right: %d\n",
-			// 	idx, i, j,
-			// 	pts[i + __DOWN], pts[i + __UP], pts[i], pts[i + __RIGHT],
-			// 	pts[j + __DOWN], pts[j + __UP], pts[j], pts[j + __RIGHT]);
-			// }
+	// const int diffX = src - dst;
+	// for(int i = 0; i < __SIZE_B; i+=2){
+	// 	b[i] += diffX;
+	// }
 
-			if(((a_down > b_up && a_down <= b_down) ||
-				(a_up  >= b_up && a_up < b_down)) &&
-				((a_right > b_left && a_right <= b_right) ||
-				(a_left  >= b_left && a_left  <  b_right) ||
-				(a_left  <= b_left && a_right >= b_right))){
-					notOverlap = 0;
-			}
+	// if(dstConn == 0 || dstConn == 1)
+	// 	dst = b[1];
+	// else 
+	// 	dst = b[3];
+		
+	// if(srcConn == 0 || srcConn == 1)
+	// 	src = a[__SIZE_A - 3];
+	// else 
+	// 	src = a[__SIZE_A - 1];
+
+	// const int diffY = src - dst;
+	// for(int i = 1; i < __SIZE_B; i+=2){
+	// 	b[i] += diffY;
+	// }
+
+	// // for(int i = 0; i < __SIZE_A; i++){
+	// // 	d_pts[res_idx + i] = a[i];
+	// // }
+
+	// int16_t minH = 5000, maxH = -5000;
+	// int16_t minW = 5000, maxW = -5000;
+	// for(int i = 0; i < __SIZE_B; i+=4){
+	// 	if(b[i + __UP] < minH)
+	// 		maxH = b[i + __UP];
+	// 	if(b[i + __DOWN] > maxH)
+	// 		maxH = b[i + __DOWN];
+	// 	if(b[i] < minW)
+	// 		minW = b[i];
+	// 	if(b[i + __RIGHT] > maxW)
+	// 		maxW = b[i + __RIGHT];
+	// }
+
+	// // res_idx += __SIZE_A;
+	// // for(int i = 0; i < __SIZE_B; i++){
+	// // 	d_pts[res_idx + i] = b[i];
+	// // }
+
+	// //left, up, right, down
+	// int8_t notOverlap = 1;
+	// for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
+	// 	const int a_left = a[i];
+	// 	const int a_up = a[i + __UP];
+	// 	const int a_down = a[i + __DOWN];
+	// 	const int a_right = a[i + __RIGHT];
+
+	// 	if(a_up < minH)
+	// 		maxH = a_up;
+	// 	if(a_down > maxH)
+	// 		maxH = a_down;
+	// 	if(a_left < minW)
+	// 		minW = a_left;
+	// 	if(a_right > maxW)
+	// 		maxW = a_right;
+
+	// 	for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
+	// 		const int b_left = b[j];
+	// 		const int b_up = b[j + __UP];
+	// 		const int b_down = b[j + __DOWN];
+	// 		const int b_right = b[j + __RIGHT];
+	// 		// if(idx > 27){
+	// 		// 	printf("idx: %d, i: %d, j: %d,\ta_down: %d, a_up: %d, a_left: %d, a_right: %d, b_down: %d, b_up: %d, b_left: %d, b_right: %d\n",
+	// 		// 	idx, i, j,
+	// 		// 	pts[i + __DOWN], pts[i + __UP], pts[i], pts[i + __RIGHT],
+	// 		// 	pts[j + __DOWN], pts[j + __UP], pts[j], pts[j + __RIGHT]);
+	// 		// }
+
+	// 		if(((a_down > b_up && a_down <= b_down) ||
+	// 			(a_up  >= b_up && a_up < b_down)) &&
+	// 			((a_right > b_left && a_right <= b_right) ||
+	// 			(a_left  >= b_left && a_left  <  b_right) ||
+	// 			(a_left  <= b_left && a_right >= b_right))){
+	// 				notOverlap = 0;
+	// 		}
 
 			
-			else if(((b_down > a_up && b_down <= a_down) ||
-				(b_up >= a_up && b_up < a_down)) &&
-				((b_right > a_left && b_right <= a_right) ||
-				(b_left  >= a_left && b_left  <  a_right) ||
-				(b_left  <= a_left && b_right >= a_right))){
-					notOverlap = 0;
-			}
+	// 		else if(((b_down > a_up && b_down <= a_down) ||
+	// 			(b_up >= a_up && b_up < a_down)) &&
+	// 			((b_right > a_left && b_right <= a_right) ||
+	// 			(b_left  >= a_left && b_left  <  a_right) ||
+	// 			(b_left  <= a_left && b_right >= a_right))){
+	// 				notOverlap = 0;
+	// 		}
 
 			
-			else if(((a_right > b_left && a_right <= b_right) ||
-				(a_left >= b_left && a_left < b_right)) &&
-				((a_down > b_up && a_down <= b_down) ||
-				(a_up  >= b_up && a_up   <  b_down) ||
-				(a_up  <= b_up && a_down >= b_down))){
-					notOverlap = 0;
-			}
+	// 		else if(((a_right > b_left && a_right <= b_right) ||
+	// 			(a_left >= b_left && a_left < b_right)) &&
+	// 			((a_down > b_up && a_down <= b_down) ||
+	// 			(a_up  >= b_up && a_up   <  b_down) ||
+	// 			(a_up  <= b_up && a_down >= b_down))){
+	// 				notOverlap = 0;
+	// 		}
 
 			
-			else if(((b_right > a_left && b_right <= a_right) ||
-				(b_left >= a_left && b_left < a_right)) &&
-				((b_down > a_up && b_down <= a_down) ||
-				(b_up  >= a_up && b_up   <  a_down) ||
-				(b_up  <= a_up && b_down >= a_down))){
-					notOverlap = 0;
-			}
+	// 		else if(((b_right > a_left && b_right <= a_right) ||
+	// 			(b_left >= a_left && b_left < a_right)) &&
+	// 			((b_down > a_up && b_down <= a_down) ||
+	// 			(b_up  >= a_up && b_up   <  a_down) ||
+	// 			(b_up  <= a_up && b_down >= a_down))){
+	// 				notOverlap = 0;
+	// 		}
 
-			// if(!notOverlap)
-			// 	break;
+	// 		// if(!notOverlap)
+	// 		// 	break;
 
-			const int i_id = i / 4;
-			const int j_id = j / 4;
-			Neighbors[i_id * __N_B + j_id] = 0;
-			if((a_down == b_up || a_up == b_down) && 
-			  ((a_left > b_left && a_left < b_right) || 
-			   (b_left > a_left && b_left < a_right) ||
-			   (a_right < b_right && a_right > b_left) || 
-			   (b_right < a_right && b_right > a_left)))
-					Neighbors[i_id * __N_B + j_id] = 1;
+	// 		const int i_id = i / 4;
+	// 		const int j_id = j / 4;
+	// 		Neighbors[i_id * __N_B + j_id] = 0;
+	// 		if((a_down == b_up || a_up == b_down) && 
+	// 		  ((a_left > b_left && a_left < b_right) || 
+	// 		   (b_left > a_left && b_left < a_right) ||
+	// 		   (a_right < b_right && a_right > b_left) || 
+	// 		   (b_right < a_right && b_right > a_left)))
+	// 				Neighbors[i_id * __N_B + j_id] = 1;
 
-			if((a_left == b_right || a_right == b_left) && 
-			  ((a_up > b_up && a_up < b_down) || 
-			   (b_up > a_up && b_up < a_down) ||
-			   (a_down < b_down && a_down > b_up) || 
-			   (b_down < a_down && b_down > a_up)))
-					Neighbors[i_id * __N_B + j_id] = 1;
+	// 		if((a_left == b_right || a_right == b_left) && 
+	// 		  ((a_up > b_up && a_up < b_down) || 
+	// 		   (b_up > a_up && b_up < a_down) ||
+	// 		   (a_down < b_down && a_down > b_up) || 
+	// 		   (b_down < a_down && b_down > a_up)))
+	// 				Neighbors[i_id * __N_B + j_id] = 1;
 
-		}
-	}
+	// 	}
+	// }
 
-	d_res[res_idx] = notOverlap - 1;
-	if(!notOverlap){
-		return;
-	}
+	// d_res[res_idx] = notOverlap - 1;
+	// if(!notOverlap){
+	// 	return;
+	// }
 
-	d_res[res_idx + 1] = maxH;
-	d_res[res_idx + 2] = maxW;
-	d_res[res_idx + 3] = minH;
-	d_res[res_idx + 4] = minW;
+	// d_res[res_idx + 1] = maxH;
+	// d_res[res_idx + 2] = maxW;
+	// d_res[res_idx + 3] = minH;
+	// d_res[res_idx + 4] = minW;
 
 	// for(int i = 0; i < __SIZE_NBR; i++){
 	// 	d_nbr[i + nbr_idx] = Neighbors[i];
 	// }
-	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d\n", a_idx, b_idx, res_idx, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x);
-	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d,\tdiffX: %d,\tdiffY: %d,\ta[0]: %d,\ta[1]: %d\n", a_idx, b_idx, res_idx - __SIZE_A, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, diffX, diffY, a[0], a[1]);
+	// // printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d\n", a_idx, b_idx, res_idx, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x);
+	// // printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d,\tdiffX: %d,\tdiffY: %d,\ta[0]: %d,\ta[1]: %d\n", a_idx, b_idx, res_idx - __SIZE_A, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, diffX, diffY, a[0], a[1]);
 }
 
 // __global__ 
