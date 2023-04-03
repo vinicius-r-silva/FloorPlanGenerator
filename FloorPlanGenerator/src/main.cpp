@@ -151,9 +151,9 @@ void combineDataGPU(){
     @return if there are no erros returns 0 
 */
 int main(){
-    // generateData(3);
+    generateData(3);
     // combineData();
-    combineDataGPU();
+    // combineDataGPU();
     // std::vector<int> a;
     // Cuda_Combine::launchGPU(a, a, 0, 0);
     return 0;

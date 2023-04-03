@@ -133,3 +133,12 @@ int CVHelper::showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector
     return 1;
 #endif
 }
+
+
+int CVHelper::showLayoutMove(const std::vector<int16_t> &layouts, const int n){
+#ifdef OPENCV_ENABLED
+#else
+    std::cout << layouts[0] << n << std::endl;
+    return 1;
+#endif
+}

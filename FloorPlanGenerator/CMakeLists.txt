@@ -4,6 +4,7 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 find_package(CUDA QUIET REQUIRED)
 
+# set( CMAKE_VERBOSE_MAKEFILE on )
 set(CMAKE_CXX_STANDARD 20)
 find_package(OpenMP)
 if (OPENMP_FOUND)

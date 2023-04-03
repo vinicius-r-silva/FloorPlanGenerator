@@ -15,8 +15,8 @@
 #define __SIZE_A 12		// n_a * 4
 #define __SIZE_B 12		// n_b * 4
 #define __SIZE_PTS 24	// n_pts * 4
-#define __SIZE_RES 5	// score, maxH, minH, maxW, minW
-#define __SIZE_NBR 9	// __SIZE_A * __SIZE_B conns
+#define __SIZE_RES 5	// score, maxH, minH, maxW, minW //Add Area later
+// #define __SIZE_NBR 9	// __SIZE_A * __SIZE_B
 
 #define __LEFT 0
 #define __UP 1
@@ -98,192 +98,169 @@
 // dim3 threads(num_threads, 1, 1);
 
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int8_t *d_nbr, const int qtd_a, const int qtd_b, const int a_offset) {
-	const int k = blockIdx.z + 1 + blockIdx.z/4;
-	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A;  //A layout index, just one per block
-	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //B layout index
-	// int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_PTS;
-	int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
+void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, const int qtd_b, const int a_offset) {
+	// Block and thread indexes
+	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), that iterates over Nconn connections (blockIdx.z)
+	// Each threadIdx.x represents a Layout B design inside the blockIdx.x block 
+
+	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
+	const int k = blockIdx.z + 1 + blockIdx.z/4; 
+	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A; //layout A index
+	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index (without * __SIZE_B)
+	const int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
 	// const int nbr_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_NBR;
 
-	printf("Hello World. \n\t blockDim.x: %d, blockDim.y: %d, blockDim.z: %d\n\t blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d\n\t threadIdx.x: %d, threadIdx.y: %d, threadIdx.z: %d\n\t k: %d, a_idx: %d, b_idx: %d\n", blockDim.x, blockDim.y, blockDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z, k, a_idx, b_idx);
+	// Check bounds
+	if(b_idx >= qtd_b || blockIdx.y >= qtd_a)
+		return;
 
-	// if(b_idx >= qtd_b || blockIdx.y >= qtd_a)
-	// 	return;
+	// printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
+	// printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
 
-	// __shared__ int16_t a[__SIZE_A];
-	// if(threadIdx.x < __SIZE_A){
-	// 	a[threadIdx.x] = d_a[a_idx + threadIdx.x];
-	// }
-  	// __syncthreads();
+	// Load A into shared memory
+	__shared__ int16_t a[__SIZE_A];
+	if(threadIdx.x < __SIZE_A){
+		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
+	}
+  	__syncthreads();
 
-	// int16_t b[__SIZE_B];
-	// for(int i = 0; i < __SIZE_B; i++){
-	// 	b[i] = d_b[b_idx*__SIZE_B + i];
-	// }
-
-	// // TODO: doenst have to be 9, only 3 + 2 + 1
-	// int8_t Neighbors[__SIZE_NBR];
+	// Load B into local memory
+	int16_t b[__SIZE_B];
+	for(int i = 0; i < __SIZE_B; i++){
+		b[i] = d_b[b_idx*__SIZE_B + i];
+	}
 	
-	// const int srcConn = k & 0b11;
-	// const int dstConn = (k >> 2) & 0b11;
+	// Extract source and destination connections from k
+	const int srcConn = k & 0b11;
+	const int dstConn = (k >> 2) & 0b11;
 	
-	// int dst = 0;
-	// int src = 0;
-	// if(dstConn == 0 || dstConn == 2)
-	// 	dst = b[0];
-	// else 
-	// 	dst = b[2];
+	// Get X axis connection points from layout A and B
+	int dst = 0;
+	int src = 0;
+	if(dstConn == 0 || dstConn == 2)
+		dst = b[0];
+	else 
+		dst = b[2];
 
-	// if(srcConn == 0 || srcConn == 2)
-	// 	src = a[__SIZE_A - 4];
-	// else 
-	// 	src = a[__SIZE_A - 2];
+	if(srcConn == 0 || srcConn == 2)
+		src = a[__SIZE_A - 4];
+	else 
+		src = a[__SIZE_A - 2];
 
-	// const int diffX = src - dst;
-	// for(int i = 0; i < __SIZE_B; i+=2){
-	// 	b[i] += diffX;
-	// }
+	//Move layout B in the X axis by diffX points
+	const int diffX = src - dst;
+	for(int i = 0; i < __SIZE_B; i+=2){
+		b[i] += diffX;
+	}
 
-	// if(dstConn == 0 || dstConn == 1)
-	// 	dst = b[1];
-	// else 
-	// 	dst = b[3];
+	// Get Y axis connection points from layout A and B
+	if(dstConn == 0 || dstConn == 1)
+		dst = b[1];
+	else 
+		dst = b[3];
 		
-	// if(srcConn == 0 || srcConn == 1)
-	// 	src = a[__SIZE_A - 3];
-	// else 
-	// 	src = a[__SIZE_A - 1];
+	if(srcConn == 0 || srcConn == 1)
+		src = a[__SIZE_A - 3];
+	else 
+		src = a[__SIZE_A - 1];
 
-	// const int diffY = src - dst;
-	// for(int i = 1; i < __SIZE_B; i+=2){
-	// 	b[i] += diffY;
-	// }
+	//Move layout B in the Y axis by diffY points
+	const int diffY = src - dst;
+	for(int i = 1; i < __SIZE_B; i+=2){
+		b[i] += diffY;
+	}
 
-	// // for(int i = 0; i < __SIZE_A; i++){
-	// // 	d_pts[res_idx + i] = a[i];
-	// // }
 
-	// int16_t minH = 5000, maxH = -5000;
-	// int16_t minW = 5000, maxW = -5000;
-	// for(int i = 0; i < __SIZE_B; i+=4){
-	// 	if(b[i + __UP] < minH)
-	// 		maxH = b[i + __UP];
-	// 	if(b[i + __DOWN] > maxH)
-	// 		maxH = b[i + __DOWN];
-	// 	if(b[i] < minW)
-	// 		minW = b[i];
-	// 	if(b[i + __RIGHT] > maxW)
-	// 		maxW = b[i + __RIGHT];
-	// }
+	// Find the bounding box of B
+	int16_t minH = 5000, maxH = -5000;
+	int16_t minW = 5000, maxW = -5000;
+	for(int i = 0; i < __SIZE_B; i+=4){
+		if(b[i + __UP] < minH)
+			maxH = b[i + __UP];
+		if(b[i + __DOWN] > maxH)
+			maxH = b[i + __DOWN];
+		if(b[i] < minW)
+			minW = b[i];
+		if(b[i + __RIGHT] > maxW)
+			maxW = b[i + __RIGHT];
+	}
 
-	// // res_idx += __SIZE_A;
-	// // for(int i = 0; i < __SIZE_B; i++){
-	// // 	d_pts[res_idx + i] = b[i];
-	// // }
+	//left, up, right, down
+	// Find the bounding box of A and check overlaping
+	int8_t notOverlap = 1;
+	for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
+		const int a_left = a[i];
+		const int a_up = a[i + __UP];
+		const int a_down = a[i + __DOWN];
+		const int a_right = a[i + __RIGHT];
 
-	// //left, up, right, down
-	// int8_t notOverlap = 1;
-	// for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
-	// 	const int a_left = a[i];
-	// 	const int a_up = a[i + __UP];
-	// 	const int a_down = a[i + __DOWN];
-	// 	const int a_right = a[i + __RIGHT];
+		if(a_up < minH)
+			maxH = a_up;
+		if(a_down > maxH)
+			maxH = a_down;
+		if(a_left < minW)
+			minW = a_left;
+		if(a_right > maxW)
+			maxW = a_right;
 
-	// 	if(a_up < minH)
-	// 		maxH = a_up;
-	// 	if(a_down > maxH)
-	// 		maxH = a_down;
-	// 	if(a_left < minW)
-	// 		minW = a_left;
-	// 	if(a_right > maxW)
-	// 		maxW = a_right;
+		for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
+			const int b_left = b[j];
+			const int b_up = b[j + __UP];
+			const int b_down = b[j + __DOWN];
+			const int b_right = b[j + __RIGHT];
 
-	// 	for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
-	// 		const int b_left = b[j];
-	// 		const int b_up = b[j + __UP];
-	// 		const int b_down = b[j + __DOWN];
-	// 		const int b_right = b[j + __RIGHT];
-	// 		// if(idx > 27){
-	// 		// 	printf("idx: %d, i: %d, j: %d,\ta_down: %d, a_up: %d, a_left: %d, a_right: %d, b_down: %d, b_up: %d, b_left: %d, b_right: %d\n",
-	// 		// 	idx, i, j,
-	// 		// 	pts[i + __DOWN], pts[i + __UP], pts[i], pts[i + __RIGHT],
-	// 		// 	pts[j + __DOWN], pts[j + __UP], pts[j], pts[j + __RIGHT]);
-	// 		// }
-
-	// 		if(((a_down > b_up && a_down <= b_down) ||
-	// 			(a_up  >= b_up && a_up < b_down)) &&
-	// 			((a_right > b_left && a_right <= b_right) ||
-	// 			(a_left  >= b_left && a_left  <  b_right) ||
-	// 			(a_left  <= b_left && a_right >= b_right))){
-	// 				notOverlap = 0;
-	// 		}
+			if(((a_down > b_up && a_down <= b_down) ||
+				(a_up  >= b_up && a_up < b_down)) &&
+				((a_right > b_left && a_right <= b_right) ||
+				(a_left  >= b_left && a_left  <  b_right) ||
+				(a_left  <= b_left && a_right >= b_right))){
+					notOverlap = 0;
+			}
 
 			
-	// 		else if(((b_down > a_up && b_down <= a_down) ||
-	// 			(b_up >= a_up && b_up < a_down)) &&
-	// 			((b_right > a_left && b_right <= a_right) ||
-	// 			(b_left  >= a_left && b_left  <  a_right) ||
-	// 			(b_left  <= a_left && b_right >= a_right))){
-	// 				notOverlap = 0;
-	// 		}
+			else if(((b_down > a_up && b_down <= a_down) ||
+				(b_up >= a_up && b_up < a_down)) &&
+				((b_right > a_left && b_right <= a_right) ||
+				(b_left  >= a_left && b_left  <  a_right) ||
+				(b_left  <= a_left && b_right >= a_right))){
+					notOverlap = 0;
+			}
 
 			
-	// 		else if(((a_right > b_left && a_right <= b_right) ||
-	// 			(a_left >= b_left && a_left < b_right)) &&
-	// 			((a_down > b_up && a_down <= b_down) ||
-	// 			(a_up  >= b_up && a_up   <  b_down) ||
-	// 			(a_up  <= b_up && a_down >= b_down))){
-	// 				notOverlap = 0;
-	// 		}
+			else if(((a_right > b_left && a_right <= b_right) ||
+				(a_left >= b_left && a_left < b_right)) &&
+				((a_down > b_up && a_down <= b_down) ||
+				(a_up  >= b_up && a_up   <  b_down) ||
+				(a_up  <= b_up && a_down >= b_down))){
+					notOverlap = 0;
+			}
 
 			
-	// 		else if(((b_right > a_left && b_right <= a_right) ||
-	// 			(b_left >= a_left && b_left < a_right)) &&
-	// 			((b_down > a_up && b_down <= a_down) ||
-	// 			(b_up  >= a_up && b_up   <  a_down) ||
-	// 			(b_up  <= a_up && b_down >= a_down))){
-	// 				notOverlap = 0;
-	// 		}
+			else if(((b_right > a_left && b_right <= a_right) ||
+				(b_left >= a_left && b_left < a_right)) &&
+				((b_down > a_up && b_down <= a_down) ||
+				(b_up  >= a_up && b_up   <  a_down) ||
+				(b_up  <= a_up && b_down >= a_down))){
+					notOverlap = 0;
+			}
 
-	// 		// if(!notOverlap)
-	// 		// 	break;
+			// if(!notOverlap)
+			// 	break;
+		}
+	}
+	
+	printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",notOverlap,blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
+	if(!notOverlap)
+		return;
+	// d_res[res_idx] = notOverlap;
 
-	// 		const int i_id = i / 4;
-	// 		const int j_id = j / 4;
-	// 		Neighbors[i_id * __N_B + j_id] = 0;
-	// 		if((a_down == b_up || a_up == b_down) && 
-	// 		  ((a_left > b_left && a_left < b_right) || 
-	// 		   (b_left > a_left && b_left < a_right) ||
-	// 		   (a_right < b_right && a_right > b_left) || 
-	// 		   (b_right < a_right && b_right > a_left)))
-	// 				Neighbors[i_id * __N_B + j_id] = 1;
+	d_res[res_idx + 1] = maxH;
+	d_res[res_idx + 2] = maxW;
+	d_res[res_idx + 3] = minH;
+	d_res[res_idx + 4] = minW;
 
-	// 		if((a_left == b_right || a_right == b_left) && 
-	// 		  ((a_up > b_up && a_up < b_down) || 
-	// 		   (b_up > a_up && b_up < a_down) ||
-	// 		   (a_down < b_down && a_down > b_up) || 
-	// 		   (b_down < a_down && b_down > a_up)))
-	// 				Neighbors[i_id * __N_B + j_id] = 1;
-
-	// 	}
-	// }
-
-	// d_res[res_idx] = notOverlap - 1;
-	// if(!notOverlap){
-	// 	return;
-	// }
-
-	// d_res[res_idx + 1] = maxH;
-	// d_res[res_idx + 2] = maxW;
-	// d_res[res_idx + 3] = minH;
-	// d_res[res_idx + 4] = minW;
-
-	// for(int i = 0; i < __SIZE_NBR; i++){
-	// 	d_nbr[i + nbr_idx] = Neighbors[i];
-	// }
-	// // printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d\n", a_idx, b_idx, res_idx, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x);
-	// // printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d,\tdiffX: %d,\tdiffY: %d,\ta[0]: %d,\ta[1]: %d\n", a_idx, b_idx, res_idx - __SIZE_A, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, diffX, diffY, a[0], a[1]);
+	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d\n", a_idx, b_idx, res_idx, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x);
+	// printf("a_idx: %d,\tb_idx: %d,\tres_idx: %d,\tblockIdx.x: %d,\tblockIdx.y: %d,\tblockIdx.z: %d,\tdblockDim.x: %d,\tthreadIdx.x: %d,\tdiffX: %d,\tdiffY: %d,\ta[0]: %d,\ta[1]: %d\n", a_idx, b_idx, res_idx - __SIZE_A, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, diffX, diffY, a[0], a[1]);
 }
 
 // __global__ 
@@ -293,20 +270,22 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int8_t *d_nbr, cons
 
 void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int16_t>& b) {
 	const int NConn = 12;
-	const long num_a = 200;
-	const int qtd_a = a.size() / __SIZE_A;
-	const int qtd_b = b.size() / __SIZE_B;
+	const long num_a = 2;
+	// const int qtd_a = a.size() / __SIZE_A;
+	// const int qtd_b = b.size() / __SIZE_B;
+	const int qtd_a = 2;
+	const int qtd_b = 2;
 
 	findCudaDevice();	
 
 	const long aLayoutSize = sizeof(int16_t) * __SIZE_A;
 	const long bLayoutSize = sizeof(int16_t) * __SIZE_B;
 	const long resLayoutSize = sizeof(int16_t) * __SIZE_RES;
-	const long nbrLayoutSize = sizeof(int8_t) * __SIZE_NBR;
+	// const long nbrLayoutSize = sizeof(int8_t) * __SIZE_NBR;
 	const unsigned long mem_size_a = aLayoutSize * qtd_a;
 	const unsigned long mem_size_b = bLayoutSize * qtd_b;
 	const unsigned long mem_size_res = num_a * NConn * qtd_b * resLayoutSize;
-	const unsigned long mem_size_nbr = num_a * NConn * qtd_b * nbrLayoutSize;
+	// const unsigned long mem_size_nbr = num_a * NConn * qtd_b * nbrLayoutSize;
 
 	// allocate host memory
 	int16_t *h_a = (int16_t *)(&a[0]);
@@ -325,18 +304,19 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 	const int num_threads = 768; // 1024
 	const int num_blocks = (qtd_b + num_threads -1) / num_threads;
 
-	// dim3 grid(num_blocks, num_a, NConn);
-	// dim3 threads(num_threads, 1, 1);
-	dim3 grid(2, 2, NConn);
-	dim3 threads(32, 1, 1);
+	dim3 grid(num_blocks, num_a, NConn);
+	dim3 threads(num_threads, 1, 1);
+	// dim3 grid(2, 1, NConn);
+	// dim3 threads(6, 1, 1);
 
 
 	// allocate device memory
 	int16_t *d_a, *d_b, *d_res;
-	int8_t *d_nbr;
+	// int8_t *d_nbr;
 	checkCudaErrors(cudaMalloc((void **)&d_a, mem_size_a));
 	checkCudaErrors(cudaMalloc((void **)&d_b, mem_size_b));
 	checkCudaErrors(cudaMalloc((void **)&d_res, mem_size_res));
+	checkCudaErrors(cudaMemset(d_res, 0, mem_size_res));
 
 	// copy host data to device
   	checkCudaErrors(cudaEventRecord(start));
@@ -344,7 +324,9 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
 
 	// k_hellowWorld<<<grid, threads>>>();
-	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_nbr, num_a, qtd_b, 0);
+	// std::cout << "b.x\tb.y\tb.z\tt.x\tk\ta_idx\tb_idx\tres_idx\t\n";
+	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, 0);
+	// k_createPts<<<grid, threads>>>(d_a, d_b, d_res, 1, 12, 0);
 	// for(int i = 0; i < qtd_a; i += num_a){
 	// 	int diff = qtd_a - i;
 	// 	if(diff < num_a){
@@ -368,8 +350,8 @@ void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int1
 	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
 	std::cout << "grid: " << grid.x << ", " << grid.y << ", " << grid.z << std::endl;
 	std::cout << "threads: " << threads.x << ", " << threads.y << ", " << threads.z << std::endl;
-	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << ", mem_size_nbr: " << mem_size_nbr << std::endl;
-	std::cout << "mem_size_a (MB): " << ((float)mem_size_a)/1024.0/1024.0 << ", mem_size_b (MB): " << ((float)mem_size_b)/1024.0/1024.0 << ", mem_size_res (MB): " << ((float)mem_size_res)/1024.0/1024.0 << ", mem_size_nbr (MB): " << ((float)mem_size_nbr)/1024.0/1024.0 << std::endl;
+	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << std::endl;
+	std::cout << "mem_size_a (MB): " << ((float)mem_size_a)/1024.0/1024.0 << ", mem_size_b (MB): " << ((float)mem_size_b)/1024.0/1024.0 << ", mem_size_res (MB): " << ((float)mem_size_res)/1024.0/1024.0 << std::endl;
 	std::cout << "Time: " << msecTotal << std::endl;
 
 	// check if kernel execution generated and error

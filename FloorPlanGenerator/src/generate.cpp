@@ -125,8 +125,13 @@ std::vector<int16_t> Generate::SizeLoop(
         sizeW.push_back(rooms[i].minW);
     }
     
-    for(const RoomConfig room : rooms)
+    int ids = 0;
+    for(const RoomConfig room : rooms){
         allReqCount[room.rPlannyId] -= 1;
+        ids |= room.id;
+        std::cout << room.name << ", ";
+    }
+    std::cout << ids << std::endl;
 
     std::vector<int> req(allReq.size(), 0);
     for(int i = 0; i < reqSize; i++){
@@ -296,9 +301,9 @@ void Generate::ConnLoop(
                     result.push_back(ptsY[2 * j + 1]);
                 }
                 
-                #ifdef OPENCV_ENABLED
-                CVHelper::showLayout(ptsX, ptsY);
-                #endif
+                // #ifdef OPENCV_ENABLED
+                // CVHelper::showLayout(ptsX, ptsY);
+                // #endif
             }
         }
         i += sum;

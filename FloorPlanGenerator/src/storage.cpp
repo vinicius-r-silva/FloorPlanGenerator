@@ -202,7 +202,7 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
         }
     }
 
-    std::cout << qtdPts << " pts (" << qtdPts / (n*4) << " layouts) at path: " << path << std::endl;
+    std::cout << qtdPts << " pts (" << qtdPts / (n*8) << " layouts) at path: " << path << std::endl;
 
     // size_t sizeElem = sizeof(layouts[0]);
     // const int sizeLayout = n * sizeElem;
