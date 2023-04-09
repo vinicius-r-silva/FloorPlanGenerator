@@ -204,36 +204,6 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
 
     std::cout << qtdPts << " pts (" << qtdPts / (n*8) << " layouts) at path: " << path << std::endl;
 
-    // size_t sizeElem = sizeof(layouts[0]);
-    // const int sizeLayout = n * sizeElem;
-    // const int NSizes = layouts.size();
-    // const int NPerm = layouts[0].size();
-    // const int NConns = Calculator::NConnections(n) / 2;
-    
-    // const int qtdSizesPerSave = (NConns * NPerm * sizeLayout > 16384) ? 1 : 16384 / (NConns * NPerm * sizeLayout);
-
-
-    // std::cout << "NSizes: " << NSizes << ", NPerm: " << NPerm << ", NConns: " << NConns << ", qtdSizesPerSave: " << qtdSizesPerSave << ", sizeLayout: " << sizeLayout << std::endl;
-    // const int vectorSize = qtdSizesPerSave * NConns * NPerm * sizeLayout;
-    // std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
-
-    // for(int i = 0; i < NSizes; i++){
-        
-    //     for(int j = 0; j < NPerm; j++){
-    //         for(long unsigned int k = 0; k < layouts[i][j].size(); k++){
-    //             sizesFile.push_back(layouts[i][j][k]);
-    //             // std::cout << layouts[i][j][k] << ", "; 
-    //         }
-    //         // std::cout << std::endl;
-    //     }
-
-    //     if(i % qtdSizesPerSave == qtdSizesPerSave - 1){
-    //         outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(sizesFile[0]));
-
-    //         sizesFile.clear(); 
-    //         sizesFile.reserve(vectorSize);
-    //     }
-    // }
     outputFile.close();
 }
 

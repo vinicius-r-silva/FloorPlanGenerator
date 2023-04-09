@@ -26,7 +26,7 @@ string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
 string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
 string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
 SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-set(CUDA_NVCC_FLAGS -std=c++20  -Xcompiler -O3)
+# set(CUDA_NVCC_FLAGS -std=c++20  -Xcompiler -O3)
 
 include (CTest)
 include_directories(lib)
@@ -40,8 +40,10 @@ set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper
 set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/main.cpp")
 
 list(APPEND cxx_warning_flags "-Wall" "-Wextra")
+# list(APPEND cuda_flags_lst "-G" "-Xptxas=-v")
+list(APPEND cuda_flags_lst "-Xptxas=-v")
 add_executable(FloorPlanGenerator ${headers} ${codes} ${cuda_headers} ${cuda_codes}) 
 
 # target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra)
-target_compile_options(FloorPlanGenerator PRIVATE $<$<COMPILE_LANGUAGE:CXX>: ${cxx_warning_flags}> $<$<COMPILE_LANGUAGE:CUDA>:-Xptxas=-v>)
+target_compile_options(FloorPlanGenerator PRIVATE $<$<COMPILE_LANGUAGE:CXX>: ${cxx_warning_flags}> $<$<COMPILE_LANGUAGE:CUDA>: ${cuda_flags_lst}>)
 target_link_libraries( FloorPlanGenerator PUBLIC OpenMP::OpenMP_CXX ${OpenCV_LIBS} )
