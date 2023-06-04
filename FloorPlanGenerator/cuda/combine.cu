@@ -91,7 +91,7 @@ uint8_t check_adjacency(const int a_up, const int a_down, const int a_left, cons
 // dim3 grid(num_blocks, num_a, NConn);
 // dim3 threads(num_threads, 1, 1);
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, const int qtd_b, const int a_offset) {
+void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, uint8_t *d_rIds, uint8_t *d_reqAdj, const int qtd_a, const int qtd_b, const int a_offset) {
 	// Block and thread indexes
 	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), 
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
@@ -254,7 +254,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 			notOverlap = check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right);
 			
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
-				
+
 			}
 		}
 	}
@@ -284,7 +284,10 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 // 	printf("Hello World. \n\t blockDim.x: %d, blockDim.y: %d, blockDim.z: %d\n\t blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d\n\t threadIdx.x: %d, threadIdx.y: %d, threadIdx.z: %d\n", blockDim.x, blockDim.y, blockDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
 // }
 
-void gpuHandler::createPts(const std::vector<int16_t>& a, const std::vector<int16_t>& b) {
+void gpuHandler::createPts(
+		const std::vector<int16_t>& a, const std::vector<int16_t>& b,
+		std::vector<RoomConfig> setupsA, std::vector<RoomConfig> setupsB,
+    	std::vector<int> allReq) {
 #ifdef _FULL_DEBUG
 	const int qtd_a = 1;
 	const int qtd_b = 12;

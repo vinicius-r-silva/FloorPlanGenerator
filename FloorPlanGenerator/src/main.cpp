@@ -17,6 +17,27 @@
 #include "../lib/mpHelper.h"
 #include "../cuda/combine.h"
 
+
+/*!
+    @brief counts how many rooms of each class is included in the final layout
+    @param[in] setups rooms information
+    @return vector count how many of each class (class 0 -> allReqCount[0], ...)
+*/
+std::vector<int> countReqClasses(std::vector<RoomConfig> setups){
+    std::vector<int> allReqCount(reqSize, -1);
+    for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it){
+        RoomConfig room = (RoomConfig)(*it);
+        // Log::print(room);
+        if(allReqCount[room.rPlannyId] == -1)
+            allReqCount[room.rPlannyId] = 0;
+
+        allReqCount[room.rPlannyId] += 1;
+    }
+
+    return allReqCount;
+}
+
+
 /*!
     @brief create data
     @param[in] n number of rooms per layout
@@ -35,15 +56,7 @@ void generateData(const int n) {
     const int reqSize = sqrt(allReq.size());
     
     // counts how many rooms of each class is included in the final layout
-    std::vector<int> allReqCount(reqSize, -1);
-    for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it){
-        RoomConfig room = (RoomConfig)(*it);
-        Log::print(room);
-        if(allReqCount[room.rPlannyId] == -1)
-            allReqCount[room.rPlannyId] = 0;
-
-        allReqCount[room.rPlannyId] += 1;
-    }
+    std::vector<int> allReqCount = countReqClasses(setups);
 
     Calculator::totalOfCombinations(setups, n);
 
@@ -115,8 +128,11 @@ void combineData(){
 
 void combineDataGPU(){
     Storage hdd = Storage();
+    std::vector<int> allReq = hdd.getReqAdjValues();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
+
+    std::vector<int> allReqCount = countReqClasses(setups);
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){
@@ -141,7 +157,7 @@ void combineDataGPU(){
         // std::cout << std::endl;
 
         // std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
-        gpuHandler::createPts(layout_a, layout_b);
+        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq);
         break;
     }
 }
