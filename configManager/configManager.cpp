@@ -505,7 +505,7 @@ void normalConfig(std::string projectPath){
     rooms[banheiro].depend = 0;
     rooms[banheiro].rPlannyId = _BATHROOM;
 
-    // 2 - qaurto
+    // 2 - quarto
     rooms[quarto].id = 1 << quarto;
     rooms[quarto].numExtensions = 1;
     rooms[quarto].name[0] = 'q'; rooms[quarto].name[1] = 'u';

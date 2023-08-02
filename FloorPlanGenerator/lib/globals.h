@@ -17,7 +17,7 @@
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-// #define OPENCV_ENABLED
+#define OPENCV_ENABLED
 
 // #define MULTI_THREAD
 

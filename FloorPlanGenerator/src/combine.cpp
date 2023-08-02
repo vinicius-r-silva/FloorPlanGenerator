@@ -3,6 +3,7 @@
 #include "../lib/globals.h"
 #include <iostream>
 
+#include <opencv2/opencv.hpp>
 /** 
  * @brief Storage Constructor
  * @return None
@@ -10,9 +11,6 @@
 Combine::Combine(){
 }
 
-// static inline void combineCore(int *connA, int *connB, int *sizeHA, int *sizeWA, int *sizeHB, int *sizeWB, const std::vector<int>& permA, const std::vector<int>& permB){
-
-// }
 
 void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b){
 
@@ -26,6 +24,10 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
 
     const int ptsPerLayout_a = n_a * 2;
     const int ptsPerLayout_b = n_b * 2;
+
+    std::vector<int> iArray;
+    std::vector<int> jArray;
+    std::vector<int> kArray;
 
     for(int i = vectorOffset_a; i <= (int)a.size(); i += vectorOffset_a){
     
@@ -41,14 +43,14 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
             ptsY[j] = a[i - vectorOffset_a + (j * 2) + 1];
         }
         
-        for(int j = 0; j < (int)b.size(); j += vectorOffset_b){
     
             // std::cout << "b: ";
             // for(int k = j; k < j + n_b*4; k++)   
             //     std::cout << b[k] << ", ";
             // std::cout << std::endl;
 
-            for(int k = 0; k < 16; k++){                
+        for(int k = 0; k < 16; k++){         
+            for(int j = 0; j < (int)b.size(); j += vectorOffset_b){       
                 const int srcConn = k & 0b11;
                 const int dstConn = (k >> 2) & 0b11;
 
@@ -87,11 +89,50 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
                     ptsY[l + ptsPerLayout_a] = b[j + l * 2 + 1] + diffY;
                 }
 
-                // std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
-                // for(int l = 0; l < n_final; l++){
-                //     std::cout << "\t(" << ptsX[l * 2] << ", " << ptsY[l * 2] << "), (" << ptsX[l * 2 + 1] << ", " << ptsY[l * 2 + 1] << ")" << std::endl;
-                // }
-                CVHelper::showLayout(ptsX, ptsY);
+                std::cout << std::endl << std::endl << std::endl << iArray.size() << std::endl;
+                std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
+                std::cout << "diffX: " << diffX << ", diffY: " << diffY << std::endl;
+                int minX = 99999; int maxX = -99999;
+                int minY = 99999; int maxY = -99999;
+                for(int l = 0; l < n_final; l++){
+                    if(ptsX[l * 2] < minX)
+                        minX = ptsX[l * 2];
+                    if(ptsX[l * 2 + 1] < minX)
+                        minX = ptsX[l * 2 + 1];
+
+                    if(ptsX[l * 2] > maxX)
+                        maxX = ptsX[l * 2];
+                    if(ptsX[l * 2 + 1] > maxX)
+                        maxX = ptsX[l * 2 + 1];
+
+                    if(ptsY[l * 2] < minY)
+                        minY = ptsY[l * 2];
+                    if(ptsY[l * 2 + 1] < minY)
+                        minY = ptsY[l * 2 + 1];
+
+                    if(ptsY[l * 2] > maxY)
+                        maxY = ptsY[l * 2];
+                    if(ptsY[l * 2 + 1] > maxY)
+                        maxY = ptsY[l * 2 + 1];
+
+                    std::cout << "\t(" << ptsX[l * 2] << ", " << ptsY[l * 2] << "), (" << ptsX[l * 2 + 1] << ", " << ptsY[l * 2 + 1] << ")" << std::endl;
+                }
+                std::cout << "H: " << maxY - minY << ", W: " << maxX - minX << std::endl;
+
+
+                int dir = CVHelper::showLayoutMove(ptsX, ptsY);
+                if(dir == -1 && iArray.size() == 0){
+                    j -= vectorOffset_b;
+                }
+                else if(dir == -1 && iArray.size() > 0){
+                    i = iArray.back(); iArray.pop_back(); 
+                    j = jArray.back() - vectorOffset_b; jArray.pop_back(); 
+                    k = kArray.back(); kArray.pop_back(); 
+                } else {
+                    iArray.push_back(i);
+                    jArray.push_back(j);
+                    kArray.push_back(k);
+                }
             }            
             // break;
         }

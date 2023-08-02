@@ -17,14 +17,14 @@
 #define __SIZE_B 12		// n_b * 4
 // #define __SIZE_PTS 24	// n_pts * 4
 // #define __SIZE_RES 5	// score, maxH, minH, maxW, minW //Add Area later
-#define __SIZE_RES 2	// score, maxH, minH, maxW, minW //Add Area later
+#define __SIZE_RES 2
 
 #define __LEFT 0
 #define __UP 1
 #define __RIGHT 2
 #define __DOWN 3
 
-// #define _SIMPLE_DEBUG
+#define _SIMPLE_DEBUG
 // #define _FULL_DEBUG
 
 __device__
@@ -91,7 +91,7 @@ uint8_t check_adjacency(const int a_up, const int a_down, const int a_left, cons
 // dim3 grid(num_blocks, num_a, NConn);
 // dim3 threads(num_threads, 1, 1);
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, uint8_t *d_rIds, uint8_t *d_reqAdj, const int qtd_a, const int qtd_b, const int a_offset) {
+void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, const int qtd_b, const int a_offset) {
 	// Block and thread indexes
 	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), 
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
@@ -127,6 +127,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, uint8_t *d_rIds, ui
 	for(int i = 0; i < __SIZE_B; i++){
 		b[i] = d_b[b_idx*__SIZE_B + i];
 	}
+
 
 	// // Create Req Adj into local memory
 	// int16_t adj[__N_REQ_ADJ];
@@ -198,6 +199,52 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, uint8_t *d_rIds, ui
 	for(int i = 1; i < __SIZE_B; i+=2){
 		b[i] += diffY;
 	}
+
+
+
+// #ifdef _SIMPLE_DEBUG
+// 	if(res_idx < 10){
+// 		printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, " \
+// 		"k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"\n\n\n",
+// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, 
+// 		k, a_idx, b_idx, res_idx,
+// 		a[0], a[1], a[2], a[3], 
+// 		a[4], a[5], a[6], a[7], 
+// 		a[8], a[9], a[10], a[11],
+// 		b[0], b[1], b[2], b[3], 
+// 		b[4], b[5], b[6], b[7], 
+// 		b[8], b[9], b[10], b[11]);
+// 	}
+// #endif
+
+// #ifdef _SIMPLE_DEBUG
+// 	if(res_idx < 10){
+// 		printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, " \
+// 		"k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"(%hd, %hd), (%hd, %hd)\n, " \
+// 		"\n\n\n",
+// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, 
+// 		k, a_idx, b_idx, res_idx,
+// 		a[0], a[1], a[2], a[3], 
+// 		a[4], a[5], a[6], a[7], 
+// 		a[8], a[9], a[10], a[11],
+// 		b[0] - diffX, b[1] - diffY, b[2] - diffX, b[3] - diffY, 
+// 		b[4] - diffX, b[5] - diffY, b[6] - diffX, b[7] - diffY, 
+// 		b[8] - diffX, b[9] - diffY, b[10] - diffX, b[11] - diffY);
+// 	}
+// #endif
 
 #ifdef _FULL_DEBUG
 	if(threadIdx.x == 1 && k == 1)
@@ -318,6 +365,8 @@ void gpuHandler::createPts(
 
 	// Allocate CUDA events that we'll use for timing
 #ifdef _SIMPLE_DEBUG
+	std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+	std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
 	cudaEvent_t start, stop;
 	checkCudaErrors(cudaEventCreate(&start));
 	checkCudaErrors(cudaEventCreate(&stop));

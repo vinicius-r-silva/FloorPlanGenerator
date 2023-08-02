@@ -23,7 +23,7 @@
     @param[in] setups rooms information
     @return vector count how many of each class (class 0 -> allReqCount[0], ...)
 */
-std::vector<int> countReqClasses(std::vector<RoomConfig> setups){
+std::vector<int> countReqClasses(std::vector<RoomConfig> setups, int reqSize){
     std::vector<int> allReqCount(reqSize, -1);
     for (std::vector<RoomConfig>::iterator it = setups.begin() ; it != setups.end(); ++it){
         RoomConfig room = (RoomConfig)(*it);
@@ -56,7 +56,7 @@ void generateData(const int n) {
     const int reqSize = sqrt(allReq.size());
     
     // counts how many rooms of each class is included in the final layout
-    std::vector<int> allReqCount = countReqClasses(setups);
+    std::vector<int> allReqCount = countReqClasses(setups, reqSize);
 
     Calculator::totalOfCombinations(setups, n);
 
@@ -121,7 +121,7 @@ void combineData(){
 
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
-        break;
+        // break;
         Combine::getValidLayoutCombs(layout_b, layout_a, setupsB.size(), setupsA.size());
     }
 }
@@ -132,7 +132,7 @@ void combineDataGPU(){
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
 
-    std::vector<int> allReqCount = countReqClasses(setups);
+    // std::vector<int> allReqCount = countReqClasses(setups);
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){
@@ -170,7 +170,6 @@ int main(){
     // generateData(3);
     // combineData();
     combineDataGPU();
-    // std::vector<int> a;
-    // Cuda_Combine::launchGPU(a, a, 0, 0);
+    
     return 0;
 }

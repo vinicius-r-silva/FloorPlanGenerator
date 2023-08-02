@@ -1,6 +1,7 @@
 #ifndef GPU_HANDLER
 #define GPU_HANDLER
 
+#include "../lib/globals.h"
 #include <vector>
 
 class gpuHandler
