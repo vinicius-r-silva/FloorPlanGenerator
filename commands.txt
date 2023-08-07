@@ -1,0 +1,12 @@
+clear && make clean &&  make -j16 && ./FloorPlanGenerator/FloorPlanGenerator
+
+cd .. && ./configManager.sh && cd ./build
+
+make && cp ./FloorPlanGenerator/FloorPlanGenerator ./FloorPlanGenerator/FloorPlanGeneratorCPU 
+
+./FloorPlanGenerator/FloorPlanGeneratorCPU 
+
+watch -n.5 nvidia-smi
+
+sudo /usr/local/cuda/bin/ncu-ui
+
