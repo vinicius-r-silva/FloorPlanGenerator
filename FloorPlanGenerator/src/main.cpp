@@ -63,9 +63,10 @@ void generateData(const int n) {
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
     const int NCombs = allCombs.size();
     printf("main NCombs: %d\n\n", NCombs);
+    Log::printVector2D(allCombs);
     
-    const int NReqs = Calculator::lenghtHalfMatrix(n);
-    std::vector<int> req(NReqs, 0);
+    // const int NReqs = Calculator::lenghtHalfMatrix(n);
+    // std::vector<int> req(NReqs, 0);
 
 #ifdef MULTI_THREAD
     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs, allReqCount, allReq, reqSize, n)
@@ -119,6 +120,7 @@ void combineData(){
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
+        std::cout << "fileComb[0]" << fileComb[0] << "fileComb[1]" << fileComb[1] << std::endl;
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
         // break;
@@ -132,7 +134,20 @@ void combineDataGPU(){
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
 
-    // std::vector<int> allReqCount = countReqClasses(setups);
+    const int reqSize = sqrt(allReq.size());
+    std::vector<int> allReqCount = countReqClasses(setups, reqSize);
+    // std::cout << "allReq: ";
+    // Log::printVector1D(allReq);
+    // std::cout << "allReqCount: ";
+    // Log::printVector1D(allReqCount);
+
+    // const int NReqs = Calculator::lenghtHalfMatrix(3);
+    // std::vector<int> req(NReqs, 0);
+    // std::cout << "NReqs: " << NReqs << std::endl;
+    // std::cout << "req: ";
+    // Log::printVector1D(req);
+
+
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){

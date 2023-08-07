@@ -29,6 +29,12 @@ public:
     */
     template <typename T>
     static void printVector1D(std::vector<T> arr);
+
+    /** 
+    * @brief console print 2D vector
+    * @return None
+    */
+    static void printVector2D(std::vector<std::vector<RoomConfig>> arr);
 };
 
 #endif //LOG

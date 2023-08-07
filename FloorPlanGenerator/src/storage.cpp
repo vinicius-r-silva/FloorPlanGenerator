@@ -49,6 +49,7 @@ void Storage::updateProjectDir(){
     if(res.length() > 0)
         res.pop_back();
 
+    // _projectDir = res + "/Documents/FloorPlanGenerator";
     _projectDir = res;
 }
 

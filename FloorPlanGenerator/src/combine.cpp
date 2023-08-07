@@ -3,7 +3,6 @@
 #include "../lib/globals.h"
 #include <iostream>
 
-#include <opencv2/opencv.hpp>
 /** 
  * @brief Storage Constructor
  * @return None
@@ -48,9 +47,9 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
             // for(int k = j; k < j + n_b*4; k++)   
             //     std::cout << b[k] << ", ";
             // std::cout << std::endl;
-
-        for(int k = 0; k < 16; k++){         
-            for(int j = 0; j < (int)b.size(); j += vectorOffset_b){       
+   
+        for(int k = 0; k < 16; k++){          
+            for(int j = 0; j < (int)b.size(); j += vectorOffset_b){   
                 const int srcConn = k & 0b11;
                 const int dstConn = (k >> 2) & 0b11;
 
@@ -123,11 +122,14 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
                 int dir = CVHelper::showLayoutMove(ptsX, ptsY);
                 if(dir == -1 && iArray.size() == 0){
                     j -= vectorOffset_b;
+                    // k -= 1;
                 }
                 else if(dir == -1 && iArray.size() > 0){
                     i = iArray.back(); iArray.pop_back(); 
                     j = jArray.back() - vectorOffset_b; jArray.pop_back(); 
                     k = kArray.back(); kArray.pop_back(); 
+                    // j = jArray.back(); jArray.pop_back(); 
+                    // k = kArray.back() - 1; kArray.pop_back(); 
                 } else {
                     iArray.push_back(i);
                     jArray.push_back(j);

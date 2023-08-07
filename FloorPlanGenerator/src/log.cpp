@@ -34,5 +34,19 @@ void Log::printVector1D(std::vector<T> arr){
     }
    std::cout <<  std::endl;
 }
+    
+/** 
+ * @brief console print 2D vector
+ * @return None
+*/
+void Log::printVector2D(std::vector<std::vector<RoomConfig>> arr){
+    for(std::vector<RoomConfig> innerArray : arr){
+        for(RoomConfig val : innerArray){
+            Log::print(val);
+        }
+        std::cout <<  std::endl;
+    }
+   std::cout <<  std::endl;
+}
 
 template void Log::printVector1D<int>(std::vector<int>);
