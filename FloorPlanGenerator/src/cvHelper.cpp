@@ -74,8 +74,8 @@ void CVHelper::showLayout(const std::vector<int16_t> &ptsX, const std::vector<in
 int CVHelper::showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY){
 #ifdef OPENCV_ENABLED
     int scale = 5;
-    const int screenH = 1000;
-    const int screenW = 1000;
+    const int screenH = 600;
+    const int screenW = 600;
     const int n = (int)ptsX.size()/2;
 
     int minX = 999999, maxX = 0;
