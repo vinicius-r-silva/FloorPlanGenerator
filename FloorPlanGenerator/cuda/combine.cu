@@ -12,6 +12,10 @@
 #define __N_B 3
 #define __N_REQ_ADJ 5*5 
 #define __N_PTS 6
+#define __N_CONN 12 // always 12
+
+#define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
+#define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
 
 #define __SIZE_A 12		// n_a * 4
 #define __SIZE_B 12		// n_b * 4
@@ -24,8 +28,13 @@
 #define __RIGHT 2
 #define __DOWN 3
 
+// #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
+// #define __B_LAYOUTS_PER_BLOCK 64 // __THREADS_PER_BLOCK / 12
+#define __THREADS_PER_BLOCK 96 // 96, 192, 288, 384, 480, 576, 672, 768, 862, 
+#define __B_LAYOUTS_PER_BLOCK 8 // __THREADS_PER_BLOCK / 12
+
 #define _SIMPLE_DEBUG
-// #define _FULL_DEBUG
+#define _FULL_DEBUG
 
 __device__
 uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const int a_right, 
@@ -37,7 +46,6 @@ uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const 
 		(a_left  <= b_left && a_right >= b_right))){
 			return 0;
 	}
-
 	
 	else if(((b_down > a_up && b_down <= a_down) ||
 		(b_up >= a_up && b_up < a_down)) &&
@@ -47,7 +55,6 @@ uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const 
 			return 0;
 	}
 
-	
 	else if(((a_right > b_left && a_right <= b_right) ||
 		(a_left >= b_left && a_left < b_right)) &&
 		((a_down > b_up && a_down <= b_down) ||
@@ -55,7 +62,6 @@ uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const 
 		(a_up  <= b_up && a_down >= b_down))){
 			return 0;
 	}
-
 	
 	else if(((b_right > a_left && b_right <= a_right) ||
 		(b_left >= a_left && b_left < a_right)) &&
@@ -86,7 +92,7 @@ uint8_t check_adjacency(const int a_up, const int a_down, const int a_left, cons
     return 0;
 }
 
-// const int num_threads = 768; // 1024
+// const int num_threads = __THREADS_PER_BLOCK
 // const int num_blocks = (qtd_b + num_threads -1) / num_threads;
 // dim3 grid(num_blocks, num_a, NConn);
 // dim3 threads(num_threads, 1, 1);
@@ -97,67 +103,44 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
 	// a Layout B design inside the blockIdx.x block 
 
-	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
-	const int k = blockIdx.z + 1 + blockIdx.z/4; 
-	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A; //layout A index
-	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index (without * __SIZE_B)
-	const int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
+	// const int b_per_block = blockDim.x / __N_CONN;
+	int initial_b = blockIdx.x * __B_LAYOUTS_PER_BLOCK;
+	int a_idx = blockIdx.y + a_offset; //layout A index
+	int b_idx = initial_b + (threadIdx.x / __N_CONN); //layout B index (without * __SIZE_B)
+	int k = threadIdx.x % __N_CONN;
+
+	const int res_idx = ((a_idx * qtd_b * __N_CONN) + (b_idx * __N_CONN) + k) * __SIZE_RES;
+
+	k = k + 1 + k/4; 
 
 	// Check bounds
 	if(b_idx >= qtd_b || blockIdx.y >= qtd_a)
 		return;
 
-#ifdef _FULL_DEBUG
-	printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
-	if(threadIdx.x == 1 && k == 1){
-		// printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
-		// printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
-	}
-#endif
-
+	a_idx *= __SIZE_A;
+	b_idx *= (b_idx - initial_b) * __SIZE_B;
+	initial_b *= __SIZE_B;
 	// Load A into shared memory
 	__shared__ int16_t a[__SIZE_A];
 	if(threadIdx.x < __SIZE_A){
 		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
+	}
+
+	__shared__ int16_t b_shared[__SIZE_B * __B_LAYOUTS_PER_BLOCK];
+	if(threadIdx.x < __SIZE_B * __B_LAYOUTS_PER_BLOCK){
+		b_shared[threadIdx.x] = d_b[initial_b + threadIdx.x];
 	}
   	__syncthreads();
 
 	// Load B into local memory
 	int16_t b[__SIZE_B];
 	for(int i = 0; i < __SIZE_B; i++){
-		b[i] = d_b[b_idx*__SIZE_B + i];
+		b[i] = b_shared[b_idx *__SIZE_B + i];
 	}
-
-
-	// // Create Req Adj into local memory
-	// int16_t adj[__N_REQ_ADJ];
-	// for(int i = 0; i < __N_REQ_ADJ; i++){
-	// 	adj[i] = i;
-	// }
-	
-#ifdef _FULL_DEBUG
-	if(threadIdx.x == 1 && k == 1){
-		printf("A: ");
-		for(int i = 0; i < __SIZE_A; i++){
-			printf("%d, ", a[i]);
-		}
-
-		printf("\nB: ");
-		for(int i = 0; i < __SIZE_B; i++){
-			printf("%d, ", b[i]);
-		}
-		printf("\n");
-	}
-#endif
 	
 	// Extract source and destination connections from k
 	const int srcConn = k & 0b11;
 	const int dstConn = (k >> 2) & 0b11;
-	
-#ifdef _FULL_DEBUG
-	if(threadIdx.x == 1 && k == 1)
-		printf("srcConn: %d, dstConn: %d\n", srcConn, dstConn);
-#endif
 
 	// Get X axis connection points from layout A and B
 	int dst = 0;
@@ -178,11 +161,6 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		b[i] += diffX;
 	}
 
-#ifdef _FULL_DEBUG
-	if(threadIdx.x == 1 && k == 1)
-		printf("dst: %d, src: %d, diffX: %d\n", dst, src, diffX);
-#endif
-
 	// Get Y axis connection points from layout A and B
 	if(dstConn == 0 || dstConn == 1)
 		dst = b[1];
@@ -200,57 +178,6 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		b[i] += diffY;
 	}
 
-
-
-// #ifdef _SIMPLE_DEBUG
-// 	if(res_idx < 10){
-// 		printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, " \
-// 		"k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"\n\n\n",
-// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, 
-// 		k, a_idx, b_idx, res_idx,
-// 		a[0], a[1], a[2], a[3], 
-// 		a[4], a[5], a[6], a[7], 
-// 		a[8], a[9], a[10], a[11],
-// 		b[0], b[1], b[2], b[3], 
-// 		b[4], b[5], b[6], b[7], 
-// 		b[8], b[9], b[10], b[11]);
-// 	}
-// #endif
-
-// #ifdef _SIMPLE_DEBUG
-// 	if(res_idx < 10){
-// 		printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, " \
-// 		"k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"(%hd, %hd), (%hd, %hd)\n, " \
-// 		"\n\n\n",
-// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, 
-// 		k, a_idx, b_idx, res_idx,
-// 		a[0], a[1], a[2], a[3], 
-// 		a[4], a[5], a[6], a[7], 
-// 		a[8], a[9], a[10], a[11],
-// 		b[0] - diffX, b[1] - diffY, b[2] - diffX, b[3] - diffY, 
-// 		b[4] - diffX, b[5] - diffY, b[6] - diffX, b[7] - diffY, 
-// 		b[8] - diffX, b[9] - diffY, b[10] - diffX, b[11] - diffY);
-// 	}
-// #endif
-
-#ifdef _FULL_DEBUG
-	if(threadIdx.x == 1 && k == 1)
-		printf("dst: %d, src: %d, diffY: %d\n", dst, src, diffY);
-#endif
-
 	// Find the bounding box of B
 	int16_t minH = 5000, maxH = -5000;
 	int16_t minW = 5000, maxW = -5000;
@@ -267,12 +194,17 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 
 	//left, up, right, down
 	// Find the bounding box of A and check overlaping
-	int8_t notOverlap = 1;
+	int notOverlap = 1;
+	int connections[__N_A + __N_B];
+	for(int i = 0; i < __N_A  + __N_B; i++){
+		connections[i] = 1 << i;
+	}
+
 	for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
-		const int a_left = a[i];
-		const int a_up = a[i + __UP];
-		const int a_down = a[i + __DOWN];
-		const int a_right = a[i + __RIGHT];
+		const int16_t a_left = a[i];
+		const int16_t a_up = a[i + __UP];
+		const int16_t a_down = a[i + __DOWN];
+		const int16_t a_right = a[i + __RIGHT];
 
 		if(a_up < minH)
 			minH = a_up;
@@ -284,10 +216,10 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 			maxW = a_right;
 
 		for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
-			const int b_left = b[j];
-			const int b_up = b[j + __UP];
-			const int b_down = b[j + __DOWN];
-			const int b_right = b[j + __RIGHT];
+			const int16_t b_left = b[j];
+			const int16_t b_up = b[j + __UP];
+			const int16_t b_down = b[j + __DOWN];
+			const int16_t b_right = b[j + __RIGHT];
 
 			if(b_up < minH)
 				minH = b_up;
@@ -301,48 +233,78 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 			notOverlap = check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right);
 			
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
-
+				connections[i/4] |= 1 << (j/4) + __N_A;
+				connections[(j/4) + __N_A] |= 1 << (i/4); 
 			}
 		}
 	}
-	
-	// printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",notOverlap,blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
+
 	if(!notOverlap)
 		return;
 
+	for(int i = 0; i < __SIZE_A; i+=4){
+		const int16_t a_left = a[i];
+		const int16_t a_up = a[i + __UP];
+		const int16_t a_down = a[i + __DOWN];
+		const int16_t a_right = a[i + __RIGHT];
+
+		for(int j = 0; j < __SIZE_A; j+=4){
+			const int16_t b_left = a[j];
+			const int16_t b_up = a[j + __UP];
+			const int16_t b_down = a[j + __DOWN];
+			const int16_t b_right = a[j + __RIGHT];
+
+			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
+				connections[i/4] |= 1 << (j/4);
+				connections[j/4] |= 1 << (i/4); 
+			}
+		}
+	}
+
+	for(int i = 0; i < __SIZE_B; i+=4){
+		const int16_t a_left = b[i];
+		const int16_t a_up = b[i + __UP];
+		const int16_t a_down = b[i + __DOWN];
+		const int16_t a_right = b[i + __RIGHT];
+
+		for(int j = 0; j < __SIZE_B; j+=4){
+			const int16_t b_left = b[j];
+			const int16_t b_up = b[j + __UP];
+			const int16_t b_down = b[j + __DOWN];
+			const int16_t b_right = b[j + __RIGHT];
+
+			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
+				connections[(i/4) + __N_A] |= 1 << ((j/4) + __N_A);
+				connections[(j/4) + __N_A] |= 1 << ((i/4) + __N_A); 
+			}
+		}
+	}
+
+	for(int i = 0; i < __N_A + __N_B; i++){
+		const int conns = connections[i];
+		for(int j = i + 1; j < __N_A + __N_B; j++){
+			if(connections[j] & 1 << i)
+				connections[j] |= conns;
+		}
+	}
+
 	d_res[res_idx] = maxH - minH;
 	d_res[res_idx + 1] = maxW - minW;
-	// d_res[res_idx + 2] = minH;
-	// d_res[res_idx + 3] = minW;
-
-	#ifdef _FULL_DEBUG
-		if(threadIdx.x == 1 && k == 1){
-			printf("%d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\n", 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
-			printf("%d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\n", a[0], a[1], a[2], a[3], a[4], a[5], a[6], a[7], a[8], a[9], a[10], a[11]);
-			printf("%d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\n", b[0], b[1], b[2], b[3], b[4], b[5], b[6], b[7], b[8], b[9], b[10], b[11]);
-			printf("%d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\n", d_res[res_idx + 0], d_res[res_idx + 1], d_res[res_idx + 2], d_res[res_idx + 3], d_res[res_idx + 4], d_res[res_idx + 5], d_res[res_idx + 6], d_res[res_idx + 7], d_res[res_idx + 8], d_res[res_idx + 9], d_res[res_idx + 10], d_res[res_idx + 11]);
-			printf("%d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\t %d\n", d_res[res_idx + 12], d_res[res_idx + 13], d_res[res_idx + 14], d_res[res_idx + 15], d_res[res_idx + 16], d_res[res_idx + 17], d_res[res_idx + 18], d_res[res_idx + 19], d_res[res_idx + 20], d_res[res_idx + 21], d_res[res_idx + 22], d_res[res_idx + 23]);
-		}
-	#endif
 }
 
-// __global__ 
-// void k_hellowWorld() {
-// 	printf("Hello World. \n\t blockDim.x: %d, blockDim.y: %d, blockDim.z: %d\n\t blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d\n\t threadIdx.x: %d, threadIdx.y: %d, threadIdx.z: %d\n", blockDim.x, blockDim.y, blockDim.z, blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
-// }
 
 void gpuHandler::createPts(
 		const std::vector<int16_t>& a, const std::vector<int16_t>& b,
 		std::vector<RoomConfig> setupsA, std::vector<RoomConfig> setupsB,
     	std::vector<int> allReq) {
 #ifdef _FULL_DEBUG
-	const int qtd_a = 1;
+	const int qtd_a = 2;
 	const int qtd_b = 12;
-	const long num_a = 1;
-	const int NConn = 2;
+	const long num_a = 2;
+	const int NConn = __N_CONN;
 #else
-	const int NConn = 12;
-	const long num_a = 200;
+	const int NConn = __N_CONN;  	// always 12. Qtd of valid connectction between two rooms
+	const long num_a = 200;	//
 	const int qtd_a = a.size() / __SIZE_A;
 	const int qtd_b = b.size() / __SIZE_B;
 #endif
@@ -354,7 +316,7 @@ void gpuHandler::createPts(
 	const long resLayoutSize = sizeof(int16_t) * __SIZE_RES;
 	const unsigned long mem_size_a = aLayoutSize * qtd_a;
 	const unsigned long mem_size_b = bLayoutSize * qtd_b;
-	const unsigned long mem_size_res = num_a * NConn * qtd_b * resLayoutSize;
+	const unsigned long mem_size_res = num_a * NConn * qtd_b * resLayoutSize * 2;
 
 	// allocate host memory
 	int16_t *h_a = (int16_t *)(&a[0]);
@@ -365,18 +327,20 @@ void gpuHandler::createPts(
 
 	// Allocate CUDA events that we'll use for timing
 #ifdef _SIMPLE_DEBUG
-	std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
-	std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+	// std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+	// std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
 	cudaEvent_t start, stop;
 	checkCudaErrors(cudaEventCreate(&start));
 	checkCudaErrors(cudaEventCreate(&stop));
 #endif
 
 	// setup execution parameters
-	const int num_threads = 768; // 1024
-	const int num_blocks = (qtd_b + num_threads -1) / num_threads;
+	const int num_threads = __THREADS_PER_BLOCK; //make it multiple of 12?
+	// const int num_blocks = (qtd_b + num_threads -1) / num_threads;
+	const int num_blocks = (qtd_b + __B_LAYOUTS_PER_BLOCK -1) / __B_LAYOUTS_PER_BLOCK;
 
-	dim3 grid(num_blocks, num_a, NConn);
+	dim3 grid(num_blocks, num_a, 1);
+	// dim3 grid(num_blocks, num_a, NConn);
 	dim3 threads(num_threads, 1, 1);
 	// dim3 grid(2, 1, NConn);
 	// dim3 threads(6, 1, 1);
@@ -424,7 +388,7 @@ void gpuHandler::createPts(
 #ifdef _SIMPLE_DEBUG
 	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
 	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << qtd_a * qtd_b << std::endl;
-	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
+	std::cout << "num_threads: " << num_threads << ", __B_LAYOUTS_PER_BLOCK: " << __B_LAYOUTS_PER_BLOCK << ", num_blocks: " << num_blocks << std::endl;
 	std::cout << "grid: " << grid.x << ", " << grid.y << ", " << grid.z << std::endl;
 	std::cout << "threads: " << threads.x << ", " << threads.y << ", " << threads.z << std::endl;
 	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << std::endl;
