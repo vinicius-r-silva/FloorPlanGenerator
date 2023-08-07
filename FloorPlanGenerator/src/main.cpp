@@ -88,8 +88,8 @@ void generateData(const int n) {
         
         // std::cout << "i = " << i << std::endl;
 
-        hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
-        // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
+        hdd.saveResult(Generate::RoomPerm(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
+        // Generate::RoomPerm(reqSize, allReq, allReqCount, allCombs[i]);
         // break;
     }
 }
@@ -183,8 +183,8 @@ void combineDataGPU(){
 */
 int main(){
     // generateData(3);
-    // combineData();
-    combineDataGPU();
+    combineData();
+    // combineDataGPU();
     
     return 0;
 }

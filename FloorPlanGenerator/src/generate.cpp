@@ -98,32 +98,23 @@ inline bool Generate::check_adjacency(int a_left, int a_right, int a_up, int a_d
 
 
 /*!
-    @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
+    @brief Iterate over every room permutation
     @param[in] reqSize lengh of required matrix
     @param[in] allReq required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
     @param[in] allReqCount required rooms ajacency count of how many rules are related to each room class
     @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
     @return vector of coordinates points. Every two points combines into a coordinate and every n * 4 coordinates makes a layout
 */
-std::vector<int16_t> Generate::SizeLoop(
+std::vector<int16_t> Generate::RoomPerm(
     const int reqSize,
     std::vector<int> allReq,
     std::vector<int> allReqCount,
     const std::vector<RoomConfig>& rooms)
     {
-    
-    // SizeLoopRes res;
+
     const int n = rooms.size();
     const int NConn = Calculator::NConnections(n);
     std::vector<int16_t> result;
-
-    //Create array with the current size of every room
-    std::vector<int16_t> sizeH; sizeH.reserve(n); // Height
-    std::vector<int16_t> sizeW; sizeW.reserve(n); // Width
-    for(int i = 0; i < n; i++){
-        sizeH.push_back(rooms[i].minH);
-        sizeW.push_back(rooms[i].minW);
-    }
     
     int ids = 0;
     for(const RoomConfig room : rooms){
@@ -142,6 +133,49 @@ std::vector<int16_t> Generate::SizeLoop(
             }
         }
     }
+
+    std::vector<int> perm;
+    for(int i = 0; i < n; i++)
+        perm.push_back(i);
+
+    // Cycle each permutation
+    do {
+        SizeLoop(n, NConn, reqSize, result, perm, allReq, rooms);
+        // break;
+    } while (std::next_permutation(perm.begin(), perm.end()));
+
+    return result;
+}
+
+/*!
+    @brief Given a vector of RoomConfig setups, iterate over every possible room sizes
+    @param[in] n number of rooms
+    @param[in] NConn Number of possible connections
+    @param[in] reqSize lengh of required matrix
+    @param[in] sizeH Height value of each room setup
+    @param[in] sizeW Width value of each room setup
+    @param[in] result, vector of points. Every two points combines into a coordinate and every n * 4 coordinates makes a layout
+    @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
+    @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
+    @return None. It changes the result array by pushing back layouts coordinates
+*/
+void Generate::SizeLoop(
+    const int n, 
+    const int NConn,
+    const int reqSize,
+    std::vector<int16_t>& result,
+    const std::vector<int>& order, 
+    const std::vector<int>& reqAdj,
+    const std::vector<RoomConfig>& rooms)
+    {
+    
+    //Create array with the current size of every room
+    std::vector<int16_t> sizeH; sizeH.reserve(n); // Height
+    std::vector<int16_t> sizeW; sizeW.reserve(n); // Width
+    for(int i = 0; i < n; i++){
+        sizeH.push_back(rooms[i].minH);
+        sizeW.push_back(rooms[i].minW);
+    }
     
     // iterate over each room size combination
     do {
@@ -151,12 +185,11 @@ std::vector<int16_t> Generate::SizeLoop(
         // }
         // std::cout << "#########################" << std::endl << std::endl << std::endl;
 
-        roomPerm(n, NConn, reqSize, &sizeH[0], &sizeW[0], result, allReq, rooms);
+        ConnLoop(n, NConn, reqSize, &sizeH[0], &sizeW[0], result, order, reqAdj, rooms);
     } while(Iter::nextRoomSize(rooms, &sizeH[0], &sizeW[0]));
 
-    return result;
+    // return result;
 }
-
 
 /*!
     @brief Iterate over every possible connection between the given rooms 
@@ -276,7 +309,9 @@ void Generate::ConnLoop(
                     const int idx_2 = rooms[k_idx].rPlannyId;
                     adj[idx_1*reqSize + idx_2] |= rooms[j_idx].id;
                     adj[idx_2*reqSize + idx_1] |= rooms[k_idx].id;
+                    // int foo = 2;
                 }
+                // int foo = 2;
             }
         }
 
@@ -308,43 +343,6 @@ void Generate::ConnLoop(
         }
         i += sum;
     }
-}
-
-
-/*!
-    @brief Iterate over every room permutation
-    @param[in] n number of rooms
-    @param[in] NConn Number of possible connections
-    @param[in] reqSize lengh of required matrix
-    @param[in] sizeH Height value of each room setup
-    @param[in] sizeW Width value of each room setup
-    @param[in] result, vector of points. Every two points combines into a coordinate and every n * 4 coordinates makes a layout
-    @param[in] reqAdj required rooms ajacency, used to force room adjacency in layout, such as a master room has to have a connection with a bathroom
-    @param[in] rooms vector containg all rooms informations, such as minimum and maximum sizes
-    @return None. It changes the result array by pushing back layouts coordinates
-*/
-void Generate::roomPerm(
-    const int n, 
-    const int NConn,
-    const int reqSize,
-    const int16_t *sizeH, 
-    const int16_t *sizeW, 
-    std::vector<int16_t>& result,
-    const std::vector<int>& reqAdj,
-    const std::vector<RoomConfig>& rooms)
-    {
-
-    std::vector<int> perm;
-    for(int i = 0; i < n; i++)
-        perm.push_back(i);
-
-    // Cycle each permutation
-    do {
-        ConnLoop(n, NConn, reqSize, sizeH, sizeW, result, perm, reqAdj, rooms);
-        // break;
-    } while (std::next_permutation(perm.begin(), perm.end()));
-
-    // return conns;
 }
 
 // // 0--1
