@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic CMakeFiles/gpu.dir/gpu.cu.o CMakeFiles/gpu.dir/cpu.cpp.o -o gpu   -L/usr/lib/cuda/targets/x86_64-linux/lib/stubs  -L/usr/lib/cuda/targets/x86_64-linux/lib  -L/usr/lib/gcc/x86_64-linux-gnu/9  -lcudadevrt -lcudart_static -lrt -lpthread -ldl 

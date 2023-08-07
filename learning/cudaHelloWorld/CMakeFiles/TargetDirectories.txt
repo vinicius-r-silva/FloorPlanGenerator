@@ -1,3 +1,0 @@
-/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/gpu.dir
-/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/edit_cache.dir
-/home/ribeiro/Documents/FloorPlanGenerator/learning/cudaHelloWorld/CMakeFiles/rebuild_cache.dir
