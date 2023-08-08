@@ -28,7 +28,7 @@
 
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
-// #define _SIMPLE_DEBUG
+// #define _SIMPLE_DEBUG 
 // #define _FULL_DEBUG
 
 __device__
@@ -101,7 +101,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
 	const int k = blockIdx.z + 1 + blockIdx.z/4; 
 	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A_DISK; //layout A index
-	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index (without * __SIZE_B)
+	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index (without * __SIZE_B)
 	const int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
 
 	// Check bounds
@@ -128,10 +128,11 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 
   	__syncthreads();
 
+	b_idx *= __SIZE_B_DISK;
 	// Load B into local memory
 	int16_t b[__SIZE_B_DISK];
 	for(int i = 0; i < __SIZE_B_DISK; i++){
-		b[i] = d_b[b_idx*__SIZE_B_DISK + i];
+		b[i] = d_b[b_idx + i];
 	}
 
 	
@@ -204,7 +205,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	}
 
 // #ifdef _SIMPLE_DEBUG
-// 	if(res_idx < 2){
+// 	if(res_idx < 12 ){
 // 		printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, " \
 // 		"k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n, " \
 // 		"(%hd, %hd), (%hd, %hd)\n, " \
@@ -426,17 +427,17 @@ void gpuHandler::createPts(
 	checkCudaErrors(cudaMemcpy(d_a, h_a, mem_size_a, cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
 
-	// k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, 0);
-	for(int i = 0; i < qtd_a; i += num_a){
-		int diff = qtd_a - i;
-		if(diff < num_a){
-			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, diff, qtd_b, i);
-			// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
-		} else {
-			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, i);
-			// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
-		}
-	}
+	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, 0);
+	// for(int i = 0; i < qtd_a; i += num_a){
+	// 	int diff = qtd_a - i;
+	// 	if(diff < num_a){
+	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, diff, qtd_b, i);
+	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
+	// 	} else {
+	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, i);
+	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
+	// 	}
+	// }
 
 #ifdef _SIMPLE_DEBUG
   	checkCudaErrors(cudaEventRecord(stop));
