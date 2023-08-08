@@ -203,7 +203,7 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
         }
     }
 
-    std::cout << qtdPts << " pts (" << qtdPts / (n*8) << " layouts) at path: " << path << std::endl;
+    std::cout << qtdPts << " pts (" << qtdPts / (n*8 + 1) << " layouts) at path: " << path << std::endl;
 
     outputFile.close();
 }
@@ -237,8 +237,6 @@ std::vector<int16_t> Storage::readCoreData(int id){
     file.seekg(0, std::ios::end);
     fileSize = file.tellg() / sizeof(int16_t);
     file.seekg(0, std::ios::beg);
-
-
 
     // read the data:
     std::vector<int16_t> fileData(fileSize);

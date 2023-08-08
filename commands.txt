@@ -10,3 +10,6 @@ watch -n.5 nvidia-smi
 
 sudo /usr/local/cuda/bin/ncu-ui
 
+ls -la ../FloorPlanGenerator/storage/ --block-size=MB
+
+du -hs ../FloorPlanGenerator/storage/

@@ -17,6 +17,8 @@
 
 #define __SIZE_A 12		// n_a * 4
 #define __SIZE_B 12		// n_b * 4
+#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
+#define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
 #define __SIZE_RES 2
 
 #define __LEFT 0
@@ -98,7 +100,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 
 	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
 	const int k = blockIdx.z + 1 + blockIdx.z/4; 
-	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A; //layout A index
+	const int a_idx = (blockIdx.y + a_offset) * __SIZE_A_DISK; //layout A index
 	const int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index (without * __SIZE_B)
 	const int res_idx = ((blockIdx.z * qtd_a + blockIdx.y) * qtd_b +  b_idx) * __SIZE_RES;
 
@@ -119,17 +121,17 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 // #endif
 
 	// Load A into shared memory
-	__shared__ int16_t a[__SIZE_A];
-	if(threadIdx.x < __SIZE_A){
+	__shared__ int16_t a[__SIZE_A_DISK];
+	if(threadIdx.x < __SIZE_A_DISK){
 		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
 	}
 
   	__syncthreads();
 
 	// Load B into local memory
-	int16_t b[__SIZE_B];
-	for(int i = 0; i < __SIZE_B; i++){
-		b[i] = d_b[b_idx*__SIZE_B + i];
+	int16_t b[__SIZE_B_DISK];
+	for(int i = 0; i < __SIZE_B_DISK; i++){
+		b[i] = d_b[b_idx*__SIZE_B_DISK + i];
 	}
 
 	
@@ -375,14 +377,14 @@ void gpuHandler::createPts(
 #else
 	const int NConn = __N_CONN;  	// always 12. Qtd of valid connectction between two rooms
 	const long num_a = 200;	//
-	const int qtd_a = a.size() / __SIZE_A;
-	const int qtd_b = b.size() / __SIZE_B;
+	const int qtd_a = a.size() / __SIZE_A_DISK;
+	const int qtd_b = b.size() / __SIZE_B_DISK;
 #endif
 
 	findCudaDevice();	
 
-	const long aLayoutSize = sizeof(int16_t) * __SIZE_A;
-	const long bLayoutSize = sizeof(int16_t) * __SIZE_B;
+	const long aLayoutSize = sizeof(int16_t) * __SIZE_A_DISK;
+	const long bLayoutSize = sizeof(int16_t) * __SIZE_B_DISK;
 	const long resLayoutSize = sizeof(int16_t) * __SIZE_RES;
 	const unsigned long mem_size_a = aLayoutSize * qtd_a;
 	const unsigned long mem_size_b = bLayoutSize * qtd_b;

@@ -17,7 +17,6 @@
 #include "../lib/mpHelper.h"
 #include "../cuda/combine.h"
 
-
 /*!
     @brief counts how many rooms of each class is included in the final layout
     @param[in] setups rooms information
@@ -36,7 +35,6 @@ std::vector<int> countReqClasses(std::vector<RoomConfig> setups, int reqSize){
 
     return allReqCount;
 }
-
 
 /*!
     @brief create data
@@ -88,8 +86,9 @@ void generateData(const int n) {
         
         // std::cout << "i = " << i << std::endl;
 
-        hdd.saveResult(Generate::RoomPerm(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
-        // Generate::RoomPerm(reqSize, allReq, allReqCount, allCombs[i]);
+        hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
+        // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
+
         // break;
     }
 }
@@ -183,8 +182,8 @@ void combineDataGPU(){
 */
 int main(){
     // generateData(3);
-    combineData();
-    // combineDataGPU();
+    // combineData();
+    combineDataGPU();
     
     return 0;
 }
