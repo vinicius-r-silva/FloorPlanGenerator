@@ -11,25 +11,33 @@
 #define __N_A 3
 #define __N_B 3
 #define __N_CONN 12 // always 12
+#define __N_PERM_A 6  // __N_A !
+#define __N_PERM_B 6  // __N_B !
 
 #define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
 #define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
 
-#define __SIZE_A 12		// n_a * 4
-#define __SIZE_B 12		// n_b * 4
+#define __SIZE_A_LAYOUT 12		// __N_A * 4
+#define __SIZE_B_LAYOUT 12		// __N_B * 4
 #define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
 #define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
 #define __SIZE_RES 2
+
+#define __SIZE_ADJ_TYPES 4
+#define __SIZE_ADJ 16 // Req Adj types * Req Adj types
+#define __SIZE_PERM_A 18 // __N_A * __N_PERM_A
+#define __SIZE_PERM_B 18 // __N_B * __N_PERM_B
 
 #define __LEFT 0
 #define __UP 1
 #define __RIGHT 2
 #define __DOWN 3
 
+
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
 // #define _SIMPLE_DEBUG 
-// #define _FULL_DEBUG
+#define _FULL_DEBUG
 
 __device__
 uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const int a_right, 
@@ -87,13 +95,16 @@ uint8_t check_adjacency(const int a_up, const int a_down, const int a_left, cons
     return 0;
 }
 
+// TODO join d_adj, d_perm_a and d_perm_b in a single array?
+// or change the loading for use more threads (eg d_adj uses threads from 13 to (13 + __SIZE_ADJ))
+
 // const int num_threads = __THREADS_PER_BLOCK
 // const int num_blocks = (qtd_b + num_threads -1) / num_threads;
 // dim3 grid(num_blocks, num_a, NConn);
 // dim3 threads(num_threads, 1, 1);
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, const int qtd_b, const int a_offset) {
-	// Block and thread indexes
+void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, int *d_perm_a, int *d_perm_b, const int qtd_a, const int qtd_b, const int a_offset) {
+	// Block and thread indexes 	
 	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), 
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
 	// a Layout B design inside the blockIdx.x block 
@@ -114,10 +125,10 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 
 // #ifdef _FULL_DEBUG
 // 	printf("blockIdx.x: %d, blockIdx.y: %d, blockIdx.z: %d, threadIdx.x: %d, k: %d, a_idx: %d, b_idx: %d, res_idx: %d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
-// 	if(threadIdx.x == 1 && k == 1){
-// 		// printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
-// 	}
-// 	return;
+// 	// if(threadIdx.x == 1 && k == 1){
+// 	// 	// printf("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx);
+// 	// }
+// 	// return;
 // #endif
 
 	// Load A into shared memory
@@ -126,6 +137,21 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
 	}
 
+	__shared__ int adj[__SIZE_ADJ];
+	if(threadIdx.x < __SIZE_ADJ){
+		adj[threadIdx.x] = d_adj[threadIdx.x];
+	}
+
+	//Test withou shared perm, acess global direct
+	__shared__ int perm_a[__SIZE_PERM_A];
+	if(threadIdx.x < __SIZE_PERM_A){
+		perm_a[threadIdx.x] = d_perm_a[threadIdx.x];
+	}
+
+	__shared__ int perm_b[__SIZE_PERM_B];
+	if(threadIdx.x < __SIZE_PERM_B){
+		perm_b[threadIdx.x] = d_perm_b[threadIdx.x];
+	}
   	__syncthreads();
 
 	b_idx *= __SIZE_B_DISK;
@@ -134,6 +160,27 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	for(int i = 0; i < __SIZE_B_DISK; i++){
 		b[i] = d_b[b_idx + i];
 	}
+
+	const int perm_a_idx = a[__SIZE_A_LAYOUT] * __N_A;
+	int adj_count[__SIZE_ADJ_TYPES];
+	for(int i = 0; i < __N_A; i++){
+		adj_count[perm_a[i + perm_a_idx]] |= i;
+	}
+	
+	const int perm_b_idx = b[__SIZE_B_LAYOUT] * __N_B;
+	for(int i = 0; i < __N_B; i++){
+		adj_count[perm_b[i + perm_b_idx]] |= i + __N_A;
+	}
+
+	
+#ifdef _FULL_DEBUG
+	if(res_idx < 6){
+		printf("bx: %2d, by: %2d, bz: %2d, tx: %2d, k: %2d, a: %2d, b: %2d, res: %2d, perm_a_idx: %2d, perm_b_idx: %2d\nadj: %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n\n\n", 
+		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, k, a_idx, b_idx, res_idx, perm_a_idx, perm_b_idx,
+		adj[0], adj[1], adj[2], adj[3], adj[4], adj[5], adj[6], adj[7], adj[8], adj[9], adj[10], adj[11], adj[12], adj[13], adj[14], adj[15]);
+	}
+#endif
+	return;
 
 	
 // #ifdef _FULL_DEBUG
@@ -169,14 +216,14 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		dst = b[2];
 
 	if(srcConn == 0 || srcConn == 2)
-		src = a[__SIZE_A - 4];
+		src = a[__SIZE_A_LAYOUT - 4];
 	else 
-		src = a[__SIZE_A - 2];
+		src = a[__SIZE_A_LAYOUT - 2];
 
 
 	//Move layout B in the X axis by diffX points
 	const int diffX = src - dst;
-	for(int i = 0; i < __SIZE_B; i+=2){
+	for(int i = 0; i < __SIZE_B_LAYOUT; i+=2){
 		b[i] += diffX;
 	}
 	// d_res[a_idx + b_idx + k - a_idx - b_idx - k] = 1;
@@ -194,13 +241,13 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		dst = b[3];
 		
 	if(srcConn == 0 || srcConn == 1)
-		src = a[__SIZE_A - 3];
+		src = a[__SIZE_A_LAYOUT - 3];
 	else 
-		src = a[__SIZE_A - 1];
+		src = a[__SIZE_A_LAYOUT - 1];
 
 	//Move layout B in the Y axis by diffY points
 	const int diffY = src - dst;
-	for(int i = 1; i < __SIZE_B; i+=2){
+	for(int i = 1; i < __SIZE_B_LAYOUT; i+=2){
 		b[i] += diffY;
 	}
 
@@ -234,7 +281,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	// Find the bounding box of B
 	int16_t minH = 5000, maxH = -5000;
 	int16_t minW = 5000, maxW = -5000;
-	for(int i = 0; i < __SIZE_B; i+=4){
+	for(int i = 0; i < __SIZE_B_LAYOUT; i+=4){
 		if(b[i + __UP] < minH)
 			maxH = b[i + __UP];
 		if(b[i + __DOWN] > maxH)
@@ -253,7 +300,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		connections[i] = 1 << i;
 	}
 
-	for(int i = 0; i < __SIZE_A && notOverlap; i+=4){
+	for(int i = 0; i < __SIZE_A_LAYOUT && notOverlap; i+=4){
 		const int16_t a_left = a[i];
 		const int16_t a_up = a[i + __UP];
 		const int16_t a_down = a[i + __DOWN];
@@ -268,7 +315,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		if(a_right > maxW)
 			maxW = a_right;
 
-		for(int j = 0; j < __SIZE_B && notOverlap; j+=4){
+		for(int j = 0; j < __SIZE_B_LAYOUT && notOverlap; j+=4){
 			const int16_t b_left = b[j];
 			const int16_t b_up = b[j + __UP];
 			const int16_t b_down = b[j + __DOWN];
@@ -295,13 +342,13 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 	if(!notOverlap)
 		return;
 
-	for(int i = 0; i < __SIZE_A; i+=4){
+	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
 		const int16_t a_left = a[i];
 		const int16_t a_up = a[i + __UP];
 		const int16_t a_down = a[i + __DOWN];
 		const int16_t a_right = a[i + __RIGHT];
 
-		for(int j = 0; j < __SIZE_A; j+=4){
+		for(int j = 0; j < __SIZE_A_LAYOUT; j+=4){
 			const int16_t b_left = a[j];
 			const int16_t b_up = a[j + __UP];
 			const int16_t b_down = a[j + __DOWN];
@@ -314,13 +361,13 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 		}
 	}
 
-	for(int i = 0; i < __SIZE_B; i+=4){
+	for(int i = 0; i < __SIZE_B_LAYOUT; i+=4){
 		const int16_t a_left = b[i];
 		const int16_t a_up = b[i + __UP];
 		const int16_t a_down = b[i + __DOWN];
 		const int16_t a_right = b[i + __RIGHT];
 
-		for(int j = 0; j < __SIZE_B; j+=4){
+		for(int j = 0; j < __SIZE_B_LAYOUT; j+=4){
 			const int16_t b_left = b[j];
 			const int16_t b_up = b[j + __UP];
 			const int16_t b_down = b[j + __DOWN];
@@ -369,7 +416,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, const int qtd_a, co
 void gpuHandler::createPts(
 		const std::vector<int16_t>& a, const std::vector<int16_t>& b,
 		std::vector<RoomConfig> setupsA, std::vector<RoomConfig> setupsB,
-    	std::vector<int> allReq) {
+    	std::vector<int> allReqAdj, std::vector<int> req_perm_a, std::vector<int> req_perm_b) {
 #ifdef _FULL_DEBUG
 	const int qtd_a = 2;
 	const int qtd_b = 12;
@@ -387,15 +434,23 @@ void gpuHandler::createPts(
 	const long aLayoutSize = sizeof(int16_t) * __SIZE_A_DISK;
 	const long bLayoutSize = sizeof(int16_t) * __SIZE_B_DISK;
 	const long resLayoutSize = sizeof(int16_t) * __SIZE_RES;
+	
 	const unsigned long mem_size_a = aLayoutSize * qtd_a;
 	const unsigned long mem_size_b = bLayoutSize * qtd_b;
 	const unsigned long mem_size_res = num_a * NConn * qtd_b * resLayoutSize;
 
+	const unsigned long mem_size_adj = sizeof(int) * __SIZE_ADJ;
+	const unsigned long mem_size_perm_a = sizeof(int) * __SIZE_ADJ;
+	const unsigned long mem_size_perm_b = sizeof(int) * __SIZE_ADJ;
+
 	// allocate host memory (CPU)
+	int *h_adj = (int *)(&allReqAdj[0]);
+	int *h_perm_a = (int *)(&req_perm_a[0]);
+	int *h_perm_b = (int *)(&req_perm_b[0]);
+
 	int16_t *h_a = (int16_t *)(&a[0]);
 	int16_t *h_b = (int16_t *)(&b[0]);
 	int16_t *h_res = nullptr;
-
 	cudaMallocHost((void**)&h_res, mem_size_res);
 
 #ifdef _SIMPLE_DEBUG
@@ -413,11 +468,16 @@ void gpuHandler::createPts(
 	dim3 threads(num_threads, 1, 1);
 
 	// allocate device memory
+	int *d_adj, *d_perm_a, *d_perm_b;
 	int16_t *d_a, *d_b, *d_res;
 	checkCudaErrors(cudaMalloc((void **)&d_a, mem_size_a));
 	checkCudaErrors(cudaMalloc((void **)&d_b, mem_size_b));
 	checkCudaErrors(cudaMalloc((void **)&d_res, mem_size_res));
 	checkCudaErrors(cudaMemset(d_res, 0, mem_size_res));
+
+	checkCudaErrors(cudaMalloc((void **)&d_adj, mem_size_adj));
+	checkCudaErrors(cudaMalloc((void **)&d_perm_a, mem_size_perm_a));
+	checkCudaErrors(cudaMalloc((void **)&d_perm_b, mem_size_perm_b));
 
 	// copy host data to device
 #ifdef _SIMPLE_DEBUG
@@ -426,15 +486,18 @@ void gpuHandler::createPts(
 
 	checkCudaErrors(cudaMemcpy(d_a, h_a, mem_size_a, cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_adj, h_adj, mem_size_adj, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_perm_a, h_perm_a, mem_size_perm_a, cudaMemcpyHostToDevice));
+	checkCudaErrors(cudaMemcpy(d_perm_b, h_perm_b, mem_size_perm_b, cudaMemcpyHostToDevice));
 
-	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, 0);
+	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, d_perm_a, d_perm_b, num_a, qtd_b, 0);
 	// for(int i = 0; i < qtd_a; i += num_a){
 	// 	int diff = qtd_a - i;
 	// 	if(diff < num_a){
-	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, diff, qtd_b, i);
+	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, d_perm_a, d_perm_b, diff, qtd_b, i);
 	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
 	// 	} else {
-	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, num_a, qtd_b, i);
+	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, d_perm_a, d_perm_b, num_a, qtd_b, i);
 	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
 	// 	}
 	// }
@@ -455,7 +518,7 @@ void gpuHandler::createPts(
 	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
 	std::cout << "grid: " << grid.x << ", " << grid.y << ", " << grid.z << std::endl;
 	std::cout << "threads: " << threads.x << ", " << threads.y << ", " << threads.z << std::endl;
-	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << std::endl;
+	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << ", mem_size_adj: " << mem_size_adj << std::endl;
 	std::cout << "mem_size_a (MB): " << ((float)mem_size_a)/1024.0/1024.0 << ", mem_size_b (MB): " << ((float)mem_size_b)/1024.0/1024.0 << ", mem_size_res (MB): " << ((float)mem_size_res)/1024.0/1024.0 << std::endl;
 	std::cout << "Time: " << msecTotal << std::endl;
 #endif

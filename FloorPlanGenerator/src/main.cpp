@@ -45,7 +45,6 @@ void generateData(const int n) {
     std::cout << "NThreads: " << NThreads << std::endl;
 
     Storage hdd = Storage();
-    // std::vector<int> adj = hdd.getAdjValues();
     std::vector<RoomConfig> setups = hdd.getConfigs();
 
     std::vector<int> allReq = hdd.getReqAdjValues();
@@ -62,9 +61,6 @@ void generateData(const int n) {
     const int NCombs = allCombs.size();
     printf("main NCombs: %d\n\n", NCombs);
     Log::printVector2D(allCombs);
-    
-    // const int NReqs = Calculator::lenghtHalfMatrix(n);
-    // std::vector<int> req(NReqs, 0);
 
 #ifdef MULTI_THREAD
     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs, allReqCount, allReq, reqSize, n)
@@ -127,51 +123,66 @@ void combineData(){
     }
 }
 
+std::vector<int> getReqAdjPermutation(std::vector<RoomConfig> setups){
+    std::vector<int> req_types;
+    for(RoomConfig room : setups){
+        req_types.push_back(room.rPlannyId);
+    }
+
+    std::vector<int> idx_perm;
+    for(ulong i = 0; i < req_types.size(); i++){
+        idx_perm.push_back(i);
+    }
+
+    std::vector<int> result;
+    do {
+        // Log::printVector1D(idx_perm); 
+        for(int i : idx_perm){
+            result.push_back(req_types[i]);
+        }
+    } while (std::next_permutation(std::begin(idx_perm), std::end(idx_perm)));
+    Log::printVector1D(result);
+    // std::cout << std::endl << std::endl << std::endl;
+
+    return result;
+}
+
 void combineDataGPU(){
     Storage hdd = Storage();
-    std::vector<int> allReq = hdd.getReqAdjValues();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
 
-    const int reqSize = sqrt(allReq.size());
-    std::vector<int> allReqCount = countReqClasses(setups, reqSize);
-    // std::cout << "allReq: ";
-    // Log::printVector1D(allReq);
-    // std::cout << "allReqCount: ";
-    // Log::printVector1D(allReqCount);
 
-    // const int NReqs = Calculator::lenghtHalfMatrix(3);
-    // std::vector<int> req(NReqs, 0);
-    // std::cout << "NReqs: " << NReqs << std::endl;
-    // std::cout << "req: ";
-    // Log::printVector1D(req);
+    //TODO check if all of req are present during the gpu combination
+    std::vector<int> allReq = hdd.getReqAdjValues();
+    
+    Log::printVector1D(allReq);
+    // for(int i = 0; i < allReq.size(); i++){
+    //     std::string a = allReq[i] == REQ_ANY ? "ANY" : allReq[i] == REQ_ALL ? "ALL" : "   ";
+    //     std::cout << a << ", ";
+    //     if(i % 4 == 3){
+    //         std::cout << std::endl;
+    //     }
+    // }
+    // std::cout << std::endl;
 
+    // for(RoomConfig room : setups){
+    //     Log::print(room);
+    // }
 
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
-    for(std::vector<int> fileComb : filesCombs){
-        // std::cout << "idA: " << fileComb[0] << ", idB: " << fileComb[1] << std::endl;
-        
+    for(std::vector<int> fileComb : filesCombs){        
         std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
         std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        // std::cout << "setupsA (" << fileComb[0] << "): ";
-        // for(RoomConfig room : setupsA){
-        //     // Log.print(room);
-        //     std::cout << room.name << ", ";
-        // }
-        // std::cout << std::endl << "setupsB (" << fileComb[1] << "): ";
-        // for(RoomConfig room : setupsB){
-        //     // Log.print(room);
-        //     std::cout << room.name << ", ";
-        // }
-        // std::cout << std::endl;
+        std::vector<int> req_perm_a = getReqAdjPermutation(setupsA);
+        std::vector<int> req_perm_b = getReqAdjPermutation(setupsB);
 
-        // std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
-        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq);
+        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq, req_perm_a, req_perm_b);
         break;
     }
 }
