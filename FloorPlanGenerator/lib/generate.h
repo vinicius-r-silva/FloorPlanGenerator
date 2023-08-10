@@ -66,7 +66,7 @@ public:
         @param[in] n     number of rooms
         @param[in] NConn Number of possible connections
         @param[in] reqSize lengh of required matrix
-        @param[in] permIter iteration count of the permutation
+        @param[in] adjIds id of each rPlannyId set every 2 bits (first 2 bits are the first room rplannyid, third e fourth bits are the second rplannyid....)
         @param[in] sizeH Height value of each room setup
         @param[in] sizeW Width value of each room setup
         @param[in] order, specify the order of the rooms to connect
@@ -79,7 +79,7 @@ public:
         const int n, 
         const int NConn, 
         const int reqSize,
-        const int permIter,
+        const int adjIds,
         const int16_t *sizeH, 
         const int16_t *sizeW, 
         std::vector<int16_t>& result,

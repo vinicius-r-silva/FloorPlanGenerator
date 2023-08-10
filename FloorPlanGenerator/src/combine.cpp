@@ -39,8 +39,8 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
         // for(int k = 1; k < 2; k++){       
         //     for(int j = 0; j < 1; j += vectorOffset_b){   
    
-        for(int k = 0; k < 16; k++){         
-            for(int j = 0; j < (int)b.size(); j += vectorOffset_b){   
+        for(int j = 0; j < (int)b.size(); j += vectorOffset_b){   
+            for(int k = 0; k < 16; k++){         
                 // std::cout << "j: " << j << std::endl;
                 const int srcConn = k & 0b11;
                 const int dstConn = (k >> 2) & 0b11;
@@ -74,6 +74,8 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
 
                 const int diffX = srcX - dstX;
                 const int diffY = srcY - dstY;
+                // const int diffX = 0;
+                // const int diffY = 0;
 
                 for(int l = 0; l < ptsPerLayout_b; l++){
                     ptsX[l + ptsPerLayout_a] = b[j + l * 2] + diffX;
@@ -109,6 +111,7 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
                     std::cout << "\t(" << ptsX[l * 2] << ", " << ptsY[l * 2] << "), (" << ptsX[l * 2 + 1] << ", " << ptsY[l * 2 + 1] << ")" << std::endl;
                 }
                 std::cout << "H: " << maxY - minY << ", W: " << maxX - minX << std::endl;
+                std::cout << "Adj A: " << a[i - 1] << ", Adj B: " << b[j + vectorOffset_b - 1] << std::endl;
 
                 // ptsX.erase(ptsX.begin() + 6, ptsX.end());
                 // ptsY.erase(ptsY.begin() + 6, ptsY.end());
@@ -116,18 +119,18 @@ void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vect
                 int dir = CVHelper::showLayoutMove(ptsX, ptsY);
                 if(dir == -1 && iArray.size() == 0){
                     // i -= vectorOffset_a;
-                    j -= vectorOffset_b;
-                    // k -= 1;
+                    // j -= vectorOffset_b;
+                    k -= 1;
                 }
                 else if(dir == -1 && iArray.size() > 0){
                     i = iArray.back(); iArray.pop_back(); 
                     // i = iArray.back() - vectorOffset_a; iArray.pop_back(); 
 
-                    // j = jArray.back(); jArray.pop_back(); 
-                    j = jArray.back() - vectorOffset_b; jArray.pop_back(); 
+                    j = jArray.back(); jArray.pop_back(); 
+                    // j = jArray.back() - vectorOffset_b; jArray.pop_back(); 
 
-                    k = kArray.back(); kArray.pop_back(); 
-                    // k = kArray.back() - 1; kArray.pop_back(); 
+                    // k = kArray.back(); kArray.pop_back(); 
+                    k = kArray.back() - 1; kArray.pop_back(); 
                 } else {
                     iArray.push_back(i);
                     jArray.push_back(j);

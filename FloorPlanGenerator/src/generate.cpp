@@ -187,11 +187,13 @@ void Generate::roomPerm(
         perm.push_back(i);
 
     // Cycle each permutation
-    int permIter = 0;
     do {
-        ConnLoop(n, NConn, reqSize, permIter, sizeH, sizeW, result, perm, reqAdj, rooms);
-        permIter++;
-        // break;
+        int adjIds = 0;
+        for(int i = 0; i < n; i++){
+            adjIds |= (rooms[perm[i]].rPlannyId << (i * 2));
+        }
+
+        ConnLoop(n, NConn, reqSize, adjIds, sizeH, sizeW, result, perm, reqAdj, rooms);
     } while (std::next_permutation(perm.begin(), perm.end()));
 
     // return conns;
@@ -202,7 +204,7 @@ void Generate::roomPerm(
     @param[in] n     number of rooms
     @param[in] NConn Number of possible connections
     @param[in] reqSize lengh of required matrix
-    @param[in] permIter iteration count of the permutation
+    @param[in] adjIds id of each rPlannyId set every 2 bits (first 2 bits are the first room rplannyid, third e fourth bits are the second rplannyid....)
     @param[in] sizeH Height value of each room setup
     @param[in] sizeW Width value of each room setup
     @param[in] order, specify the order of the rooms to connect
@@ -215,7 +217,7 @@ void Generate::ConnLoop(
     const int n, 
     const int NConn, 
     const int reqSize,
-    const int permIter,
+    const int adjIds,
     const int16_t *sizeH, 
     const int16_t *sizeW, 
     std::vector<int16_t>& result,
@@ -341,7 +343,7 @@ void Generate::ConnLoop(
                     result.push_back(ptsX[2 * j + 1]);
                     result.push_back(ptsY[2 * j + 1]);
                 }
-                result.push_back(permIter);
+                result.push_back(adjIds);
                 
                 // #ifdef OPENCV_ENABLED
                 // CVHelper::showLayout(ptsX, ptsY);

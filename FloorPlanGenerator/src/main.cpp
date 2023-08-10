@@ -115,7 +115,7 @@ void combineData(){
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::cout << "fileComb[0]" << fileComb[0] << "fileComb[1]" << fileComb[1] << std::endl;
+        std::cout << "fileComb[0]" << fileComb[0] << ", fileComb[1]" << fileComb[1] << std::endl;
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
         // break;
@@ -123,66 +123,26 @@ void combineData(){
     }
 }
 
-std::vector<int> getReqAdjPermutation(std::vector<RoomConfig> setups){
-    std::vector<int> req_types;
-    for(RoomConfig room : setups){
-        req_types.push_back(room.rPlannyId);
-    }
-
-    std::vector<int> idx_perm;
-    for(ulong i = 0; i < req_types.size(); i++){
-        idx_perm.push_back(i);
-    }
-
-    std::vector<int> result;
-    do {
-        // Log::printVector1D(idx_perm); 
-        for(int i : idx_perm){
-            result.push_back(req_types[i]);
-        }
-    } while (std::next_permutation(std::begin(idx_perm), std::end(idx_perm)));
-    Log::printVector1D(result);
-    // std::cout << std::endl << std::endl << std::endl;
-
-    return result;
-}
-
 void combineDataGPU(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCombinations();
 
-
     //TODO check if all of req are present during the gpu combination
     std::vector<int> allReq = hdd.getReqAdjValues();
-    
-    Log::printVector1D(allReq);
-    // for(int i = 0; i < allReq.size(); i++){
-    //     std::string a = allReq[i] == REQ_ANY ? "ANY" : allReq[i] == REQ_ALL ? "ALL" : "   ";
-    //     std::cout << a << ", ";
-    //     if(i % 4 == 3){
-    //         std::cout << std::endl;
-    //     }
-    // }
-    // std::cout << std::endl;
-
-    // for(RoomConfig room : setups){
-    //     Log::print(room);
-    // }
+    // Log::printVector1D(allReq);
 
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){        
+        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
         std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
         std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::vector<int> req_perm_a = getReqAdjPermutation(setupsA);
-        std::vector<int> req_perm_b = getReqAdjPermutation(setupsB);
-
-        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq, req_perm_a, req_perm_b);
+        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq);
         break;
     }
 }
