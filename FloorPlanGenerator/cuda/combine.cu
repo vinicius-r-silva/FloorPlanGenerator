@@ -21,7 +21,7 @@
 #define __SIZE_B_LAYOUT 12		// __N_B * 4
 #define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
 #define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
-#define __SIZE_RES 3
+#define __SIZE_RES 2
 
 // TODO INCREASE RPLANNY IDS TO 5 TYPES INSTEAD OF 4 TYPES
 
@@ -35,77 +35,19 @@
 #define __RIGHT 2
 #define __DOWN 3
 
+#define __PERM_BITS_SIZE 3
+#define __PERM_BITS 7
+
 
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
 #define _SIMPLE_DEBUG 
 // #define _FULL_DEBUG
 
+// Sorry, had to do it this way to make the reduce the cuda kernel registers usage
 #define check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) (((a_down == b_up || a_up == b_down) && ((a_right > b_left && a_right <= b_right) || (a_left < b_right && a_left >= b_left) || (a_left <= b_left && a_right >= b_right))) ||  ((a_left == b_right || a_right == b_left) && ((a_down > b_up && a_down <= b_down) || (a_up < b_down && a_up >= b_up) || (a_up <= b_up && a_down >= b_down))))
 
-__device__
-uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const int a_right, 
-					const int b_up, const int b_down, const int b_left, const int b_right){
-	if(((a_down > b_up && a_down <= b_down) ||
-		(a_up  >= b_up && a_up < b_down)) &&
-		((a_right > b_left && a_right <= b_right) ||
-		(a_left  >= b_left && a_left  <  b_right) ||
-		(a_left  <= b_left && a_right >= b_right))){
-			return 0;
-	}
-	
-	else if(((b_down > a_up && b_down <= a_down) ||
-		(b_up >= a_up && b_up < a_down)) &&
-		((b_right > a_left && b_right <= a_right) ||
-		(b_left  >= a_left && b_left  <  a_right) ||
-		(b_left  <= a_left && b_right >= a_right))){
-			return 0;
-	}
-
-	else if(((a_right > b_left && a_right <= b_right) ||
-		(a_left >= b_left && a_left < b_right)) &&
-		((a_down > b_up && a_down <= b_down) ||
-		(a_up  >= b_up && a_up   <  b_down) ||
-		(a_up  <= b_up && a_down >= b_down))){
-			return 0;
-	}
-	
-	else if(((b_right > a_left && b_right <= a_right) ||
-		(b_left >= a_left && b_left < a_right)) &&
-		((b_down > a_up && b_down <= a_down) ||
-		(b_up  >= a_up && b_up   <  a_down) ||
-		(b_up  <= a_up && b_down >= a_down))){
-			return 0;
-	}
-
-	return 1;
-}
-
-// __device__
-// uint8_t check_adjacency(const int a_up, const int a_down, const int a_left, const int a_right, 
-// 					const int b_up, const int b_down, const int b_left, const int b_right){    
-// 	// if((a_down == b_up || a_up == b_down) &&
-//     //     ((a_right > b_left && a_right <= b_right) ||
-//     //     (a_left < b_right && a_left >= b_left) ||
-//     //     (a_left <= b_left && a_right >= b_right)))
-//     //         return 1;   
-
-//     // if((a_left == b_right || a_right == b_left) &&
-//     //     ((a_down > b_up && a_down <= b_down) ||
-//     //     (a_up < b_down && a_up >= b_up) ||
-//     //     (a_up <= b_up && a_down >= b_down)))
-//     //         return 1; 
-
-//     return 
-// 		(((a_down == b_up || a_up == b_down) &&
-//         ((a_right > b_left && a_right <= b_right) ||
-//         (a_left < b_right && a_left >= b_left) ||
-//         (a_left <= b_left && a_right >= b_right))) || 
-// 		((a_left == b_right || a_right == b_left) &&
-// 		((a_down > b_up && a_down <= b_down) ||
-// 		(a_up < b_down && a_up >= b_up) ||
-// 		(a_up <= b_up && a_down >= b_down))));
-// }
+#define check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) ((a_up >= b_up && a_up < b_down && a_left < b_right && a_left >= b_left) || (a_up >= b_up && a_up < b_down && a_right >= b_right && a_left <= b_left) || (a_up >= b_up && a_up < b_down && a_right <= b_right && a_right > b_left) || (a_down >= b_down && a_left < b_right && a_left >= b_left && a_up <= b_up) || (a_down >= b_down && a_up <= b_up && a_right <= b_right && a_right > b_left) || (a_left < b_right && a_left >= b_left && a_down > b_up && a_down <= b_down) || (a_right >= b_right && a_down > b_up && a_down <= b_down && a_left <= b_left) || (b_right >= a_right && b_up >= a_up && b_up < a_down && b_left <= a_left) || (b_right >= a_right && b_down > a_up && b_down <= a_down && b_left <= a_left) || (b_up >= a_up && b_up < a_down && b_left >= a_left && b_left < a_right) || (b_up >= a_up && b_up < a_down && b_right > a_left && b_right <= a_right) || (b_down >= a_down && b_left >= a_left && b_left < a_right && b_up <= a_up) || (b_down >= a_down && b_right > a_left && b_right <= a_right && b_up <= a_up) || (b_left >= a_left && b_left < a_right && b_down > a_up && b_down <= a_down) || (a_down > b_up && a_down <= b_down && a_right <= b_right && a_right > b_left) || (b_right > a_left && b_right <= a_right && b_down > a_up && b_down <= a_down))
 
 // const int num_threads = __THREADS_PER_BLOCK
 // const int num_blocks = (qtd_b + num_threads -1) / num_threads;
@@ -122,27 +64,29 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	const int k = blockIdx.z + 1 + blockIdx.z/4; 
 	int a_idx = blockIdx.y + a_offset; //layout A index
 	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index
-	const int res_idx = ((a_idx * qtd_b * __N_CONN) + (b_idx * __N_CONN) + blockIdx.z) * __SIZE_RES;
-	a_idx *= __SIZE_A_DISK;
+	const uint64_t res_idx = ((a_idx * qtd_b * __N_CONN) + (b_idx * __N_CONN) + blockIdx.z) * __SIZE_RES;
 
 	// Check bounds
 	if(b_idx >= qtd_b || blockIdx.y >= qtd_a){
 		return;
 	}
 
+	a_idx *= __SIZE_A_DISK;
+	b_idx *= __SIZE_B_DISK;
+
 	// Load A into shared memory
 	__shared__ int16_t a[__SIZE_A_DISK];
 	if(threadIdx.x < __SIZE_A_DISK){
 		a[threadIdx.x] = d_a[a_idx + threadIdx.x];
 	}
-
+	
 	__shared__ int req_adj[__SIZE_ADJ];
 	if(threadIdx.x < __SIZE_ADJ){
 		req_adj[threadIdx.x] = d_adj[threadIdx.x];
 	}
+
   	__syncthreads();
 
-	b_idx *= __SIZE_B_DISK;
 	// Load B into local memory
 	int16_t b[__SIZE_B_DISK];
 	for(int i = 0; i < __SIZE_B_DISK; i++){
@@ -191,8 +135,8 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	}
 
 	// Find the bounding box of B
-	int16_t minH = 5000, maxH = -5000;
-	int16_t minW = 5000, maxW = -5000;
+	int minH = 5000, maxH = -5000;
+	int minW = 5000, maxW = -5000;
 	for(int i = 0; i < __SIZE_B_LAYOUT; i+=4){
 		if(b[i + __UP] < minH)
 			minH = b[i + __UP];
@@ -206,13 +150,12 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 
 	//left, up, right, down
 	// Find the bounding box of A and check overlaping
-	int notOverlap = 1;
 	int connections[__N_A + __N_B];
 	for(int i = 0; i < __N_A  + __N_B; i++){
 		connections[i] = 1 << i;
 	}
 
-	for(int i = 0; i < __SIZE_A_LAYOUT && notOverlap; i+=4){
+	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
 		const int16_t a_left = a[i];
 		const int16_t a_up = a[i + __UP];
 		const int16_t a_down = a[i + __DOWN];
@@ -227,13 +170,14 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 		if(a_right > maxW)
 			maxW = a_right;
 
-		for(int j = 0; j < __SIZE_B_LAYOUT && notOverlap; j+=4){
+		for(int j = 0; j < __SIZE_B_LAYOUT; j+=4){
 			const int16_t b_left = b[j];
 			const int16_t b_up = b[j + __UP];
 			const int16_t b_down = b[j + __DOWN];
 			const int16_t b_right = b[j + __RIGHT];
 
-			notOverlap = check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right);
+			if(check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right))
+				return;
 			
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
 				connections[i/4] |= 1 << (j/4) + __N_A;
@@ -241,9 +185,6 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 			}
 		}
 	}
-
-	if(!notOverlap)
-		return;
 
 	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
 		const int16_t a_left = a[i];
@@ -283,6 +224,9 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 		}
 	}
 
+	const int a_perm_idx = a[__SIZE_A_LAYOUT];
+	const int b_perm_idx = b[__SIZE_B_LAYOUT];
+
 	int adj[__SIZE_ADJ_TYPES]; //Rid connections from the specific rId
 	int adj_count[__SIZE_ADJ_TYPES]; //Idx of each room from the specific rId
 	for(int i = 0; i < __SIZE_ADJ_TYPES; i++){
@@ -291,31 +235,27 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	}
 
 	for(int i = 0; i < __N_A; i++){
-		const int rplannyId = (a[__SIZE_A_LAYOUT] >> (i * 2)) & 3;
+		const int rplannyId = (a_perm_idx >> (i * __PERM_BITS_SIZE)) & __PERM_BITS;
 		adj_count[rplannyId] |= 1 << i;
 		adj[rplannyId] |= connections[i];
 	}
 	
 	for(int i = 0; i < __N_B; i++){
-		const int rplannyId = (b[__SIZE_B_LAYOUT] >> (i * 2)) & 3;
+		const int rplannyId = (b_perm_idx >> (i * __PERM_BITS_SIZE)) & __PERM_BITS;
 		adj_count[rplannyId] |= 1 << (i + __N_A);
 		adj[rplannyId] |= connections[i + __N_A];
 	}
 
-	int reqAdjCompliant = 1;
-	for(int i = 0; i < __SIZE_ADJ_TYPES && reqAdjCompliant; i++){
-		for(int j = 0; j < __SIZE_ADJ_TYPES && reqAdjCompliant; j++){
-			if(req_adj[i*__SIZE_ADJ_TYPES + j] == REQ_ANY){
-				reqAdjCompliant = adj[j] & adj_count[i];
-			}
-			else if(req_adj[i*__SIZE_ADJ_TYPES + j] == REQ_ALL){
-				reqAdjCompliant = ((adj[j] & adj_count[i]) == adj_count[i]);
-			}
+	for(int i = 0; i < __SIZE_ADJ_TYPES; i++){
+		for(int j = 0; j < __SIZE_ADJ_TYPES; j++){
+			const int req_adj_idx = i*__SIZE_ADJ_TYPES + j;
+			if(req_adj[req_adj_idx] == REQ_ANY && !(adj[j] & adj_count[i]))
+				return;
+
+			if(req_adj[req_adj_idx] == REQ_ALL && (adj[j] & adj_count[i]) != adj_count[i])
+				return;
 		}
 	}
-
-	if(!reqAdjCompliant)
-		return;
 
 	for(int i = 0; i < __N_A + __N_B; i++){
 		const int conns = connections[i];
@@ -366,7 +306,7 @@ void gpuHandler::createPts(
 	int16_t *h_b = (int16_t *)(&b[0]);
 	int16_t *h_res = nullptr;
 	cudaMallocHost((void**)&h_res, mem_size_res);
-	std::cout << "a: " << h_a[0] << ", " << h_a[1] << ", " << h_a[2] << ", " << h_a[3] << ", " << h_a[4] << ", " << h_a[5] << ", " << h_a[6] << ", " << h_a[7] << ", " << h_a[8] << ", " << h_a[9] << ", " << h_a[10] << ", " << h_a[11] << std::endl << std::endl << std::endl;
+	// std::cout << "a: " << h_a[0] << ", " << h_a[1] << ", " << h_a[2] << ", " << h_a[3] << ", " << h_a[4] << ", " << h_a[5] << ", " << h_a[6] << ", " << h_a[7] << ", " << h_a[8] << ", " << h_a[9] << ", " << h_a[10] << ", " << h_a[11] << std::endl << std::endl << std::endl;
 
 #ifdef _SIMPLE_DEBUG
 	// Allocate CUDA events used for timing
@@ -447,8 +387,7 @@ std::cout << std::endl;
 	checkCudaErrors(cudaFree(d_res));
 
 #ifdef _SIMPLE_DEBUG
-	// for(int i = 0; i < num_a * NConn * qtd_b; i++){
-	for(int i = 0; i < qtd_a * NConn * qtd_b; i++){
+	for(int i = 0; i < num_a * NConn * qtd_b; i++){
 		int memAddr = i * __SIZE_RES;
 		if(h_res[memAddr] == 0)
 			continue;
@@ -456,8 +395,7 @@ std::cout << std::endl;
 		std::cout << "i: " << i << ", memAddr: " << memAddr << std::endl;
 		for(int j = 0; j < __SIZE_RES; j++){
 			std::cout << h_res[memAddr + j] << ", ";
-		}
-		std::cout << std::endl;
+		}std::cout << std::endl;
 
 		getchar();
 	}

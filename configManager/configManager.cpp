@@ -538,7 +538,7 @@ void normalConfig(std::string projectPath){
     rooms[cozinha].minW = 20; rooms[cozinha].maxW = 20;
     // rooms[cozinha].minH = 15; rooms[cozinha].maxH = 25;
     // rooms[cozinha].minW = 15; rooms[cozinha].maxW = 30;
-    rooms[cozinha].step = 100; // 5
+    rooms[cozinha].step = 100; // 10
     rooms[cozinha].depend = 0;
     rooms[cozinha].rPlannyId = _KITCHEN;
     

@@ -81,7 +81,7 @@ void generateData(const int n) {
         // std::cout << std::endl;
         
         // std::cout << "i = " << i << std::endl;
-
+        
         hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
         // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
 
@@ -115,7 +115,8 @@ void combineData(){
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::cout << "fileComb[0]" << fileComb[0] << ", fileComb[1]" << fileComb[1] << std::endl;
+        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
         // break;
@@ -135,7 +136,7 @@ void combineDataGPU(){
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){        
-        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+        // std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
         std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
         std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
