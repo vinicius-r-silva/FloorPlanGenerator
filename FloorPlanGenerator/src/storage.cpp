@@ -187,21 +187,29 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
     std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
     std::ofstream outputFile(path, std::ios::out | std::ios::binary);
 
+    //Write in a single pass
+    outputFile.write(reinterpret_cast<const char*>(layouts.data()), layouts.size() * sizeof(int16_t));
+
 
     const int qtdPts = layouts.size();
-    const int pageSize = 4096;
-    const int vectorSize = pageSize / sizeof(layouts[0]);
-    std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
-    for(int i = 0; i < qtdPts; i++){
-        sizesFile.push_back(layouts[i]);
 
-        if(i % vectorSize == vectorSize - 1){
-            outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(sizesFile[0]));
+    // Maybe split the write calls in chunks can improve performance?
+    // const int pageSize = 4096; //make it divisible by the layout size
+    // const int vectorSize = pageSize / sizeof(layouts[0]);
+    // std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
+    // for(int i = 0; i < qtdPts; i++){
+    //     if(layouts[i] > 1000 || layouts[i] < -1000){
+    //         std::cout << layouts[i] << std::endl;
+    //     }
+    //     sizesFile.push_back(layouts[i]);
 
-            sizesFile.clear(); 
-            sizesFile.reserve(vectorSize);
-        }
-    }
+    //     if(i % vectorSize == vectorSize - 1){
+    //         outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(sizesFile[0]));
+
+    //         sizesFile.clear(); 
+    //         sizesFile.reserve(vectorSize);
+    //     }
+    // }
 
     std::cout << qtdPts << " pts (" << qtdPts / (n*8 + 1) << " layouts) at path: " << path << std::endl;
 
