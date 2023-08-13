@@ -41,13 +41,51 @@
 
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
-#define _SIMPLE_DEBUG 
+// #define _SIMPLE_DEBUG 
 // #define _FULL_DEBUG
 
 // Sorry, had to do it this way to make the reduce the cuda kernel registers usage
 #define check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) (((a_down == b_up || a_up == b_down) && ((a_right > b_left && a_right <= b_right) || (a_left < b_right && a_left >= b_left) || (a_left <= b_left && a_right >= b_right))) ||  ((a_left == b_right || a_right == b_left) && ((a_down > b_up && a_down <= b_down) || (a_up < b_down && a_up >= b_up) || (a_up <= b_up && a_down >= b_down))))
 
-#define check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) ((a_up >= b_up && a_up < b_down && a_left < b_right && a_left >= b_left) || (a_up >= b_up && a_up < b_down && a_right >= b_right && a_left <= b_left) || (a_up >= b_up && a_up < b_down && a_right <= b_right && a_right > b_left) || (a_down >= b_down && a_left < b_right && a_left >= b_left && a_up <= b_up) || (a_down >= b_down && a_up <= b_up && a_right <= b_right && a_right > b_left) || (a_left < b_right && a_left >= b_left && a_down > b_up && a_down <= b_down) || (a_right >= b_right && a_down > b_up && a_down <= b_down && a_left <= b_left) || (b_right >= a_right && b_up >= a_up && b_up < a_down && b_left <= a_left) || (b_right >= a_right && b_down > a_up && b_down <= a_down && b_left <= a_left) || (b_up >= a_up && b_up < a_down && b_left >= a_left && b_left < a_right) || (b_up >= a_up && b_up < a_down && b_right > a_left && b_right <= a_right) || (b_down >= a_down && b_left >= a_left && b_left < a_right && b_up <= a_up) || (b_down >= a_down && b_right > a_left && b_right <= a_right && b_up <= a_up) || (b_left >= a_left && b_left < a_right && b_down > a_up && b_down <= a_down) || (a_down > b_up && a_down <= b_down && a_right <= b_right && a_right > b_left) || (b_right > a_left && b_right <= a_right && b_down > a_up && b_down <= a_down))
+// #define check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) ((a_up >= b_up && a_up < b_down && a_left < b_right && a_left >= b_left) || (a_up >= b_up && a_up < b_down && a_right >= b_right && a_left <= b_left) || (a_up >= b_up && a_up < b_down && a_right <= b_right && a_right > b_left) || (a_down >= b_down && a_left < b_right && a_left >= b_left && a_up <= b_up) || (a_down >= b_down && a_up <= b_up && a_right <= b_right && a_right > b_left) || (a_left < b_right && a_left >= b_left && a_down > b_up && a_down <= b_down) || (a_right >= b_right && a_down > b_up && a_down <= b_down && a_left <= b_left) || (b_right >= a_right && b_up >= a_up && b_up < a_down && b_left <= a_left) || (b_right >= a_right && b_down > a_up && b_down <= a_down && b_left <= a_left) || (b_up >= a_up && b_up < a_down && b_left >= a_left && b_left < a_right) || (b_up >= a_up && b_up < a_down && b_right > a_left && b_right <= a_right) || (b_down >= a_down && b_left >= a_left && b_left < a_right && b_up <= a_up) || (b_down >= a_down && b_right > a_left && b_right <= a_right && b_up <= a_up) || (b_left >= a_left && b_left < a_right && b_down > a_up && b_down <= a_down) || (a_down > b_up && a_down <= b_down && a_right <= b_right && a_right > b_left) || (b_right > a_left && b_right <= a_right && b_down > a_up && b_down <= a_down))
+
+__device__
+uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const int a_right, 
+	const int b_up, const int b_down, const int b_left, const int b_right){
+	if(((a_down > b_up && a_down <= b_down) ||
+	(a_up  >= b_up && a_up < b_down)) &&
+	((a_right > b_left && a_right <= b_right) ||
+	(a_left  >= b_left && a_left  <  b_right) ||
+	(a_left  <= b_left && a_right >= b_right))){
+		return 0;
+	}
+
+	else if(((b_down > a_up && b_down <= a_down) ||
+	(b_up >= a_up && b_up < a_down)) &&
+	((b_right > a_left && b_right <= a_right) ||
+	(b_left  >= a_left && b_left  <  a_right) ||
+	(b_left  <= a_left && b_right >= a_right))){
+		return 0;
+	}
+
+	else if(((a_right > b_left && a_right <= b_right) ||
+	(a_left >= b_left && a_left < b_right)) &&
+	((a_down > b_up && a_down <= b_down) ||
+	(a_up  >= b_up && a_up   <  b_down) ||
+	(a_up  <= b_up && a_down >= b_down))){
+		return 0;
+	}
+
+	else if(((b_right > a_left && b_right <= a_right) ||
+	(b_left >= a_left && b_left < a_right)) &&
+	((b_down > a_up && b_down <= a_down) ||
+	(b_up  >= a_up && b_up   <  a_down) ||
+	(b_up  <= a_up && b_down >= a_down))){
+		return 0;
+	}
+
+	return 1;
+}
 
 // const int num_threads = __THREADS_PER_BLOCK
 // const int num_blocks = (qtd_b + num_threads -1) / num_threads;
@@ -156,10 +194,10 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	}
 
 	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
-		const int16_t a_left = a[i];
-		const int16_t a_up = a[i + __UP];
-		const int16_t a_down = a[i + __DOWN];
-		const int16_t a_right = a[i + __RIGHT];
+		const int a_left = a[i];
+		const int a_up = a[i + __UP];
+		const int a_down = a[i + __DOWN];
+		const int a_right = a[i + __RIGHT];
 
 		if(a_up < minH)
 			minH = a_up;
@@ -171,12 +209,12 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 			maxW = a_right;
 
 		for(int j = 0; j < __SIZE_B_LAYOUT; j+=4){
-			const int16_t b_left = b[j];
-			const int16_t b_up = b[j + __UP];
-			const int16_t b_down = b[j + __DOWN];
-			const int16_t b_right = b[j + __RIGHT];
+			const int b_left = b[j];
+			const int b_up = b[j + __UP];
+			const int b_down = b[j + __DOWN];
+			const int b_right = b[j + __RIGHT];
 
-			if(check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right))
+			if(!check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right))
 				return;
 			
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
@@ -187,16 +225,16 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	}
 
 	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
-		const int16_t a_left = a[i];
-		const int16_t a_up = a[i + __UP];
-		const int16_t a_down = a[i + __DOWN];
-		const int16_t a_right = a[i + __RIGHT];
+		const int a_left = a[i];
+		const int a_up = a[i + __UP];
+		const int a_down = a[i + __DOWN];
+		const int a_right = a[i + __RIGHT];
 
 		for(int j = 0; j < __SIZE_A_LAYOUT; j+=4){
-			const int16_t b_left = a[j];
-			const int16_t b_up = a[j + __UP];
-			const int16_t b_down = a[j + __DOWN];
-			const int16_t b_right = a[j + __RIGHT];
+			const int b_left = a[j];
+			const int b_up = a[j + __UP];
+			const int b_down = a[j + __DOWN];
+			const int b_right = a[j + __RIGHT];
 
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
 				connections[i/4] |= 1 << (j/4);
@@ -206,16 +244,16 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	}
 
 	for(int i = 0; i < __SIZE_B_LAYOUT; i+=4){
-		const int16_t a_left = b[i];
-		const int16_t a_up = b[i + __UP];
-		const int16_t a_down = b[i + __DOWN];
-		const int16_t a_right = b[i + __RIGHT];
+		const int a_left = b[i];
+		const int a_up = b[i + __UP];
+		const int a_down = b[i + __DOWN];
+		const int a_right = b[i + __RIGHT];
 
 		for(int j = 0; j < __SIZE_B_LAYOUT; j+=4){
-			const int16_t b_left = b[j];
-			const int16_t b_up = b[j + __UP];
-			const int16_t b_down = b[j + __DOWN];
-			const int16_t b_right = b[j + __RIGHT];
+			const int b_left = b[j];
+			const int b_up = b[j + __UP];
+			const int b_down = b[j + __DOWN];
+			const int b_right = b[j + __RIGHT];
 
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
 				connections[(i/4) + __N_A] |= 1 << ((j/4) + __N_A);
