@@ -11,8 +11,7 @@ public:
     gpuHandler();
     static void createPts(
         const std::vector<int16_t>& a, const std::vector<int16_t>& b,
-		std::vector<RoomConfig> setupsA, std::vector<RoomConfig> setupsB,
-    	std::vector<int> allReq);
+    	std::vector<int> allReq, std::string resultPath, int id_a, int id_b);
 };
 
 #endif //GPU_HANDLER

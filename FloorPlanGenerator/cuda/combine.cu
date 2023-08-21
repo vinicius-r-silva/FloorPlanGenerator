@@ -2,44 +2,16 @@
 #include <iostream>
 #include <vector>
 #include <stdint.h>
+#include <algorithm>
+#include <filesystem>
+#include <fstream>
 
-#include "combine.h"
 #include "helper.h"
+#include "combine.h"
+#include "process.h"
 #include "../lib/cvHelper.h"
 #include "../lib/globals.h"
 
-#define __N_A 3
-#define __N_B 3
-#define __N_CONN 12 // always 12
-#define __N_PERM_A 6  // __N_A !
-#define __N_PERM_B 6  // __N_B !
-
-#define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
-#define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
-
-#define __SIZE_A_LAYOUT 12		// __N_A * 4
-#define __SIZE_B_LAYOUT 12		// __N_B * 4
-#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
-#define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
-#define __SIZE_RES 2
-
-// TODO INCREASE RPLANNY IDS TO 5 TYPES INSTEAD OF 4 TYPES
-
-#define __SIZE_ADJ_TYPES 4
-#define __SIZE_ADJ 16 // Req Adj types * Req Adj types
-#define __SIZE_PERM_A 18 // __N_A * __N_PERM_A
-#define __SIZE_PERM_B 18 // __N_B * __N_PERM_B
-
-#define __LEFT 0
-#define __UP 1
-#define __RIGHT 2
-#define __DOWN 3
-
-#define __PERM_BITS_SIZE 3
-#define __PERM_BITS 7
-
-
-#define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
 // #define _SIMPLE_DEBUG 
 // #define _FULL_DEBUG
@@ -92,7 +64,7 @@ uint8_t check_overlap(const int a_up, const int a_down, const int a_left, const 
 // dim3 grid(num_blocks, num_a, NConn);
 // dim3 threads(num_threads, 1, 1);
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const int qtd_a, const int qtd_b, const int a_offset) {
+void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int qtd_a, const int qtd_b, const int a_offset) {
 	// Block and thread indexes 	
 	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), 
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
@@ -102,7 +74,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 	const int k = blockIdx.z + 1 + blockIdx.z/4; 
 	int a_idx = blockIdx.y + a_offset; //layout A index
 	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index
-	const uint64_t res_idx = ((a_idx * qtd_b * __N_CONN) + (b_idx * __N_CONN) + blockIdx.z) * __SIZE_RES;
+	const uint64_t res_idx = ((blockIdx.y * qtd_b * __N_CONN) + (b_idx * __N_CONN) + blockIdx.z) * __SIZE_RES;
 
 	// Check bounds
 	if(b_idx >= qtd_b || blockIdx.y >= qtd_a){
@@ -308,13 +280,13 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int16_t *d_res, int *d_adj, const i
 
 	d_res[res_idx] = maxH - minH;
 	d_res[res_idx + 1] = maxW - minW;
+	d_res[res_idx + 2] = a_idx;
+	d_res[res_idx + 3] = b_idx;
 }
-
 
 void gpuHandler::createPts(
 		const std::vector<int16_t>& a, const std::vector<int16_t>& b,
-		std::vector<RoomConfig> setupsA, std::vector<RoomConfig> setupsB,
-    	std::vector<int> allReqAdj) {
+    	std::vector<int> allReqAdj, std::string resultFolderPath, int id_a, int id_b) {
 #ifdef _FULL_DEBUG
 	const int qtd_a = 2;
 	const int qtd_b = 12;
@@ -324,27 +296,27 @@ void gpuHandler::createPts(
 	const int NConn = __N_CONN;  	// always 12. Qtd of valid connectction between two rooms
 	const int qtd_a = a.size() / __SIZE_A_DISK;
 	const int qtd_b = b.size() / __SIZE_B_DISK;
-	const long num_a = qtd_a > 200 ? 200 : qtd_a;	//
+	const int num_a = qtd_a > 200 ? 200 : qtd_a;	//
 #endif
 
 	findCudaDevice();	
+	const long qtd_res = num_a * NConn * qtd_b;
 
 	const long aLayoutSize = sizeof(int16_t) * __SIZE_A_DISK;
 	const long bLayoutSize = sizeof(int16_t) * __SIZE_B_DISK;
-	const long resLayoutSize = sizeof(int16_t) * __SIZE_RES;
+	const long resLayoutSize = sizeof(int) * __SIZE_RES;
 	
 	const unsigned long mem_size_a = aLayoutSize * qtd_a;
 	const unsigned long mem_size_b = bLayoutSize * qtd_b;
-	const unsigned long mem_size_res = num_a * NConn * qtd_b * resLayoutSize;
+	const unsigned long mem_size_res = resLayoutSize * qtd_res;
 	const unsigned long mem_size_adj = sizeof(int) * __SIZE_ADJ;
 
 	// allocate host memory (CPU)
+	int *h_res = nullptr;
 	int *h_adj = (int *)(&allReqAdj[0]);
 	int16_t *h_a = (int16_t *)(&a[0]);
 	int16_t *h_b = (int16_t *)(&b[0]);
-	int16_t *h_res = nullptr;
 	cudaMallocHost((void**)&h_res, mem_size_res);
-	// std::cout << "a: " << h_a[0] << ", " << h_a[1] << ", " << h_a[2] << ", " << h_a[3] << ", " << h_a[4] << ", " << h_a[5] << ", " << h_a[6] << ", " << h_a[7] << ", " << h_a[8] << ", " << h_a[9] << ", " << h_a[10] << ", " << h_a[11] << std::endl << std::endl << std::endl;
 
 #ifdef _SIMPLE_DEBUG
 	// Allocate CUDA events used for timing
@@ -361,8 +333,8 @@ void gpuHandler::createPts(
 	dim3 threads(num_threads, 1, 1);
 
 	// allocate device memory
-	int *d_adj;
-	int16_t *d_a, *d_b, *d_res;
+	int *d_adj, *d_res;
+	int16_t *d_a, *d_b;
 	checkCudaErrors(cudaMalloc((void **)&d_a, mem_size_a));
 	checkCudaErrors(cudaMalloc((void **)&d_b, mem_size_b));
 	checkCudaErrors(cudaMalloc((void **)&d_res, mem_size_res));
@@ -378,18 +350,31 @@ void gpuHandler::createPts(
 	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
 	checkCudaErrors(cudaMemcpy(d_adj, h_adj, mem_size_adj, cudaMemcpyHostToDevice));
 
-	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, 0);
+	const int max_layout_size = 200;
+	std::vector<int> result;
+	std::vector<int> h_begin(max_layout_size, 0);
+	std::vector<int> index_table(max_layout_size * max_layout_size, 0); //relative
+
+	// k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, 0);
+	// checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
+	// CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
 	
-	// for(int i = 0; i < qtd_a; i += num_a){
-	// 	int diff = qtd_a - i;
-	// 	if(diff < num_a){
-	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, diff, qtd_b, i);
-	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
-	// 	} else {
-	// 		k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, i);
-	// 		// cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost);
-	// 	}
-	// }
+	for(int i = 0; i < qtd_a; i += num_a){
+		int diff = qtd_a - i; 
+		#ifdef _SIMPLE_DEBUG
+			std::cout << (float)i / (float)qtd_a <<  " %" << std::endl;
+		#endif
+		
+		if(diff < num_a){
+			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, diff, qtd_b, i);
+			checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
+			CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
+		} else {
+			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, i);
+			checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
+			CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
+		}
+	}
 
 #ifdef _SIMPLE_DEBUG
   	checkCudaErrors(cudaEventRecord(stop));
@@ -413,31 +398,34 @@ std::cout << std::endl;
 	std::cout << "Time: " << msecTotal << std::endl;
 #endif
 
+
+    // std::string result_data_path = resultFolderPath + "/" + std::to_string(id_a | (id_b << 16)) + ".dat";
+    // std::ofstream outputFile(result_data_path, std::ios::out | std::ios::binary);
+    // outputFile.write(reinterpret_cast<const char*>(result.data()), result.size() * sizeof(int16_t));
+    // outputFile.close();
+
 	// check if kernel execution generated and error
 	getLastCudaError("Kernel execution failed");
-
-	// copy results from device to host
-	checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
 
 	// cleanup device memory
 	checkCudaErrors(cudaFree(d_a));
 	checkCudaErrors(cudaFree(d_b));
 	checkCudaErrors(cudaFree(d_res));
 
-#ifdef _SIMPLE_DEBUG
-	for(int i = 0; i < num_a * NConn * qtd_b; i++){
-		int memAddr = i * __SIZE_RES;
-		if(h_res[memAddr] == 0)
-			continue;
+// #ifdef _SIMPLE_DEBUG
+// 	for(int i = 0; i < num_a * NConn * qtd_b; i++){
+// 		int memAddr = i * __SIZE_RES;
+// 		if(h_res[memAddr] == 0)
+// 			continue;
 
-		std::cout << "i: " << i << ", memAddr: " << memAddr << std::endl;
-		for(int j = 0; j < __SIZE_RES; j++){
-			std::cout << h_res[memAddr + j] << ", ";
-		}std::cout << std::endl;
+// 		std::cout << "i: " << i << ", memAddr: " << memAddr << std::endl;
+// 		for(int j = 0; j < __SIZE_RES; j++){
+// 			std::cout << h_res[memAddr + j] << ", ";
+// 		}std::cout << std::endl;
 
-		getchar();
-	}
-#endif
+// 		getchar();
+// 	}
+// #endif
 
 	// cleanup host memory
 	checkCudaErrors(cudaFreeHost(h_res));

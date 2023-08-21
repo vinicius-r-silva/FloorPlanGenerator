@@ -17,9 +17,9 @@
  * Enbale/Disable opencv functions
  * necessary to simplify valgrind output
  */
-// #define OPENCV_ENABLED
+#define OPENCV_ENABLED
 
-#define MULTI_THREAD
+// #define MULTI_THREAD
 
 // #define N_ROOMS 3
 
@@ -68,4 +68,39 @@ typedef struct{
 //     _ID_QUARTO_2 = 5,
 //     _NAME_IDS_COUNT = 6
 // };
+
+
+#define __N_A 3
+#define __N_B 3
+#define __N_CONN 12 // always 12
+#define __N_PERM_A 6  // __N_A !
+#define __N_PERM_B 6  // __N_B !
+
+#define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
+#define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
+
+#define __SIZE_A_LAYOUT 12		// __N_A * 4
+#define __SIZE_B_LAYOUT 12		// __N_B * 4
+#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
+#define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
+#define __SIZE_RES 4
+
+// TODO INCREASE RPLANNY IDS TO 5 TYPES INSTEAD OF 4 TYPES
+
+#define __SIZE_ADJ_TYPES 4
+#define __SIZE_ADJ 16 // Req Adj types * Req Adj types
+#define __SIZE_PERM_A 18 // __N_A * __N_PERM_A
+#define __SIZE_PERM_B 18 // __N_B * __N_PERM_B
+
+#define __LEFT 0
+#define __UP 1
+#define __RIGHT 2
+#define __DOWN 3
+
+#define __PERM_BITS_SIZE 3
+#define __PERM_BITS 7
+
+#define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
+
+
 #endif //GLOBALS

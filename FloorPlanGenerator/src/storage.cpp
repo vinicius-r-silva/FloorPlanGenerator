@@ -10,8 +10,11 @@
 #include "../lib/iter.h"
 #include "../lib/calculator.h"
 
-// ls -la ../FloorPlanGenerator/storage/ --block-size=MB
-// du -hs ../FloorPlanGenerator/storage/
+// ls -la ../FloorPlanGenerator/storage/core --block-size=MB
+// du -hs ../FloorPlanGenerator/storage/core
+
+// ls -la ../FloorPlanGenerator/storage/cudaResult --block-size=MB
+// du -hs ../FloorPlanGenerator/storage/cudaResult
 
 /// @brief          Storage Constructor
 /// @return         None
@@ -49,8 +52,14 @@ void Storage::updateProjectDir(){
     if(res.length() > 0)
         res.pop_back();
 
-    // _projectDir = res + "/Documents/FloorPlanGenerator";
     _projectDir = res;
+    // _projectDir += "/Documents/FloorPlanGenerator";
+}
+
+/// @brief  Returns the system path for the cudaResult results folder
+/// @return result folder path as string
+std::string Storage::getResultPath(){
+    return _projectDir + "/FloorPlanGenerator/storage/cudaResult";
 }
 
 /// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
@@ -184,7 +193,7 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
         combId += rooms[i].id;
     }
 
-    std::string path = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(combId) + ".dat";
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + ".dat";
     std::ofstream outputFile(path, std::ios::out | std::ios::binary);
 
     //Write in a single pass
@@ -216,9 +225,9 @@ void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<
     outputFile.close();
 }
 
-std::vector<int> Storage::getSavedCombinations() {
+std::vector<int> Storage::getSavedCoreCombinations() {
     std::vector<int> result;
-    std::string path = _projectDir + "/FloorPlanGenerator/storage";
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
 
     for (const auto & entry : std::filesystem::directory_iterator(path)){
         std::string fileName = entry.path().stem();
@@ -227,7 +236,6 @@ std::vector<int> Storage::getSavedCombinations() {
         if(extension.compare(".dat") == 0){
             result.push_back(stoi(fileName));
         }
-        // std::cout << fileName << "  " << extension <<std::endl;
     }
 
     return result;
@@ -235,7 +243,7 @@ std::vector<int> Storage::getSavedCombinations() {
 
 // https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
 std::vector<int16_t> Storage::readCoreData(int id){
-    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/" + std::to_string(id) + ".dat";
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(id) + ".dat";
     
     // open the file:
     std::streampos fileSize;
@@ -249,6 +257,42 @@ std::vector<int16_t> Storage::readCoreData(int id){
     // read the data:
     std::vector<int16_t> fileData(fileSize);
     file.read((char*) &fileData[0], fileSize * sizeof(int16_t));
+
+    return fileData;
+}
+
+
+std::vector<int> Storage::getSavedResults() {
+    std::vector<int> result;
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/cudaResult";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string fileName = entry.path().stem();
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") == 0){
+            result.push_back(stoi(fileName));
+        }
+    }
+
+    return result;
+}
+
+std::vector<int> Storage::readResultData(int id){
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/cudaResult/" + std::to_string(id) + ".dat";
+    
+    // open the file:
+    std::streampos fileSize;
+    std::ifstream file(filename, std::ios::binary);
+
+    // get its size:
+    file.seekg(0, std::ios::end);
+    fileSize = file.tellg() / sizeof(int);
+    file.seekg(0, std::ios::beg);
+
+    // read the data:
+    std::vector<int> fileData(fileSize);
+    file.read((char*) &fileData[0], fileSize * sizeof(int));
 
     return fileData;
 }

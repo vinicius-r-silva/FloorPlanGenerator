@@ -15,6 +15,7 @@
 #include "../lib/generate.h"
 #include "../lib/calculator.h"
 #include "../lib/mpHelper.h"
+#include "../lib/search.h"
 #include "../cuda/combine.h"
 
 /*!
@@ -103,7 +104,7 @@ static inline std::vector<RoomConfig> getConfigsById(const int layoutId, const s
 void combineData(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedCombs = hdd.getSavedCombinations();
+    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){
@@ -115,8 +116,6 @@ void combineData(){
         std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
         std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
-
         std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
         Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
         // break;
@@ -127,7 +126,7 @@ void combineData(){
 void combineDataGPU(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedCombs = hdd.getSavedCombinations();
+    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
 
     //TODO check if all of req are present during the gpu combination
     std::vector<int> allReq = hdd.getReqAdjValues();
@@ -136,16 +135,42 @@ void combineDataGPU(){
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){        
-        // std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
         std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
         std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
-        std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
-        std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+        // std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
+        // std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        gpuHandler::createPts(layout_a, layout_b, setupsA, setupsB, allReq);
+        std::string resultPath = hdd.getResultPath();
+
+        // TODO: rotate layout b with layout a, or change cuda code to process the two ways os combination
+        gpuHandler::createPts(layout_a, layout_b, allReq, resultPath, fileComb[0], fileComb[1]);
         break;
     }
+}
+
+void showReults(){
+    Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
+    std::vector<int> savedResults = hdd.getSavedResults();
+
+    for(int resultName : savedResults){
+        const int b_comb = resultName >> 16;
+        const int a_comb = resultName ^ (b_comb << 16);
+
+        std::vector<int16_t> layout_a = hdd.readCoreData(a_comb);
+        std::vector<int16_t> layout_b = hdd.readCoreData(b_comb);
+        std::vector<int> cudaResult = hdd.readResultData(resultName);
+
+        std::vector<RoomConfig> setupsA = getConfigsById(a_comb, setups);
+        std::vector<RoomConfig> setupsB = getConfigsById(b_comb, setups);
+        
+        Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size());
+        break;
+    }
+
+
 }
 
 /*!
@@ -153,9 +178,12 @@ void combineDataGPU(){
     @return if there are no erros returns 0 
 */
 int main(){
+    // Process::processResult((int*)0, 0);
+
     // generateData(3);
     // combineData();
-    combineDataGPU();
+    // combineDataGPU();
+    showReults();
     
     return 0;
 }

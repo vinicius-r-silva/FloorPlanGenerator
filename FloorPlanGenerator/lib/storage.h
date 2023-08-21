@@ -4,6 +4,9 @@
 // ls -la ../FloorPlanGenerator/storage/ --block-size=MB
 // du -hs ../FloorPlanGenerator/storage/
 
+// ls -la ../FloorPlanGenerator/storage/combination --block-size=MB
+// du -hs ../FloorPlanGenerator/storage/combination
+
 #include "globals.h"
 #include <stdint.h>
 #include <vector>
@@ -58,6 +61,10 @@ public:
     /// @return         None
     Storage();
 
+    /// @brief          Returns the system path for the combination results folder
+    /// @return         result folder path as string
+    std::string getResultPath();
+
     /// @brief          Get the possible RoomConfig informations
     /// @return         RoomConfig vector
     std::vector<RoomConfig> getConfigs();
@@ -73,9 +80,13 @@ public:
 
     void saveResult(const std::vector<int16_t>& res, const std::vector<RoomConfig>& rooms, const int n);
 
-    std::vector<int> getSavedCombinations();
+    std::vector<int> getSavedCoreCombinations();
     
     std::vector<int16_t> readCoreData(int id);
+
+    std::vector<int> getSavedResults();
+
+    std::vector<int> readResultData(int id);
 };
 
 #endif //STORAGE

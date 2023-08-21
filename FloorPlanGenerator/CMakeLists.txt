@@ -37,8 +37,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 set(cuda_headers "./cuda/combine.h" "./cuda/helper.h")
 set(cuda_codes   "./cuda/combine.cu")
-set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/globals.h") 
-set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/main.cpp")
+set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/search.h"   "./cuda/process.h"   "./lib/globals.h") 
+set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/search.cpp" "./cuda/process.cpp" "./src/main.cpp")
 
 list(APPEND cxx_warning_flags "-Wall" "-Wextra")
 # list(APPEND cuda_flags_lst "-G" "-Xptxas=-v")
