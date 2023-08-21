@@ -62,6 +62,12 @@ std::string Storage::getResultPath(){
     return _projectDir + "/FloorPlanGenerator/storage/cudaResult";
 }
 
+/// @brief  Returns the system path for the Images folder
+/// @return mages folder path as string
+std::string Storage::getImagesPath(){
+    return _projectDir + "/FloorPlanGenerator/storage/images";
+}
+
 /// @brief          Loads the rooms file and set the private vector "setups" with the rooms information
 /// @return         None
 void Storage::readConfigs(){

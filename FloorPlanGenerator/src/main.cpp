@@ -123,6 +123,21 @@ void combineData(){
     }
 }
 
+void showCoreResults(){
+    Storage hdd = Storage();
+    std::vector<RoomConfig> setups = hdd.getConfigs();
+    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+
+    for(int combId : savedCombs){
+        std::cout << "combId: " << combId << std::endl;
+        
+        std::vector<int16_t> layout = hdd.readCoreData(combId);
+        std::vector<RoomConfig> setup = getConfigsById(combId, setups);
+
+        Combine::showCoreResults(layout, setup.size());
+    }
+}
+
 void combineDataGPU(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
@@ -155,6 +170,8 @@ void showReults(){
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedResults = hdd.getSavedResults();
 
+    std::string imagesPath = hdd.getImagesPath();
+
     for(int resultName : savedResults){
         const int b_comb = resultName >> 16;
         const int a_comb = resultName ^ (b_comb << 16);
@@ -166,11 +183,9 @@ void showReults(){
         std::vector<RoomConfig> setupsA = getConfigsById(a_comb, setups);
         std::vector<RoomConfig> setupsB = getConfigsById(b_comb, setups);
         
-        Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size());
+        Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size(), imagesPath);
         break;
     }
-
-
 }
 
 /*!
@@ -183,7 +198,8 @@ int main(){
     // generateData(3);
     // combineData();
     // combineDataGPU();
-    showReults();
+    // showReults();
+    showCoreResults();
     
     return 0;
 }

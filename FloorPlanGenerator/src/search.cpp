@@ -2,6 +2,7 @@
 #include "../lib/cvHelper.h"
 #include "../lib/globals.h"
 #include <iostream>
+#include <string>
 
 /** 
  * @brief Search Constructor
@@ -54,8 +55,8 @@ bool Search::check_overlap(const int a_up, const int a_down, const int a_left, c
 }
 
 bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY, const std::vector<int16_t>& a, const std::vector<int16_t>& b, int a_offset, int b_offset, const int n_a, const int n_b, const int conn, const int diffH, const int diffW){
-    const int layout_size_a = n_a * 4 + 1;
-    const int layout_size_b = n_a * 4 + 1;
+    const int layout_size_a = (n_a * 4) + 1;
+    // const int layout_size_b = n_a * 4 + 1;
     const int ptsPerLayout_a = n_a * 2;
     const int ptsPerLayout_b = n_b * 2;
 
@@ -66,11 +67,12 @@ bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY
     const int srcConn = conn & 0b11;
     const int dstConn = (conn >> 2) & 0b11;
 
-    std::cout << "a_offset: " << a_offset << ", b_offset: " << b_offset << ", n_a: " << n_a << ", n_b: " << n_b << ", conn: " << conn << std::endl;
-    std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
+    // std::cout << "a_offset: " << a_offset << ", b_offset: " << b_offset << ", n_a: " << n_a << ", n_b: " << n_b << ", conn: " << conn << std::endl;
+    // std::cout << "srcConn: " << srcConn << ", dstConn: " << dstConn << std::endl;
 
-    if(srcConn == dstConn)
+    if(srcConn == dstConn){
         return false;
+    }
 
 	int minH = 5000, maxH = -5000;
 	int minW = 5000, maxW = -5000;
@@ -90,17 +92,17 @@ bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY
             minH = ptsY[i];
     }
 
-    std::cout << "a: ";
-    for(int i = 0; i < n_a * 4; i++){
-        std::cout << a[a_offset + i] << ", ";
-    }
+    // std::cout << "a: ";
+    // for(int i = 0; i < n_a * 4; i++){
+    //     std::cout << a[a_offset + i] << ", ";
+    // }
 
 
-    std::cout << std::endl << "b: ";
-    for(int i = 0; i < n_b * 4; i++){
-        std::cout << b[b_offset + i] << ", ";
-    }
-    std::cout << std::endl;
+    // std::cout << std::endl << "b: ";
+    // for(int i = 0; i < n_b * 4; i++){
+    //     std::cout << b[b_offset + i] << ", ";
+    // }
+    // std::cout << std::endl;
     // std::cout << "offsetX: " << offsetX << ", offsetY: " << offsetY << std::endl;
 
     int dstX = 0;
@@ -129,8 +131,9 @@ bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY
 
     const int offsetX = srcX - dstX;
     const int offsetY = srcY - dstY;
-    std::cout << "offsetX: " << offsetX << ", offsetY: " << offsetY << std::endl;
-    std::cout << std::endl;
+    // std::cout << "srcX: " << srcX << ", dstX: " << dstX << ", srcY: " << srcY << ", dstY: " << dstY << std::endl;
+    // std::cout << "offsetX: " << offsetX << ", offsetY: " << offsetY << std::endl;
+    // std::cout << std::endl;
 
     for(int i = 0; i < ptsPerLayout_b; i++){
         const int idx = i + ptsPerLayout_a;
@@ -147,6 +150,14 @@ bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY
         if(ptsY[idx] < minH)
             minH = ptsY[idx];
     }
+
+    // std::cout << "pts: ";
+    // for(int i = 0; i < ptsPerLayout_a + ptsPerLayout_b; i++){
+    //     std::cout << "(" << ptsX[i] << ", " << ptsY[i] << "), ";
+    // }
+    // std::cout << std::endl;
+    // std::cout << "maxW: " << maxW << ", minW: " << minW << ", maxH: " << maxH << ", minH: " << minH << std::endl;
+    // std::cout << "maxW - minW: " << maxW - minW << ", maxH - minH: " << maxH - minH << std::endl;
 
     if(maxW - minW != diffW || maxH - minH != diffH)
         return false;
@@ -187,24 +198,64 @@ bool Search::CalculatePts(std::vector<int16_t>& ptsX, std::vector<int16_t>& ptsY
     return true;
 }
 
-void Search::ShowContent(const std::vector<int>& cudaResult, const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b){
+void Search::ShowContent(const std::vector<int>& cudaResult, const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b, std::string imagesPath){
     std::vector<int16_t> ptsX((n_a + n_b) * 2, 0);
     std::vector<int16_t> ptsY((n_a + n_b) * 2, 0);
 
+    std::vector<int> last_i;
+    std::vector<int> last_j;
+
     for(unsigned long i = 0; i < cudaResult.size(); i+= __SIZE_RES){
-		const int diffH = cudaResult[i];
-		const int diffW = cudaResult[i + 1];
-		const int a_layout_idx = cudaResult[i + 2];
-		const int b_layout_idx = cudaResult[i + 3];
+		int diffH = cudaResult[i];
+		int diffW = cudaResult[i + 1];
+		int a_layout_idx = cudaResult[i + 2];
+		int b_layout_idx = cudaResult[i + 3];
+
+
+        // if(diffH != 40 || diffW != 95)
+        //     continue;
+
+        if(i < 472)
+            continue;
 
         for(int j = 0; j < __N_CONN; j++){
             const int conn = j + 1 + j/4;
+            std::cout << "1 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
 
-            std::cout << std::endl;
-            std::cout << "diffH: " << diffH << ", diffW: " << diffW << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx << std::endl;
+            // std::fill (ptsX.begin(), ptsX.end(), 0);
+            // std::fill (ptsY.begin(), ptsY.end(), 0);
             if(Search::CalculatePts(ptsX, ptsY, a, b, a_layout_idx, b_layout_idx, n_a, n_b, conn, diffH, diffW)){
-                CVHelper::showLayout(ptsX, ptsY);
+                // std::cout << std::endl;
+                std::cout << "i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
+                std::cout << "diffH: " << diffH << ", diffW: " << diffW << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx << std::endl;
+
+                int dir = CVHelper::showLayoutMove(ptsX, ptsY);
+                if(dir == -1 && last_i.size() == 0){
+                    j = -1;
+                }
+                else if(dir == -1){
+                    i = last_i.back(); last_i.pop_back(); 
+                    j = last_j.back() - 1; last_j.pop_back(); 
+
+                    diffH = cudaResult[i];
+                    diffW = cudaResult[i + 1];
+                    a_layout_idx = cudaResult[i + 2];
+                    b_layout_idx = cudaResult[i + 3];
+                } else {
+                    last_i.push_back(i);
+                    last_j.push_back(j);
+                }
+
+                // std::cout << "3 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
+                std::cout << std::endl;
+                // std::cout << std::endl;
+
+                // std::string fullPath = imagesPath + "/" + std::to_string(diffH) + "_" + std::to_string(diffW) + "_" + std::to_string(a_layout_idx) + "_" + std::to_string(b_layout_idx) + "_" + std::to_string(j) + ".png";
+                // std::cout << fullPath << std::endl;
+                // CVHelper::saveImage(ptsX, ptsY, fullPath);
             }
+            // std::cout << std::endl;
+            
             // CVHelper::showLayout(ptsX, ptsY);
             // break;
         }

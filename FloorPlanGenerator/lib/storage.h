@@ -65,6 +65,10 @@ public:
     /// @return         result folder path as string
     std::string getResultPath();
 
+    /// @brief  Returns the system path for the Images folder
+    /// @return mages folder path as string
+    std::string getImagesPath();
+
     /// @brief          Get the possible RoomConfig informations
     /// @return         RoomConfig vector
     std::vector<RoomConfig> getConfigs();

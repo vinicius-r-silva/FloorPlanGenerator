@@ -15,6 +15,7 @@ public:
     */
     Combine();
 
+    static void showCoreResults(const std::vector<int16_t>& arr, const int n);
 
     static void getValidLayoutCombs(const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b);
 };

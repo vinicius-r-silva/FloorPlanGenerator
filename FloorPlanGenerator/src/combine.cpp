@@ -10,6 +10,32 @@
 Combine::Combine(){
 }
 
+void Combine::showCoreResults(const std::vector<int16_t>& arr, const int n){
+    const int vectorOffset = n * 4 + 1;
+    const int ptsPerLayout = n * 2;
+    std::vector<int16_t> ptsX(n * 2, 0); 
+    std::vector<int16_t> ptsY(n * 2, 0);
+    std::cout << "vectorOffset: " << vectorOffset << ", ptsPerLayout: " << ptsPerLayout << std::endl;
+
+    for(int i = 0; i <= (int)arr.size(); i += vectorOffset){    
+        std::cout << "i: " << i << ", idx: " << i / vectorOffset << std::endl;
+        for(int j = 0; j < ptsPerLayout; j++){
+            ptsX[j] = arr[i + (j * 2)];
+            ptsY[j] = arr[i + (j * 2) + 1];
+
+            std::cout << "(" << ptsX[j] << ", " << ptsY[j] << "), ";
+        }
+        std::cout << std::endl;
+
+        int dir = CVHelper::showLayoutMove(ptsX, ptsY);
+
+        if(dir == -1 && i == 0){
+            i -= vectorOffset;
+        } else if(dir == -1){
+            i -= (vectorOffset*2);
+        }
+    }
+}
 
 void Combine::getValidLayoutCombs(const std::vector<int16_t>& a, const std::vector<int16_t>& b, const int n_a, const int n_b){
     const int n_final = n_a + n_b;

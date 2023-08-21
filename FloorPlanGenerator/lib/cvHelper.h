@@ -2,6 +2,7 @@
 #define OPENCV_HELPER
 
 #include <vector>
+#include <opencv2/opencv.hpp>
 
 
 /** 
@@ -26,6 +27,10 @@ public:
     static void showLayout(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
 
     static int showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
+
+    static void createLayoutImage(cv::Mat& fundo, const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
+
+    static void saveImage(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY, std::string fullPath);
 
 };
 
