@@ -70,6 +70,25 @@ typedef struct{
 // };
 
 
+
+#define __GENERATE_N 3
+#define __GENERATE_PERM 6 // __GENERATE_N!
+#define __GENERATE_RES_LAYOUT_LENGHT 12 // __GENERATE_N * 4
+#define __GENERATE_RES_LENGHT 13 // __GENERATE_N * 4 + 1
+#define __GENERATE_SIZE_LENGHT 6 //__GENERATE_N * 2
+#define __GENERATE_ROTATIONS 8 //2 ^ __GENERATE_N
+
+#define __ROOM_CONFIG_STEP 0
+#define __ROOM_CONFIG_MINH 1
+#define __ROOM_CONFIG_MAXH 2
+#define __ROOM_CONFIG_MINW 3
+#define __ROOM_CONFIG_MAXW 4
+#define __ROOM_CONFIG_COUNTH 5
+#define __ROOM_CONFIG_COUNTW 6
+
+#define __ROOM_CONFIG_LENGHT 7
+
+
 #define __N_A 3
 #define __N_B 3
 #define __N_CONN 12 // always 12

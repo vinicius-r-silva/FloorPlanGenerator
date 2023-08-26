@@ -17,6 +17,7 @@
 #include "../lib/mpHelper.h"
 #include "../lib/search.h"
 #include "../cuda/combine.h"
+#include "../cuda/generate.h"
 
 /*!
     @brief counts how many rooms of each class is included in the final layout
@@ -37,56 +38,71 @@ std::vector<int> countReqClasses(std::vector<RoomConfig> setups, int reqSize){
     return allReqCount;
 }
 
-/*!
-    @brief create data
-    @param[in] n number of rooms per layout
-*/
-void generateData(const int n) {
-    const int NThreads = MPHelper::omp_thread_count();
-    std::cout << "NThreads: " << NThreads << std::endl;
+// /*!
+//     @brief create data
+//     @param[in] n number of rooms per layout
+// */
+// void generateData(const int n) {
+//     const int NThreads = MPHelper::omp_thread_count();
+//     std::cout << "NThreads: " << NThreads << std::endl;
 
+//     Storage hdd = Storage();
+//     std::vector<RoomConfig> setups = hdd.getConfigs();
+
+//     std::vector<int> allReq = hdd.getReqAdjValues();
+//     // std::cout << "allReq" << std::endl << allReq << std::endl << std::endl;
+
+//     const int reqSize = sqrt(allReq.size());
+    
+//     // counts how many rooms of each class is included in the final layout
+//     std::vector<int> allReqCount = countReqClasses(setups, reqSize);
+
+//     Calculator::totalOfCombinations(setups, n);
+
+//     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
+//     const int NCombs = allCombs.size();
+//     printf("main NCombs: %d\n\n", NCombs);
+//     Log::printVector2D(allCombs);
+
+// #ifdef MULTI_THREAD
+//     #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs, allReqCount, allReq, reqSize, n)
+// #endif
+//     // for(int i = 0; i < NCombs; i++)
+//     for(int i = 1; i < NCombs; i++)
+//     {
+//         const int tid = omp_get_thread_num();
+//         printf("Thread: %d, i: %d\n", tid, i);
+
+//         // for(std::size_t k = 0; k < allCombs[i].size(); k++){
+//         //    printf("%s, ", allCombs[i][k].name);
+//         // }
+//         // printf("\n");
+//         // for(std::size_t k = 0; k < allCombs[i].size(); k++){
+//         //     std::cout << allCombs[i][k].name << ",  ";
+//         // }
+//         // std::cout << std::endl;
+        
+//         // std::cout << "i = " << i << std::endl;
+        
+//         hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
+//         // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
+
+//         // break;
+//     }
+// }
+
+
+void generateDataGpu() {
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
 
-    std::vector<int> allReq = hdd.getReqAdjValues();
-    // std::cout << "allReq" << std::endl << allReq << std::endl << std::endl;
-
-    const int reqSize = sqrt(allReq.size());
-    
-    // counts how many rooms of each class is included in the final layout
-    std::vector<int> allReqCount = countReqClasses(setups, reqSize);
-
-    Calculator::totalOfCombinations(setups, n);
-
-    std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, n);
+    std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, __GENERATE_N);
     const int NCombs = allCombs.size();
-    printf("main NCombs: %d\n\n", NCombs);
-    Log::printVector2D(allCombs);
 
-#ifdef MULTI_THREAD
-    #pragma omp parallel for num_threads(NThreads) default(none) firstprivate(hdd) shared(allCombs, NCombs, allReqCount, allReq, reqSize, n)
-#endif
-    // for(int i = 0; i < NCombs; i++)
     for(int i = 1; i < NCombs; i++)
     {
-        const int tid = omp_get_thread_num();
-        printf("Thread: %d, i: %d\n", tid, i);
-
-        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
-        //    printf("%s, ", allCombs[i][k].name);
-        // }
-        // printf("\n");
-        // for(std::size_t k = 0; k < allCombs[i].size(); k++){
-        //     std::cout << allCombs[i][k].name << ",  ";
-        // }
-        // std::cout << std::endl;
-        
-        // std::cout << "i = " << i << std::endl;
-        
-        hdd.saveResult(Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]), allCombs[i], n);
-        // Generate::SizeLoop(reqSize, allReq, allReqCount, allCombs[i]);
-
-        // break;
+        CudaGenerate::generateCuda(allCombs[i]);
+        break;
     }
 }
 
@@ -199,7 +215,9 @@ int main(){
     // combineData();
     // combineDataGPU();
     // showReults();
-    showCoreResults();
+    // showCoreResults();
+    generateDataGpu();
+
     
     return 0;
 }

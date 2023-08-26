@@ -250,9 +250,10 @@ void Search::ShowContent(const std::vector<int>& cudaResult, const std::vector<i
                 std::cout << std::endl;
                 // std::cout << std::endl;
 
-                // std::string fullPath = imagesPath + "/" + std::to_string(diffH) + "_" + std::to_string(diffW) + "_" + std::to_string(a_layout_idx) + "_" + std::to_string(b_layout_idx) + "_" + std::to_string(j) + ".png";
-                // std::cout << fullPath << std::endl;
-                // CVHelper::saveImage(ptsX, ptsY, fullPath);
+                if(false){
+                    std::string fullPath = imagesPath + "/" + std::to_string(diffH) + "_" + std::to_string(diffW) + "_" + std::to_string(a_layout_idx) + "_" + std::to_string(b_layout_idx) + "_" + std::to_string(j) + ".png";
+                    CVHelper::saveImage(ptsX, ptsY, fullPath);
+                }
             }
             // std::cout << std::endl;
             

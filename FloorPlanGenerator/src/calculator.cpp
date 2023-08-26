@@ -29,13 +29,18 @@ int Calculator::Factorial(int x){
 
 /*!
     @brief Calculates the number of possible connections given the quantity of rooms
+    @details f(2) = 16 || f(n) = f(n-1) * (n - 1) * 16
     @param[in] n input to calculate the number of connections
     @return (int) number of connections
 */
 int Calculator::NConnections(int n){
+    if(n == 1)
+        return 0;
+
     int res = 1;
-    for(; n > 1; n--)
-        res *= 16;
+    for(int i = 1; i < n; i++){
+        res *= i * 16;
+    }
 
     return res;
 }
