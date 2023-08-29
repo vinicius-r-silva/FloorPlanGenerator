@@ -18,6 +18,7 @@
 #include "../lib/search.h"
 #include "../cuda/combine.h"
 #include "../cuda/generate.h"
+#include "../lib/viewer.h"
 
 /*!
     @brief counts how many rooms of each class is included in the final layout
@@ -150,7 +151,7 @@ void showCoreResults(){
         std::vector<int16_t> layout = hdd.readCoreData(combId);
         std::vector<RoomConfig> setup = getConfigsById(combId, setups);
 
-        Combine::showCoreResults(layout, setup.size());
+        Viewer::showCoreResults(layout, setup.size());
     }
 }
 
@@ -217,6 +218,7 @@ int main(){
     // showReults();
     // showCoreResults();
     generateDataGpu();
+    Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/temp/generate.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
 
     
     return 0;

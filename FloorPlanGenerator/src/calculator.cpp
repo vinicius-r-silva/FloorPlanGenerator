@@ -53,9 +53,13 @@ int Calculator::NConnections(int n){
     @return (int) number of combination
 */
 int Calculator::NConnectionsReduced(int n){
+    if(n == 1)
+        return 0;
+
     int res = 1;
-    for(; n > 1; n--)
-        res *= 12;
+    for(int i = 1; i < n; i++){
+        res *= i * 12;
+    }
 
     return res;
 }

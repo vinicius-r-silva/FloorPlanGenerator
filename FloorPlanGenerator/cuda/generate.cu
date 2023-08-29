@@ -14,141 +14,12 @@
 #include "../lib/globals.h"
 #include "../lib/calculator.h"
 
-
-// __global__
-// void createSizes(int *d_rooms_config, int8_t *d_room_sizes, const long offset, const long maxIdx){
-// 	long idx = blockIdx.x * blockDim.x + threadIdx.x;
-// 	if(idx > maxIdx)
-// 		return;
-	
-// 	const long res_idx = idx * __GENERATE_SIZE_LENGHT * __GENERATE_ROTATIONS;
-// 	idx += offset;
-
-// 	if(res_idx < 0){
-// 		printf("aa");
-// 		return;
-// 	}
-// 	if(idx < 0){
-// 		printf("bb");
-// 		return;
-// 	}
-
-// 	__shared__ int rooms_config[__GENERATE_N * __ROOM_CONFIG_LENGHT];
-// 	if(threadIdx.x < __GENERATE_N * __ROOM_CONFIG_LENGHT){
-// 		rooms_config[threadIdx.x] = d_rooms_config[threadIdx.x];
-// 	}
-
-// 	// //TODO remove this for sizes < 30
-// 	// if(maxIdx < __GENERATE_N * __ROOM_CONFIG_LENGHT && threadIdx.x == 0){
-// 	// 	for(int i = 0; i < __GENERATE_N * __ROOM_CONFIG_LENGHT; i++){
-// 	// 		rooms_config[i] = d_rooms_config[i];
-// 	// 		// printf("%d, ", rooms_config[i]);
-// 	// 	}
-// 	// 	// printf("\n");
-// 	// }
-
-// 	__syncthreads();
-
-// 	int8_t room_sizes[__GENERATE_SIZE_LENGHT];
-// 	int validRotations[__GENERATE_N];
-// 	for(int i = 0; i < __GENERATE_N; i++){
-// 		validRotations[i] = 0;
-// 	}
-
-// 	for(int i = 0; i < __GENERATE_N; i++){
-// 		const int sizes_idx = i * 2;
-// 		const int room_idx = i * __ROOM_CONFIG_LENGHT;
-// 		const int step = rooms_config[room_idx + __ROOM_CONFIG_STEP];
-// 		const int minH = rooms_config[room_idx + __ROOM_CONFIG_MINH];
-// 		const int maxH = rooms_config[room_idx + __ROOM_CONFIG_MAXH];
-// 		const int minW = rooms_config[room_idx + __ROOM_CONFIG_MINW];
-// 		const int maxW = rooms_config[room_idx + __ROOM_CONFIG_MAXW];
-// 		const int countH = rooms_config[room_idx + __ROOM_CONFIG_COUNTH];
-// 		const int countW = rooms_config[room_idx + __ROOM_CONFIG_COUNTW];
-
-// 		room_sizes[sizes_idx] = ((idx % countH) * step) + minH;
-// 		idx /= countH;
-
-// 		room_sizes[sizes_idx + 1] = ((idx % countW) * step) + minW;
-// 		idx /= countW;
-
-// 		validRotations[i] = room_sizes[sizes_idx] < minW || room_sizes[sizes_idx] > maxW;
-
-// 		if(room_sizes[sizes_idx] > maxH){
-// 			room_sizes[sizes_idx] = maxH;
-// 		};
-		
-// 		if(room_sizes[sizes_idx + 1] > minW){
-// 			room_sizes[sizes_idx + 1] = minW;
-// 		};
-// 	}
-
-// 	for(int i = 0; i < __GENERATE_ROTATIONS; i++){
-// 		int validRotation = 1;
-// 		for(int j = 0; j < __GENERATE_N && validRotation; j++){
-// 			if(i & (1 << j)){
-// 				validRotation = validRotations[j];
-// 			}
-// 		}
-
-// 		if(!validRotation)
-// 			continue;
-
-
-// 		const long offset = res_idx + (i * __GENERATE_SIZE_LENGHT);
-// 		for(int j = 0; j < __GENERATE_N; j++){
-// 			if(i & (1 << j)){
-// 				d_room_sizes[offset + (j * 2)] = room_sizes[(j * 2) + 1];
-// 				d_room_sizes[offset + (j * 2) + 1] = room_sizes[(j * 2)];
-// 			} else {
-// 				d_room_sizes[offset + (j * 2)] = room_sizes[(j * 2)];
-// 				d_room_sizes[offset + (j * 2) + 1] = room_sizes[(j * 2) + 1];
-// 			}
-// 		}
-// 	}
-// }
-
-
-// int8_t* CudaGenerate::generateSizes(int* d_configs, const long qtdSizes){
-// 	int8_t *d_sizes = nullptr;
-// 	const long sizes_mem_size = qtdSizes * __GENERATE_SIZE_LENGHT * __GENERATE_ROTATIONS * sizeof(int8_t);
-// 	cudaMalloc((void**)&d_sizes, sizes_mem_size);	
-// 	checkCudaErrors(cudaMemset(d_sizes, 0, sizes_mem_size));
-
-// 	std::cout << "sizes_mem_size: " << sizes_mem_size << ", Mb: " << ((double)sizes_mem_size) / 1024.0 / 1024.0 << std::endl;
-
-// 	const int threadsPerBlock = qtdSizes > 768 ? 768 : qtdSizes;
-// 	const int qtdBlocks = (qtdSizes + threadsPerBlock - 1) / threadsPerBlock;
-
-// 	dim3 grid(qtdBlocks, 1, 1);
-// 	dim3 threads(threadsPerBlock, 1, 1);
-
-// 	createSizes<<<grid, threads>>>(d_configs, d_sizes, 0, qtdSizes);
-// 	cudaDeviceSynchronize();	
-
-// 	// int8_t *h_sizes = nullptr;
-// 	// cudaMallocHost((void**)&h_sizes, sizes_mem_size);	
-// 	// checkCudaErrors(cudaMemcpy(h_sizes, d_sizes, sizes_mem_size, cudaMemcpyDeviceToHost));
-// 	// cudaDeviceSynchronize();	
-
-// 	// for(int i = 0; i < qtdSizes * __GENERATE_ROTATIONS; i++){
-// 	// 	for(int j = 0; j < __GENERATE_SIZE_LENGHT; j++){
-// 	// 		std::cout << (int)h_sizes[(i * __GENERATE_SIZE_LENGHT) + j] << ", ";
-// 	// 	}
-// 	// 	std::cout << std::endl;
-// 	// }
-// 	// std::cout << std::endl;
-
-// 	return d_sizes;
-// }
-
-
 __global__
 void generate(int *d_rooms_config, int *d_perm, int16_t *d_res, const long size_idx_offset, const long max_size_idx){
-	// const int conn_idx = blockIdx.y;
+	int conn_idx = blockIdx.y;
 	const int perm_idx = blockIdx.z;
-	const int rotation_idx = threadIdx.y;
-	long size_idx = (blockIdx.x * blockDim.x) + threadIdx.x;
+	const int rotation_idx = threadIdx.x;
+	long size_idx = (blockIdx.x * blockDim.y) + threadIdx.y;
 	const long res_idx = ((blockIdx.z * gridDim.y * gridDim.x * blockDim.x * blockDim.y) + (blockIdx.y * gridDim.x * blockDim.x * blockDim.y) + (blockIdx.x * blockDim.x * blockDim.y)  + (threadIdx.y * blockDim.x) + threadIdx.x) * (long)__GENERATE_RES_LENGHT;
 
 	if(size_idx > max_size_idx)
@@ -157,22 +28,21 @@ void generate(int *d_rooms_config, int *d_perm, int16_t *d_res, const long size_
 	size_idx += size_idx_offset;
 
 	__shared__ int rooms_config[__GENERATE_N * __ROOM_CONFIG_LENGHT];
-	if(threadIdx.x < (__GENERATE_N * __ROOM_CONFIG_LENGHT) && threadIdx.y == 0){
-		rooms_config[threadIdx.x] = d_rooms_config[threadIdx.x];
+	if(threadIdx.y < (__GENERATE_N * __ROOM_CONFIG_LENGHT) && threadIdx.x == 0){
+		rooms_config[threadIdx.y] = d_rooms_config[threadIdx.y];
 	}
 
 	__shared__ int perm[__GENERATE_N * __GENERATE_PERM];
-	if(threadIdx.x < (__GENERATE_N * __GENERATE_PERM) && threadIdx.y == 0){
-		perm[threadIdx.x] = d_perm[threadIdx.x];
+	if(threadIdx.y < (__GENERATE_N * __GENERATE_PERM) && threadIdx.x == 0){
+		perm[threadIdx.y] = d_perm[threadIdx.y];
 	}
-
-	__syncthreads();
-
 
 	int result[__GENERATE_RES_LAYOUT_LENGHT];
 	for(int i = 0; i < __GENERATE_RES_LAYOUT_LENGHT; i++){
 		result[i] = 0;
 	}
+
+	__syncthreads();
 
 	for(int i = 0; i < __GENERATE_N; i++){
 		const int id = perm[(perm_idx * __GENERATE_N) + i];
@@ -202,19 +72,49 @@ void generate(int *d_rooms_config, int *d_perm, int16_t *d_res, const long size_
 			if(w == h)
 				return;
 
-			result[offset_idx] = w;
-			result[offset_idx + 1] = h;
-		} else {
 			result[offset_idx] = h;
 			result[offset_idx + 1] = w;
+		} else {
+			result[offset_idx] = w;
+			result[offset_idx + 1] = h;
 		}
+	}
+
+	for(int i = 1; i < __GENERATE_N; i++){
+		const int connections = 3*i*4;
+		const int res_offset = i*4;
+		int conn = conn_idx % connections;
+		conn_idx /= connections;
+
+		conn += (conn/4) + (conn/12) + 1;
+		int srcConn = conn >> 2;
+		int dstConn = conn & 3;
+
+		if(dstConn == srcConn)
+			return;
+
+		const int srcW = result[(srcConn & ~3) | ((srcConn & 1) << 1)];
+		const int srcH = result[srcConn | 1];
+		
+		dstConn += res_offset;
+		const int dstW = result[(dstConn & ~3) | ((dstConn & 1) << 1)];
+		const int dstH = result[(dstConn | 1)];
+
+		const int diffW = srcW - dstW;
+		const int diffH = srcH - dstH;
+
+		result[res_offset] += diffW;
+		result[res_offset + 1] += diffH;
+		result[res_offset + 2] += diffW;
+		result[res_offset + 3] += diffH;
 	}
 
 	for(int i = 0; i < __GENERATE_RES_LAYOUT_LENGHT; i++){
 		d_res[res_idx + i] = result[i];
 	}
-	d_res[res_idx + __GENERATE_RES_LAYOUT_LENGHT] = perm_idx;
 
+	// //TODO replace to adj idx permuated
+	d_res[res_idx + __GENERATE_RES_LAYOUT_LENGHT] =  blockIdx.y;
 
 }
 
@@ -267,15 +167,14 @@ int* CudaGenerate::createDevicePermArray(){
 	} while (std::next_permutation(perm.begin(), perm.end()));
 	std::cout << std::endl;
 
-
-	for(int i = 0; i < __GENERATE_PERM; i++){
-		std::cout << "perm " << i << ": ";
-		for(int j = 0; j < __GENERATE_N; j++){
-			std::cout << h_perm[(i * __GENERATE_N) + j] << ", ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << std::endl;
+	// for(int i = 0; i < __GENERATE_PERM; i++){
+	// 	std::cout << "perm " << i << ": ";
+	// 	for(int j = 0; j < __GENERATE_N; j++){
+	// 		std::cout << h_perm[(i * __GENERATE_N) + j] << ", ";
+	// 	}
+	// 	std::cout << std::endl;
+	// }
+	// std::cout << std::endl;
 
 	int *d_perm = nullptr;
 	checkCudaErrors(cudaMalloc((void **)&d_perm, perm_mem_size));
@@ -298,12 +197,39 @@ void CudaGenerate::generateCuda(const std::vector<RoomConfig>& rooms) {
 	// const long targetMemSize = (45l * 1024l * 1024l * 1024l) / 10l;
 	const long targetMemSize = 8l * 1024l * 1024l * 1024l;
 
+	int k = 2;
+	for(int i = 0; i < 3*k*4; i++){
+		int conn_idx = i;
+		std::cout << conn_idx << ": "; 
+
+		const int connections = 3*k*4;
+
+		int conn = conn_idx % connections;
+		conn_idx /= connections;
+
+		int newconn = conn + (conn/4) + (conn/12) + 1;
+		int srcConn = newconn >> 2;
+		int dstConn = newconn & 3;
+
+
+
+		const int srcW_idx = (srcConn & ~3) | ((srcConn & 1) << 1);
+		const int srcH_idx = srcConn | 1;
+		
+		dstConn += k * 4;
+		const int dstW_idx = (dstConn & ~3) | ((dstConn & 1) << 1);
+		const int dstH_idx = (dstConn | 1);
+
+		std::cout  << "  (" << srcConn << ", " << dstConn << "), " << "conn: " << conn << ", newconn: " << newconn << ", srcW_idx: " << srcW_idx << ", srcH_idx: " << srcH_idx << ", dstW_idx: " << dstW_idx << ", dstH_idx: " << dstH_idx << std::endl;
+	}
+	// return;
+
 	long NSizes = 1;
     for(const RoomConfig room : rooms){
 		NSizes *= (((room.maxH - room.minH + room.step - 1) / room.step) + 1) * (((room.maxW - room.minW + room.step - 1) / room.step) + 1);
     }
 
-    const long NConn = Calculator::NConnections(__GENERATE_N);
+    const long NConn = Calculator::NConnectionsReduced(__GENERATE_N);
     const long NPerm = Calculator::Factorial(__GENERATE_N);
     const long NSizesRotation = NSizes * __GENERATE_ROTATIONS;
 
@@ -348,15 +274,15 @@ void CudaGenerate::generateCuda(const std::vector<RoomConfig>& rooms) {
 	cudaMalloc((void**)&d_res, result_mem_size);	
 	checkCudaErrors(cudaMemset(d_res, 0, result_mem_size));
 
-	const int qtdThreadX = qtdSizes > targetQtdThreadsX ? targetQtdThreadsX : qtdSizes;
-	const int qtdBlocksX = (qtdSizes + qtdThreadX - 1) / qtdThreadX;
+	const int qtdThreadY = qtdSizes > targetQtdThreadsX ? targetQtdThreadsX : qtdSizes;
+	const int qtdBlocksX = (qtdSizes + qtdThreadY - 1) / qtdThreadY;
 
 	dim3 grid(qtdBlocksX, NConn, NPerm);
-	dim3 threads(qtdThreadX, __GENERATE_ROTATIONS, 1);
+	dim3 threads(__GENERATE_ROTATIONS, qtdThreadY, 1);
 
 	std::cout << "result_mem_size: " << result_mem_size << std::endl;
 	std::cout << "targetThreadsPerBlock: " << targetThreadsPerBlock << ", targetQtdThreadsX: " << targetQtdThreadsX << std::endl;
-	std::cout << "qtdThreadX: " << qtdThreadX << ", qtdBlocksX: " << qtdBlocksX << std::endl;
+	std::cout << "qtdThreadY: " << qtdThreadY << ", qtdBlocksX: " << qtdBlocksX << std::endl;
 	std::cout << "grid: " << grid.x << ", " << grid.y << ", " << grid.z << std::endl;
 	std::cout << "threads: " << threads.x << ", " << threads.y << ", " << threads.z << std::endl;
 
@@ -379,19 +305,38 @@ void CudaGenerate::generateCuda(const std::vector<RoomConfig>& rooms) {
 	checkCudaErrors(cudaMemcpy(h_res, d_res, result_mem_size, cudaMemcpyDeviceToHost));
 	cudaDeviceSynchronize();	
 
-	for(int i = 0; i < layoutsPerKernel; i++){
-	// for(int i = 0; i < layoutsPerKernel; i+= qtdBlocksX * qtdThreadX * NConn * __GENERATE_ROTATIONS){
-		// if(h_res[(i * __GENERATE_RES_LENGHT) + 2] == 0)
-		// 	continue;
+	// // for(int i = 0; i < layoutsPerKernel; i++){
+	// for(int i = 0; i < layoutsPerKernel; i+= qtdBlocksX * qtdThreadY * __GENERATE_ROTATIONS ){
+	// // for(int i = 0; i < layoutsPerKernel; i+= qtdBlocksX * qtdThreadY * NConn * __GENERATE_ROTATIONS){
+	// 	if(h_res[(i * __GENERATE_RES_LENGHT) + 2] == 0)
+	// 		continue;
 
-		std::cout << i * __GENERATE_RES_LENGHT << ":  ";
+	// 	std::cout << i * __GENERATE_RES_LENGHT << ":  ";
+	// 	for(int j = 0; j < __GENERATE_RES_LENGHT; j++){
+	// 		std::cout << (int)h_res[(i * __GENERATE_RES_LENGHT) + j] << ", ";
+	// 	}
+	// 	std::cout << std::endl;
+	// 	getchar();
+	// }
+	// std::cout << std::endl;
+
+
+	std::vector<int16_t> result_vector;
+	// for(int i = 0; i < layoutsPerKernel; i++){
+	for(int i = 0; i < layoutsPerKernel; i+= qtdBlocksX * qtdThreadY * __GENERATE_ROTATIONS){
+		if(h_res[(i * __GENERATE_RES_LENGHT) + 2] == 0)
+			continue;
+
 		for(int j = 0; j < __GENERATE_RES_LENGHT; j++){
-			std::cout << (int)h_res[(i * __GENERATE_RES_LENGHT) + j] << ", ";
+			result_vector.push_back(h_res[(i * __GENERATE_RES_LENGHT) + j]);
 		}
-		std::cout << std::endl;
-		getchar();
 	}
-	std::cout << std::endl;
+
+    std::string result_data_path = "/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/temp/generate.dat";
+    std::ofstream outputFile(result_data_path, std::ios::out | std::ios::binary);
+    outputFile.write(reinterpret_cast<const char*>(result_vector.data()), result_vector.size() * sizeof(int16_t));
+    outputFile.close();
+
 	checkCudaErrors(cudaFreeHost(h_res));
 
 	checkCudaErrors(cudaFree(d_configs));

@@ -250,19 +250,23 @@ std::vector<int> Storage::getSavedCoreCombinations() {
 // https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
 std::vector<int16_t> Storage::readCoreData(int id){
     const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(id) + ".dat";
-    
+    return readVector<int16_t>(filename);
+}
+
+template <typename T>
+std::vector<T> Storage::readVector(std::string fullPath){    
     // open the file:
     std::streampos fileSize;
-    std::ifstream file(filename, std::ios::binary);
+    std::ifstream file(fullPath, std::ios::binary);
 
     // get its size:
     file.seekg(0, std::ios::end);
-    fileSize = file.tellg() / sizeof(int16_t);
+    fileSize = file.tellg() / sizeof(T);
     file.seekg(0, std::ios::beg);
 
     // read the data:
-    std::vector<int16_t> fileData(fileSize);
-    file.read((char*) &fileData[0], fileSize * sizeof(int16_t));
+    std::vector<T> fileData(fileSize);
+    file.read((char*) &fileData[0], fileSize * sizeof(T));
 
     return fileData;
 }
@@ -302,3 +306,6 @@ std::vector<int> Storage::readResultData(int id){
 
     return fileData;
 }
+
+
+template std::vector<int16_t> Storage::readVector(std::string fullPath);

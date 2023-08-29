@@ -88,6 +88,9 @@ public:
     
     std::vector<int16_t> readCoreData(int id);
 
+    template <typename T>
+    std::vector<T> readVector(std::string fullPath);
+
     std::vector<int> getSavedResults();
 
     std::vector<int> readResultData(int id);

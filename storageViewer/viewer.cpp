@@ -30,7 +30,7 @@ void updateProjectDir(){
     _projectDir = res;
 }
 
-std::vector<int> getSavedCombinations() {
+std::vector<int> getSavedCoreCombinations() {
     std::vector<int> result;
     std::string path = _projectDir + "/FloorPlanGenerator/storage";
 
