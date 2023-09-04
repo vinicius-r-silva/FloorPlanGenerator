@@ -73,10 +73,11 @@ typedef struct{
 
 #define __GENERATE_N 3
 #define __GENERATE_PERM 6 // __GENERATE_N!
-#define __GENERATE_RES_LAYOUT_LENGHT 12 // __GENERATE_N * 4
+#define __GENERATE_REQ_ADJ 9 // __GENERATE_N * __GENERATE_N
+#define __GENERATE_ROTATIONS 8 //2 ^ __GENERATE_N
 #define __GENERATE_RES_LENGHT 13 // __GENERATE_N * 4 + 1
 #define __GENERATE_SIZE_LENGHT 6 //__GENERATE_N * 2
-#define __GENERATE_ROTATIONS 8 //2 ^ __GENERATE_N
+#define __GENERATE_RES_LAYOUT_LENGHT 12 // __GENERATE_N * 4
 
 #define __ROOM_CONFIG_STEP 0
 #define __ROOM_CONFIG_MINH 1
@@ -85,8 +86,9 @@ typedef struct{
 #define __ROOM_CONFIG_MAXW 4
 #define __ROOM_CONFIG_COUNTH 5
 #define __ROOM_CONFIG_COUNTW 6
+#define __ROOM_CONFIG_RID 7
 
-#define __ROOM_CONFIG_LENGHT 7
+#define __ROOM_CONFIG_LENGHT 8
 
 
 #define __N_A 3

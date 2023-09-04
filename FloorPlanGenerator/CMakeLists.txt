@@ -35,7 +35,7 @@ include_directories(lib)
 # set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_BUILD_TYPE Release)
 
-set(cuda_headers "./cuda/combine.h"  "./cuda/generate.h"  "./cuda/helper.h")
+set(cuda_headers "./cuda/combine.h"  "./cuda/generate.h"  "./cuda/helper.cuh"  "./cuda/common.cuh"  )
 set(cuda_codes   "./cuda/combine.cu" "./cuda/generate.cu")
 set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/search.h"   "./lib/viewer.h"   "./cuda/process.h"   "./lib/globals.h") 
 set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/search.cpp" "./src/viewer.cpp" "./cuda/process.cpp" "./src/main.cpp")

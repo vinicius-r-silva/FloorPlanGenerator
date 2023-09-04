@@ -96,13 +96,22 @@ std::vector<int> countReqClasses(std::vector<RoomConfig> setups, int reqSize){
 void generateDataGpu() {
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
+    std::vector<int> allReq = hdd.getReqAdjValues();
+    
+    const int reqSize = sqrt(allReq.size());
+    std::vector<int> allReqCount = countReqClasses(setups, reqSize);
+	std::cout << "allReqCount main: ";
+    for(int val : allReqCount){
+        std::cout << val << ", ";
+    }
+   	std::cout <<  std::endl;
 
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, __GENERATE_N);
     const int NCombs = allCombs.size();
 
     for(int i = 1; i < NCombs; i++)
     {
-        CudaGenerate::generateCuda(allCombs[i]);
+        CudaGenerate::generateCuda(allCombs[i], allReq, allReqCount, reqSize);
         break;
     }
 }
@@ -218,7 +227,7 @@ int main(){
     // showReults();
     // showCoreResults();
     generateDataGpu();
-    Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/temp/generate.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
+    // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/temp/generate.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
 
     
     return 0;
