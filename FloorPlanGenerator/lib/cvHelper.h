@@ -2,7 +2,12 @@
 #define OPENCV_HELPER
 
 #include <vector>
+#include <string>
+#include "globals.h"
+
+#ifdef OPENCV_ENABLED 
 #include <opencv2/opencv.hpp>
+#endif
 
 
 /** 
@@ -28,7 +33,9 @@ public:
 
     static int showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
 
+#ifdef OPENCV_ENABLED
     static void createLayoutImage(cv::Mat& fundo, const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY);
+#endif
 
     static void saveImage(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY, std::string fullPath);
 

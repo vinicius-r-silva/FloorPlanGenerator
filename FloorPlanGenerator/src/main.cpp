@@ -17,7 +17,7 @@
 #include "../lib/mpHelper.h"
 #include "../lib/search.h"
 #include "../cuda/combine.h"
-#include "../cuda/generate.h"
+#include "../cuda/generateHandler.h"
 #include "../lib/viewer.h"
 
 /*!
@@ -97,22 +97,32 @@ void generateDataGpu() {
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> allReq = hdd.getReqAdjValues();
+
+    hdd.deleteSavedResults();
     
     const int reqSize = sqrt(allReq.size());
     std::vector<int> allReqCount = countReqClasses(setups, reqSize);
-	std::cout << "allReqCount main: ";
-    for(int val : allReqCount){
-        std::cout << val << ", ";
-    }
-   	std::cout <<  std::endl;
 
     std::vector<std::vector<RoomConfig>> allCombs = Iter::getAllComb(setups, __GENERATE_N);
     const int NCombs = allCombs.size();
 
+    GenerateHandler handler = GenerateHandler();
+
     for(int i = 1; i < NCombs; i++)
-    {
-        CudaGenerate::generateCuda(allCombs[i], allReq, allReqCount, reqSize);
-        break;
+    {            
+        int combId  = 0;
+        for(int j = 0; j < __GENERATE_N; j++){
+            combId += allCombs[i][j].id;
+        }
+
+	    std::cout << std::endl << std::endl << std::endl;
+        std::cout << "combId: " << combId << std::endl;
+
+        // if(combId != 14)
+        //     continue;
+
+        handler.generate(allCombs[i], allReqCount, allReq, reqSize, combId, hdd);
+        // break;
     }
 }
 
@@ -133,34 +143,44 @@ void combineData(){
     std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
-    for(std::vector<int> fileComb : filesCombs){
-        std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
+    // for(std::vector<int> fileComb : filesCombs){
+    //     std::cout << fileComb[0] << ", " << fileComb[1] << std::endl;
         
-        std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
-        std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
+    //     std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
+    //     std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
-        std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
-        std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+    //     std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
+    //     std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
-        Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
-        // break;
-        Combine::getValidLayoutCombs(layout_b, layout_a, setupsB.size(), setupsA.size());
-    }
+    //     std::cout << layout_a.size()/(setupsA.size() * 4) << ", " << layout_b.size()/(setupsB.size() * 4) << std::endl << std::endl;
+    //     Combine::getValidLayoutCombs(layout_a, layout_b, setupsA.size(), setupsB.size());
+    //     // break;
+    //     Combine::getValidLayoutCombs(layout_b, layout_a, setupsB.size(), setupsA.size());
+    // }
 }
 
 void showCoreResults(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+    std::sort (savedCombs.begin(), savedCombs.end()); // 12 32 45 71(26 33 53 80)
 
     for(int combId : savedCombs){
-        std::cout << "combId: " << combId << std::endl;
-        
-        std::vector<int16_t> layout = hdd.readCoreData(combId);
-        std::vector<RoomConfig> setup = getConfigsById(combId, setups);
+        std::vector<int> fileIds = hdd.getSavedCoreCombinationFiles(combId);
 
-        Viewer::showCoreResults(layout, setup.size());
+        for(int fileId : fileIds){
+            std::cout << std::endl << std::endl << std::endl;
+            std::cout << "combId: " << combId << ", fileId: " << fileId << std::endl;
+
+            std::vector<RoomConfig> setup = getConfigsById(combId, setups);
+            for(RoomConfig room : setup){
+                Log::print(room);
+            }
+
+
+            std::vector<int16_t> layout = hdd.readCoreData(combId, fileId);
+            Viewer::showCoreResults(layout, setup.size());
+        }
     }
 }
 
@@ -175,44 +195,86 @@ void combineDataGPU(){
 
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
-    for(std::vector<int> fileComb : filesCombs){        
-        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
-        std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
-        std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
+    // for(std::vector<int> fileComb : filesCombs){        
+    //     std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+    //     std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
+    //     std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
         
-        // std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
-        // std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+    //     // std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
+    //     // std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
 
-        std::string resultPath = hdd.getResultPath();
+    //     std::string resultPath = hdd.getResultPath();
 
-        // TODO: rotate layout b with layout a, or change cuda code to process the two ways os combination
-        gpuHandler::createPts(layout_a, layout_b, allReq, resultPath, fileComb[0], fileComb[1]);
-        break;
-    }
+    //     // TODO: rotate layout b with layout a, or change cuda code to process the two ways os combination
+    //     gpuHandler::createPts(layout_a, layout_b, allReq, resultPath, fileComb[0], fileComb[1]);
+    //     break;
+    // }
 }
 
 void showReults(){
-    Storage hdd = Storage();
-    std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedResults = hdd.getSavedResults();
+    // Storage hdd = Storage();
+    // std::vector<RoomConfig> setups = hdd.getConfigs();
+    // std::vector<int> savedResults = hdd.getSavedResults();
 
-    std::string imagesPath = hdd.getImagesPath();
+    // std::string imagesPath = hdd.getImagesPath();
 
-    for(int resultName : savedResults){
-        const int b_comb = resultName >> 16;
-        const int a_comb = resultName ^ (b_comb << 16);
+    // for(int resultName : savedResults){
+    //     const int b_comb = resultName >> 16;
+    //     const int a_comb = resultName ^ (b_comb << 16);
 
-        std::vector<int16_t> layout_a = hdd.readCoreData(a_comb);
-        std::vector<int16_t> layout_b = hdd.readCoreData(b_comb);
-        std::vector<int> cudaResult = hdd.readResultData(resultName);
+    //     std::vector<int16_t> layout_a = hdd.readCoreData(a_comb);
+    //     std::vector<int16_t> layout_b = hdd.readCoreData(b_comb);
+    //     std::vector<int> cudaResult = hdd.readResultData(resultName);
 
-        std::vector<RoomConfig> setupsA = getConfigsById(a_comb, setups);
-        std::vector<RoomConfig> setupsB = getConfigsById(b_comb, setups);
+    //     std::vector<RoomConfig> setupsA = getConfigsById(a_comb, setups);
+    //     std::vector<RoomConfig> setupsB = getConfigsById(b_comb, setups);
         
-        Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size(), imagesPath);
-        break;
-    }
+    //     Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size(), imagesPath);
+    //     break;
+    // }
 }
+
+// void test(std::vector<int16_t> result){
+// 	const size_t resultSize = result.size();
+//     Log::printVector1D<int16_t>(result);
+//     std::cout << "resultSize: " << resultSize << std::endl;
+
+// 	size_t dst = 0;
+// 	for(; dst < resultSize && result[dst] != -1; dst += 3);
+
+// 	size_t i = dst;
+// 	size_t src_init = 0, src_end = 0;
+
+// 	while(true){
+//         std::cout << "dst: " << dst;
+//         // for(; result[i] == -1 && i < resultSize; i += 3){};
+// 	    for(; i < resultSize && result[i] == -1; i += 3);
+
+// 		src_init = i;
+//         std::cout << ", src_init: " << src_init;
+
+//         // for(; result[i] != -1 && i < resultSize; i += 3){};
+// 	    for(; i < resultSize && result[i] != -1; i += 3);
+
+
+// 		src_end = i;
+//         std::cout << ", src_end: " << src_end << std::endl;
+//         // std::cout << ", src_end: " << src_end << std::endl;
+// 		if(src_init == src_end)
+// 			break;
+
+// 		std::copy(result.begin() + src_init, result.begin() + src_end, result.begin() + dst);
+// 		dst += src_end - src_init;
+
+// 		if(i >= resultSize)
+// 			break;
+// 	}
+// 	result.resize(dst);
+
+//     std::cout << "dst: " << dst << ", result.size(): " << result.size() << std::endl;
+//     Log::printVector1D<int16_t>(result);
+//     std::cout << std::endl << std::endl << std::endl;
+// }
 
 /*!
     @brief Main Function
@@ -225,10 +287,20 @@ int main(){
     // combineData();
     // combineDataGPU();
     // showReults();
-    // showCoreResults();
     generateDataGpu();
-    // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/temp/generate.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
+    // showCoreResults();
+    // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/core/21_0.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
 
+    // std::vector<int16_t> result{0,1,2,-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
+    // std::vector<int16_t> result{-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
+    // std::vector<int16_t> result{0,1,2,-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1,3,4,5};
+    // std::vector<int16_t> result{-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1,3,4,5};
+
+    // test(std::vector<int16_t>{0,1,2,-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1});
+    // test(std::vector<int16_t>{-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1});
+    // test(std::vector<int16_t>{0,1,2,-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1,9,10,11});
+    // test(std::vector<int16_t>{-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1,9,10,11});
+    
     
     return 0;
 }

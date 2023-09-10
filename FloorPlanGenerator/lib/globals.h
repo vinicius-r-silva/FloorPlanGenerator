@@ -119,7 +119,7 @@ typedef struct{
 #define __DOWN 3
 
 #define __PERM_BITS_SIZE 3
-#define __PERM_BITS 7
+#define __PERM_BITS 7 // 1 << 0 | 1 << 1 | ... | 1 <<  __PERM_BITS_SIZE
 
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 

@@ -25,6 +25,9 @@ public:
     */
     static int Factorial(int x);
 
+
+    static int NRotations(int n);
+
     /*!
         @brief Calculates the number of possible connections given the quantity of rooms
         @param[in] n input to calculate the number of connections

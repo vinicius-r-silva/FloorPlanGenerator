@@ -10,6 +10,13 @@ watch -n.5 nvidia-smi
 
 sudo /usr/local/cuda/bin/ncu-ui
 
-ls -la ../FloorPlanGenerator/storage/ --block-size=MB
+sudo /usr/local/cuda/compute-sanitizer/compute-sanitizer
 
-du -hs ../FloorPlanGenerator/storage/
+compute-sanitizer  --tool memcheck --leak-check full --check-device-heap yes --padding 100 /home/ribeiro/Documents/FloorPlanGenerator/build/FloorPlanGenerator/FloorPlanGenerator > /home/ribeiro/Documents/FloorPlanGenerator/logs/cuda_memcheck.txt
+
+ls -la ../FloorPlanGenerator/storage/core --block-size=MB
+du -hs ../FloorPlanGenerator/storage/core
+
+ls -la ../FloorPlanGenerator/storage/cudaResult --block-size=MB
+du -hs ../FloorPlanGenerator/storage/cudaResult
+

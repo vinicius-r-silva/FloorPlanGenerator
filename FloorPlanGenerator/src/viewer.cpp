@@ -26,6 +26,10 @@ void Viewer::showCoreResults(const std::vector<int16_t>& arr, const int n){
 
             std::cout << "(" << ptsX[j] << ", " << ptsY[j] << "), ";
         }
+        std::cout << "  -  ";
+        for(int j = ptsPerLayout * 2; j < vectorOffset; j++){
+                std::cout << arr[i + j] << ", ";
+        }
         std::cout << std::endl;
 
         int dir = CVHelper::showLayoutMove(ptsX, ptsY);

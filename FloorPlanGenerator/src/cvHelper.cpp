@@ -1,11 +1,11 @@
 #include <iostream>
-// #ifdef OPENCV_ENABLED 
-#include <opencv2/opencv.hpp>
-// #endif
 
-#include "../lib/cvHelper.h"
 #include "../lib/globals.h"
+#include "../lib/cvHelper.h"
 
+#ifdef OPENCV_ENABLED 
+#include <opencv2/opencv.hpp>
+#endif
 /** 
  * @brief Storage Constructor
  * @return None
@@ -15,6 +15,7 @@ CVHelper::CVHelper(){
 
 
 
+#ifdef OPENCV_ENABLED 
 void CVHelper::createLayoutImage(cv::Mat& fundo, const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY){
     int scale = 5;
     const int screenH = 700;
@@ -56,6 +57,7 @@ void CVHelper::createLayoutImage(cv::Mat& fundo, const std::vector<int16_t> &pts
                       color, 2, 8, 0);
     }
 }
+#endif
     
 /** 
  * @brief draw and show a layout
@@ -106,9 +108,11 @@ int CVHelper::showLayoutMove(const std::vector<int16_t> &ptsX, const std::vector
 
 
 void CVHelper::saveImage(const std::vector<int16_t> &ptsX, const std::vector<int16_t> &ptsY, std::string fullPath){
+#ifdef OPENCV_ENABLED
     cv::Mat fundo;
     CVHelper::createLayoutImage(fundo, ptsX, ptsY);
     cv::imwrite(fullPath, fundo);
+#endif
 }
 
 

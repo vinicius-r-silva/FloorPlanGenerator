@@ -81,19 +81,27 @@ public:
     /// @return         int vector
     std::vector<int> getReqAdjValues();
     // boost::numeric::ublas::matrix<int> getReqAdjValues();
+ 
 
-    void saveResult(const std::vector<int16_t>& res, const std::vector<RoomConfig>& rooms, const int n);
+    void saveResult(const std::vector<int16_t>& layouts, const int combId, const int offsetId);
 
     std::vector<int> getSavedCoreCombinations();
+
+    std::vector<int> getSavedCoreCombinationFiles(int id);
     
-    std::vector<int16_t> readCoreData(int id);
+    std::vector<int16_t> readCoreData(int combId, int fileId);
+
+    template <typename T>
+    void saveVector(std::string fullPath, std::vector<T> arr, size_t elemSize);
 
     template <typename T>
     std::vector<T> readVector(std::string fullPath);
 
+    void deleteSavedResults();
+
     std::vector<int> getSavedResults();
 
-    std::vector<int> readResultData(int id);
+    std::vector<int> readResultData(int combId, int fileId);
 };
 
 #endif //STORAGE

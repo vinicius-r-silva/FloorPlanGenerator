@@ -25,6 +25,16 @@ int Calculator::Factorial(int x){
 
     return res;
 }
+    
+
+int Calculator::NRotations(int n){
+    int res = 1;
+    for(int i = 1; i < n; i++){
+        res *= i * 2;
+    }
+
+    return res;
+}
 
 
 /*!

@@ -192,44 +192,46 @@ inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, con
 }
 
 // layout: size -> order -> conn
-void Storage::saveResult(const std::vector<int16_t>& layouts, const std::vector<RoomConfig>& rooms, const int n){
-    
-    int combId  = 0;
-    for(int i = 0; i < n; i++){
-        combId += rooms[i].id;
-    }
+void Storage::saveResult(const std::vector<int16_t>& layouts, const int combId, const int offsetId){
+    if(layouts.size() == 0)
+        return;
 
-    std::string path = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + ".dat";
-    std::ofstream outputFile(path, std::ios::out | std::ios::binary);
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + "_" + std::to_string(offsetId) + ".dat";
+    Storage::saveVector(path, layouts, sizeof(int16_t));
+}
 
-    //Write in a single pass
-    outputFile.write(reinterpret_cast<const char*>(layouts.data()), layouts.size() * sizeof(int16_t));
-
-
-    const int qtdPts = layouts.size();
-
-    // Maybe split the write calls in chunks can improve performance?
-    // const int pageSize = 4096; //make it divisible by the layout size
-    // const int vectorSize = pageSize / sizeof(layouts[0]);
-    // std::vector<int16_t> sizesFile; sizesFile.reserve(vectorSize);
-    // for(int i = 0; i < qtdPts; i++){
-    //     if(layouts[i] > 1000 || layouts[i] < -1000){
-    //         std::cout << layouts[i] << std::endl;
-    //     }
-    //     sizesFile.push_back(layouts[i]);
-
-    //     if(i % vectorSize == vectorSize - 1){
-    //         outputFile.write((char*)&sizesFile[0], sizesFile.size() * sizeof(sizesFile[0]));
-
-    //         sizesFile.clear(); 
-    //         sizesFile.reserve(vectorSize);
-    //     }
-    // }
-
-    std::cout << qtdPts << " pts (" << qtdPts / (n*8 + 1) << " layouts) at path: " << path << std::endl;
-
+template <typename T>
+void Storage::saveVector(std::string fullPath, std::vector<T> arr, size_t elemSize){    
+    std::ofstream outputFile(fullPath, std::ios::out | std::ios::binary);
+    outputFile.write(reinterpret_cast<const char*>(arr.data()), arr.size() * elemSize);
     outputFile.close();
 }
+
+std::vector<int> Storage::getSavedCoreCombinationFiles(int id) {
+    std::string id_name = std::to_string(id);
+    std::vector<int> result;
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string fileName = entry.path().stem();
+        std::string extension = entry.path().extension();
+
+
+        if(extension.compare(".dat") != 0)
+            continue;
+
+        if (fileName.find(id_name) != 0)
+            continue;
+            
+        size_t split_pos = fileName.find('_');
+        
+        std::string fileId = fileName.substr(split_pos + 1, fileName.length() - 1);
+        result.push_back(stoi(fileId));
+    }
+
+    return result;
+}
+
 
 std::vector<int> Storage::getSavedCoreCombinations() {
     std::vector<int> result;
@@ -239,7 +241,15 @@ std::vector<int> Storage::getSavedCoreCombinations() {
         std::string fileName = entry.path().stem();
         std::string extension = entry.path().extension();
 
-        if(extension.compare(".dat") == 0){
+        if(extension.compare(".dat") != 0)
+            continue;
+
+        size_t split_pos = fileName.find('_');
+        if (split_pos != std::string::npos){
+            if(fileName.find("_0") == std::string::npos)
+                continue;
+            
+            fileName = fileName.substr(0, split_pos);
             result.push_back(stoi(fileName));
         }
     }
@@ -248,8 +258,8 @@ std::vector<int> Storage::getSavedCoreCombinations() {
 }
 
 // https://stackoverflow.com/questions/15138353/how-to-read-a-binary-file-into-a-vector-of-unsigned-chars
-std::vector<int16_t> Storage::readCoreData(int id){
-    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(id) + ".dat";
+std::vector<int16_t> Storage::readCoreData(int combId, int fileId){
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + "_" + std::to_string(fileId) + ".dat";
     return readVector<int16_t>(filename);
 }
 
@@ -272,6 +282,19 @@ std::vector<T> Storage::readVector(std::string fullPath){
 }
 
 
+void Storage::deleteSavedResults() {
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") == 0){
+            remove(entry.path());
+        }
+    }
+}
+
+
 std::vector<int> Storage::getSavedResults() {
     std::vector<int> result;
     std::string path = _projectDir + "/FloorPlanGenerator/storage/cudaResult";
@@ -288,8 +311,8 @@ std::vector<int> Storage::getSavedResults() {
     return result;
 }
 
-std::vector<int> Storage::readResultData(int id){
-    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/cudaResult/" + std::to_string(id) + ".dat";
+std::vector<int> Storage::readResultData(int combId, int fileId){
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + "_" + std::to_string(fileId) + ".dat";
     
     // open the file:
     std::streampos fileSize;
@@ -309,3 +332,4 @@ std::vector<int> Storage::readResultData(int id){
 
 
 template std::vector<int16_t> Storage::readVector(std::string fullPath);
+template void Storage::saveVector(std::string fullPath, std::vector<int16_t> arr, size_t elemSize);
