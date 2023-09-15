@@ -60,7 +60,7 @@ void GenerateHandler::generate(
 		Log::print(rooms[i]);
 	}
 
-	const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
+	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
 	const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
 
 	long NSizes = 1;
@@ -150,7 +150,7 @@ void GenerateHandler::generate(
 					}
 
     				// std::vector<int16_t> result_copy(h_res[threadId]); 
-					CudaGenerate::launchDuplicateCheckKernel(d_res, h_res[threadId].data(), layoutsPerKernel, result_mem_size);
+					// CudaGenerate::launchDuplicateCheckKernel(d_res, h_res[threadId].data(), layoutsPerKernel, result_mem_size);
 					
 					printf("producer %d end\n", threadId);
 

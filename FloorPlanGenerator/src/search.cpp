@@ -218,7 +218,7 @@ void Search::ShowContent(const std::vector<int>& cudaResult, const std::vector<i
         if(i < 472)
             continue;
 
-        for(int j = 0; j < __N_CONN; j++){
+        for(int j = 0; j < __COMBINE_CONN; j++){
             const int conn = j + 1 + j/4;
             std::cout << "1 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
 

@@ -73,6 +73,8 @@ public:
     /// @return         RoomConfig vector
     std::vector<RoomConfig> getConfigs();
 
+    std::vector<RoomConfig> getConfigsById(int configId);
+
     /// @brief          Get the adjacency values
     /// @return         int vector
     std::vector<int> getAdjValues();

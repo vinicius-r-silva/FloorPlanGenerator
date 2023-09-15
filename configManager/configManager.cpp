@@ -566,9 +566,9 @@ void normalConfig(std::string projectPath){
     for(int i = 0; i < numOfRooms; i++){
         rooms[i].rPlannyId = mapRplannyId[rooms[i].rPlannyId];
         
-        if(rooms[i].rPlannyId > __PERM_BITS){
+        if(rooms[i].rPlannyId > __RID_BITS){
             std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
-            std::cout << "!!!!!!!!!!!!!!!!!!!!!!! invalid __PERM_BITS value !!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+            std::cout << "!!!!!!!!!!!!!!!!!!!!!!! invalid __RID_BITS value !!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
             std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
         }
     }

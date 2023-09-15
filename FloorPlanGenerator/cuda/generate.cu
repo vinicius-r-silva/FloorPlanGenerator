@@ -166,7 +166,7 @@ void generate(
 		const int id = perm[i];
 		const int rid = rooms_config[id * __ROOM_CONFIG_LENGHT + __ROOM_CONFIG_RID];
 		adj[rid] |= connections[i];
-		layout_rids |= rid << (i * __PERM_BITS_SIZE);
+		layout_rids |= rid << (i * __RID_BITS_SIZE);
 	}
 
 	// if(res_idx > 1910000 && res_idx < 1940000){
@@ -469,13 +469,13 @@ void CudaGenerate::launchGenereteKernel(
 	checkCudaErrors(cudaMemcpy(h_res, d_res, result_mem_size, cudaMemcpyDeviceToHost));
 	cudaDeviceSynchronize();
 
-	int found = 0;
-	for(int i = 0; i < result_mem_size / (sizeof(int16_t)); i+= __GENERATE_RES_LENGHT){
-		found += (h_res[i] == -1) ? 0 : 1;
-	}
-	if(!found){
-		std::cout << "not found" << std::endl;
-	}
+	// int found = 0;
+	// for(int i = 0; i < result_mem_size / (sizeof(int16_t)); i+= __GENERATE_RES_LENGHT){
+	// 	found += (h_res[i] == -1) ? 0 : 1;
+	// }
+	// if(!found){
+	// 	std::cout << "not found" << std::endl;
+	// }
 }
 
 void CudaGenerate::launchDuplicateCheckKernel(

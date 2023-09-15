@@ -7,18 +7,15 @@
 #include <fstream>
 
 #include "helper.cuh"
-#include "combine.h"
+#include "combine.cuh"
 #include "common.cuh"
 #include "process.h"
 #include "../lib/cvHelper.h"
 #include "../lib/globals.h"
 
 
-// #define _SIMPLE_DEBUG 
-// #define _FULL_DEBUG
 
 // Sorry, had to do it this way to make the reduce the cuda kernel registers usage
-
 // #define check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right) ((a_up >= b_up && a_up < b_down && a_left < b_right && a_left >= b_left) || (a_up >= b_up && a_up < b_down && a_right >= b_right && a_left <= b_left) || (a_up >= b_up && a_up < b_down && a_right <= b_right && a_right > b_left) || (a_down >= b_down && a_left < b_right && a_left >= b_left && a_up <= b_up) || (a_down >= b_down && a_up <= b_up && a_right <= b_right && a_right > b_left) || (a_left < b_right && a_left >= b_left && a_down > b_up && a_down <= b_down) || (a_right >= b_right && a_down > b_up && a_down <= b_down && a_left <= b_left) || (b_right >= a_right && b_up >= a_up && b_up < a_down && b_left <= a_left) || (b_right >= a_right && b_down > a_up && b_down <= a_down && b_left <= a_left) || (b_up >= a_up && b_up < a_down && b_left >= a_left && b_left < a_right) || (b_up >= a_up && b_up < a_down && b_right > a_left && b_right <= a_right) || (b_down >= a_down && b_left >= a_left && b_left < a_right && b_up <= a_up) || (b_down >= a_down && b_right > a_left && b_right <= a_right && b_up <= a_up) || (b_left >= a_left && b_left < a_right && b_down > a_up && b_down <= a_down) || (a_down > b_up && a_down <= b_down && a_right <= b_right && a_right > b_left) || (b_right > a_left && b_right <= a_right && b_down > a_up && b_down <= a_down))
 
 // __device__
@@ -59,10 +56,7 @@
 // 	return 1;
 // }
 
-// const int num_threads = __THREADS_PER_BLOCK
-// const int num_blocks = (qtd_b + num_threads -1) / num_threads;
-// dim3 grid(num_blocks, num_a, NConn);
-// dim3 threads(num_threads, 1, 1);
+
 __global__ 
 void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int qtd_a, const int qtd_b, const int a_offset) {
 	// Block and thread indexes 	
@@ -74,7 +68,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 	const int k = blockIdx.z + 1 + blockIdx.z/4; 
 	int a_idx = blockIdx.y + a_offset; //layout A index
 	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index
-	const uint64_t res_idx = ((blockIdx.y * qtd_b * __N_CONN) + (b_idx * __N_CONN) + blockIdx.z) * __SIZE_RES;
+	const uint64_t res_idx = ((blockIdx.y * qtd_b * __COMBINE_CONN) + (b_idx * __COMBINE_CONN) + blockIdx.z) * __SIZE_RES;
 
 	// Check bounds
 	if(b_idx >= qtd_b || blockIdx.y >= qtd_a){
@@ -160,8 +154,8 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 
 	//left, up, right, down
 	// Find the bounding box of A and check overlaping
-	int connections[__N_A + __N_B];
-	for(int i = 0; i < __N_A  + __N_B; i++){
+	int connections[__COMBINE_N_A + __COMBINE_N_B];
+	for(int i = 0; i < __COMBINE_N_A  + __COMBINE_N_B; i++){
 		connections[i] = 1 << i;
 	}
 
@@ -186,12 +180,12 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 			const int b_down = b[j + __DOWN];
 			const int b_right = b[j + __RIGHT];
 
-			if(!check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right))
-				return;
+			// if(!check_overlap(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right))
+			// 	return;
 			
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
-				connections[i/4] |= 1 << (j/4) + __N_A;
-				connections[(j/4) + __N_A] |= 1 << (i/4); 
+				connections[i/4] |= 1 << (j/4) + __COMBINE_N_A;
+				connections[(j/4) + __COMBINE_N_A] |= 1 << (i/4); 
 			}
 		}
 	}
@@ -228,14 +222,14 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 			const int b_right = b[j + __RIGHT];
 
 			if(check_adjacency(a_up, a_down, a_left, a_right, b_up, b_down, b_left, b_right)){
-				connections[(i/4) + __N_A] |= 1 << ((j/4) + __N_A);
-				connections[(j/4) + __N_A] |= 1 << ((i/4) + __N_A); 
+				connections[(i/4) + __COMBINE_N_A] |= 1 << ((j/4) + __COMBINE_N_A);
+				connections[(j/4) + __COMBINE_N_A] |= 1 << ((i/4) + __COMBINE_N_A); 
 			}
 		}
 	}
 
-	const int a_perm_idx = a[__SIZE_A_LAYOUT];
-	const int b_perm_idx = b[__SIZE_B_LAYOUT];
+	const int a_rid_idx = a[__SIZE_A_LAYOUT];
+	const int b_rid_idx = b[__SIZE_B_LAYOUT];
 
 	int adj[__SIZE_ADJ_TYPES]; //Rid connections from the specific rId
 	int adj_count[__SIZE_ADJ_TYPES]; //Idx of each room from the specific rId
@@ -244,189 +238,151 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 		adj_count[i] = 0;
 	}
 
-	for(int i = 0; i < __N_A; i++){
-		const int rplannyId = (a_perm_idx >> (i * __PERM_BITS_SIZE)) & __PERM_BITS;
+	for(int i = 0; i < __COMBINE_N_A; i++){
+		const int rplannyId = (a_rid_idx >> (i * __RID_BITS_SIZE)) & __RID_BITS;
 		adj_count[rplannyId] |= 1 << i;
 		adj[rplannyId] |= connections[i];
 	}
 	
-	for(int i = 0; i < __N_B; i++){
-		const int rplannyId = (b_perm_idx >> (i * __PERM_BITS_SIZE)) & __PERM_BITS;
-		adj_count[rplannyId] |= 1 << (i + __N_A);
-		adj[rplannyId] |= connections[i + __N_A];
+	for(int i = 0; i < __COMBINE_N_B; i++){
+		const int rplannyId = (b_rid_idx >> (i * __RID_BITS_SIZE)) & __RID_BITS;
+		adj_count[rplannyId] |= 1 << (i + __COMBINE_N_A);
+		adj[rplannyId] |= connections[i + __COMBINE_N_A];
 	}
 
 	for(int i = 0; i < __SIZE_ADJ_TYPES; i++){
 		for(int j = 0; j < __SIZE_ADJ_TYPES; j++){
 			const int req_adj_idx = i*__SIZE_ADJ_TYPES + j;
-			if(req_adj[req_adj_idx] == REQ_ANY && !(adj[j] & adj_count[i]))
-				return;
+			// if(req_adj[req_adj_idx] == REQ_ANY && !(adj[j] & adj_count[i]))
+			// 	return;
 
-			if(req_adj[req_adj_idx] == REQ_ALL && (adj[j] & adj_count[i]) != adj_count[i])
-				return;
+			// if(req_adj[req_adj_idx] == REQ_ALL && (adj[j] & adj_count[i]) != adj_count[i])
+			// 	return;
 		}
 	}
 
-	for(int i = 0; i < __N_A + __N_B; i++){
+	for(int i = 0; i < __COMBINE_N_A + __COMBINE_N_B; i++){
 		const int conns = connections[i];
-		for(int j = i + 1; j < __N_A + __N_B; j++){
+		for(int j = i + 1; j < __COMBINE_N_A + __COMBINE_N_B; j++){
 			if(connections[j] & 1 << i)
 				connections[j] |= conns;
 		}
 	}
 
-	if(connections[__CONN_CHECK_IDX] != __CONN_CHECK)
-		return;
+	// if(connections[__CONN_CHECK_IDX] != __CONN_CHECK)
+	// 	return;
 
+	// if(res_idx == 1660128){
+	// 	printf("\n\nbx: %d, by: %d, bz: %d, tx: %d, ty: %d, tz: %d\n\n",
+	// 			blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
+
+	// 	printf("a: (%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n", 
+	// 	a[0], a[1], a[2], a[3], 
+	// 	a[4], a[5], a[6], a[7], 
+	// 	a[8], a[9], a[10], a[11]);
+
+	// 	printf("b: (%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n\n", 
+	// 	b[0], b[1], b[2], b[3], 
+	// 	b[4], b[5], b[6], b[7], 
+	// 	b[8], b[9], b[10], b[11]);
+	// }
+
+	// d_res[res_idx] = a[0];
+	// d_res[res_idx + 1] = a[1];
+	// d_res[res_idx + 2] = a[2];
+	// d_res[res_idx + 3] = a[3];
+	// d_res[res_idx + 4] = a[4];
+	// d_res[res_idx + 5] = a[5];
+	// d_res[res_idx + 6] = a[6];
+	// d_res[res_idx + 7] = a[7];
+	// d_res[res_idx + 8] = a[8];
+	// d_res[res_idx + 9] = a[9];
+	// d_res[res_idx + 10] = a[10];
+	// d_res[res_idx + 11] = a[11];
+
+	// d_res[res_idx + 12] = b[0];
+	// d_res[res_idx + 13] = b[1];
+	// d_res[res_idx + 14] = b[2];
+	// d_res[res_idx + 15] = b[3];
+	// d_res[res_idx + 16] = b[4];
+	// d_res[res_idx + 17] = b[5];
+	// d_res[res_idx + 18] = b[6];
+	// d_res[res_idx + 19] = b[7];
+	// d_res[res_idx + 20] = b[8];
+	// d_res[res_idx + 21] = b[9];
+	// d_res[res_idx + 22] = b[10];
+	// d_res[res_idx + 23] = b[11];
 	d_res[res_idx] = maxH - minH;
 	d_res[res_idx + 1] = maxW - minW;
 	d_res[res_idx + 2] = a_idx;
 	d_res[res_idx + 3] = b_idx;
 }
 
-void gpuHandler::createPts(
-		const std::vector<int16_t>& a, const std::vector<int16_t>& b,
-    	std::vector<int> allReqAdj, std::string resultFolderPath, int id_a, int id_b) {
-#ifdef _FULL_DEBUG
-	const int qtd_a = 2;
-	const int qtd_b = 12;
-	const long num_a = 2;
-	const int NConn = __N_CONN;
-#else
-	const int NConn = __N_CONN;  	// always 12. Qtd of valid connectction between two rooms
-	const int qtd_a = a.size() / __SIZE_A_DISK;
-	const int qtd_b = b.size() / __SIZE_B_DISK;
-	const int num_a = qtd_a > 200 ? 200 : qtd_a;	//
-#endif
 
-	findCudaDevice();	
-	const long qtd_res = num_a * NConn * qtd_b;
+int* CudaCombine::createDeviceAdjArray(const std::vector<int>& allReqAdj){
+	int* d_adj;
+	const size_t mem_size = __SIZE_ADJ * sizeof(int);
+	checkCudaErrors(cudaMalloc((void **)&d_adj, mem_size));
 
-	const long aLayoutSize = sizeof(int16_t) * __SIZE_A_DISK;
-	const long bLayoutSize = sizeof(int16_t) * __SIZE_B_DISK;
-	const long resLayoutSize = sizeof(int) * __SIZE_RES;
-	
-	const unsigned long mem_size_a = aLayoutSize * qtd_a;
-	const unsigned long mem_size_b = bLayoutSize * qtd_b;
-	const unsigned long mem_size_res = resLayoutSize * qtd_res;
-	const unsigned long mem_size_adj = sizeof(int) * __SIZE_ADJ;
+	int* h_adj = (int*)(allReqAdj.data());
+	checkCudaErrors(cudaMemcpy(d_adj, h_adj, mem_size, cudaMemcpyHostToDevice));
 
-	// allocate host memory (CPU)
-	int *h_res = nullptr;
-	int *h_adj = (int *)(&allReqAdj[0]);
-	int16_t *h_a = (int16_t *)(&a[0]);
-	int16_t *h_b = (int16_t *)(&b[0]);
-	cudaMallocHost((void**)&h_res, mem_size_res);
+	std::cout << "mem size adj: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	return d_adj;
+}
 
-#ifdef _SIMPLE_DEBUG
-	// Allocate CUDA events used for timing
-	cudaEvent_t start, stop;
-	checkCudaErrors(cudaEventCreate(&start));
-	checkCudaErrors(cudaEventCreate(&stop));
-#endif
 
-	// setup execution parameters
-	const int num_threads = qtd_b > __THREADS_PER_BLOCK ? __THREADS_PER_BLOCK : qtd_b; 
-	const int num_blocks = (qtd_b + num_threads -1) / num_threads;
+int16_t* CudaCombine::createDeviceCoreLayoutsArray(const std::vector<int16_t>& pts){
+	int16_t* d_pts;
+	const size_t mem_size = pts.size() * sizeof(int16_t);
+	checkCudaErrors(cudaMalloc((void **)&d_pts, mem_size));
+
+	int16_t* h_pts = (int16_t*)(pts.data());
+	checkCudaErrors(cudaMemcpy(d_pts, h_pts, mem_size, cudaMemcpyHostToDevice));
+
+	std::cout << "mem size core layout: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	return d_pts;
+}
+
+int* CudaCombine::createDeviceResArray(const size_t mem_size) {
+	int *d_res = nullptr;
+	checkCudaErrors(cudaMalloc((void**)&d_res, mem_size));
+	checkCudaErrors(cudaMemset(d_res, -1, mem_size));
+
+	std::cout << "mem size res: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	return d_res;
+}
+
+void CudaCombine::freeDeviceArrays(int* adj, int* res, int16_t* a, int16_t* b) {
+	checkCudaErrors(cudaFree(a));
+	checkCudaErrors(cudaFree(b));
+	checkCudaErrors(cudaFree(adj));
+	checkCudaErrors(cudaFree(res));
+}
+
+void CudaCombine::createPts(
+		const size_t res_mem_size,
+		const long NConn,
+		const long num_a,
+		const long qtd_b,
+		const long a_offset,
+		const long num_blocks,
+		const long num_threads,
+		int* h_res,
+		int* d_adj,
+		int* d_res,
+		int16_t* d_a,
+		int16_t* d_b) 
+	{
 
 	dim3 grid(num_blocks, num_a, NConn);
 	dim3 threads(num_threads, 1, 1);
 
-	// allocate device memory
-	int *d_adj, *d_res;
-	int16_t *d_a, *d_b;
-	checkCudaErrors(cudaMalloc((void **)&d_a, mem_size_a));
-	checkCudaErrors(cudaMalloc((void **)&d_b, mem_size_b));
-	checkCudaErrors(cudaMalloc((void **)&d_res, mem_size_res));
-	checkCudaErrors(cudaMalloc((void **)&d_adj, mem_size_adj));
-	checkCudaErrors(cudaMemset(d_res, 0, mem_size_res));
+	checkCudaErrors(cudaMemset(d_res, -1, res_mem_size));
 
-	// copy host data to device
-#ifdef _SIMPLE_DEBUG
-  	checkCudaErrors(cudaEventRecord(start));
-#endif
-
-	checkCudaErrors(cudaMemcpy(d_a, h_a, mem_size_a, cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_b, h_b, mem_size_b, cudaMemcpyHostToDevice));
-	checkCudaErrors(cudaMemcpy(d_adj, h_adj, mem_size_adj, cudaMemcpyHostToDevice));
-
-	const int max_layout_size = 200;
-	std::vector<int> result;
-	std::vector<int> h_begin(max_layout_size, 0);
-	std::vector<int> index_table(max_layout_size * max_layout_size, 0); //relative
-
-	// k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, 0);
-	// checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
-	// CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
-	
-	for(int i = 0; i < qtd_a; i += num_a){
-		int diff = qtd_a - i; 
-		#ifdef _SIMPLE_DEBUG
-			std::cout << (float)i / (float)qtd_a <<  " %" << std::endl;
-		#endif
-		
-		if(diff < num_a){
-			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, diff, qtd_b, i);
-			checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
-			CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
-		} else {
-			k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, i);
-			checkCudaErrors(cudaMemcpy(h_res, d_res, mem_size_res, cudaMemcpyDeviceToHost));
-			CudaProcess::processResult(result, h_res, qtd_res, h_begin, index_table, max_layout_size);
-		}
-	}
-
-#ifdef _SIMPLE_DEBUG
-  	checkCudaErrors(cudaEventRecord(stop));
-  	checkCudaErrors(cudaEventSynchronize(stop));
-
-  	float msecTotal = 0.0f;
-  	checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
-#else
+	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, a_offset);
 	cudaDeviceSynchronize();
-#endif
 
-#ifdef _SIMPLE_DEBUG
-std::cout << std::endl;
-	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
-	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << qtd_a * qtd_b << std::endl;
-	std::cout << "num_threads: " << num_threads << ", num_blocks: " << num_blocks << std::endl;
-	std::cout << "grid: " << grid.x << ", " << grid.y << ", " << grid.z << std::endl;
-	std::cout << "threads: " << threads.x << ", " << threads.y << ", " << threads.z << std::endl;
-	std::cout << "mem_size_a: " << mem_size_a << ", mem_size_b: " << mem_size_b << ", mem_size_res: " << mem_size_res << ", mem_size_adj: " << mem_size_adj << std::endl;
-	std::cout << "mem_size_a (MB): " << ((float)mem_size_a)/1024.0/1024.0 << ", mem_size_b (MB): " << ((float)mem_size_b)/1024.0/1024.0 << ", mem_size_res (MB): " << ((float)mem_size_res)/1024.0/1024.0 << std::endl;
-	std::cout << "Time: " << msecTotal << std::endl;
-#endif
-
-
-    // std::string result_data_path = resultFolderPath + "/" + std::to_string(id_a | (id_b << 16)) + ".dat";
-    // std::ofstream outputFile(result_data_path, std::ios::out | std::ios::binary);
-    // outputFile.write(reinterpret_cast<const char*>(result.data()), result.size() * sizeof(int16_t));
-    // outputFile.close();
-
-	// check if kernel execution generated and error
-	getLastCudaError("Kernel execution failed");
-
-	// cleanup device memory
-	checkCudaErrors(cudaFree(d_a));
-	checkCudaErrors(cudaFree(d_b));
-	checkCudaErrors(cudaFree(d_res));
-
-// #ifdef _SIMPLE_DEBUG
-// 	for(int i = 0; i < num_a * NConn * qtd_b; i++){
-// 		int memAddr = i * __SIZE_RES;
-// 		if(h_res[memAddr] == 0)
-// 			continue;
-
-// 		std::cout << "i: " << i << ", memAddr: " << memAddr << std::endl;
-// 		for(int j = 0; j < __SIZE_RES; j++){
-// 			std::cout << h_res[memAddr + j] << ", ";
-// 		}std::cout << std::endl;
-
-// 		getchar();
-// 	}
-// #endif
-
-	// cleanup host memory
-	checkCudaErrors(cudaFreeHost(h_res));
+	checkCudaErrors(cudaMemcpy(h_res, d_res, res_mem_size, cudaMemcpyDeviceToHost));
+	cudaDeviceSynchronize();
 }

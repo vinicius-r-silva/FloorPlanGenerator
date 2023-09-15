@@ -165,6 +165,18 @@ std::vector<RoomConfig> Storage::getConfigs(){
     return setups;
 }
 
+std::vector<RoomConfig> Storage::getConfigsById(int configId){
+    std::vector<RoomConfig> result;
+
+    for(RoomConfig room : setups){
+        if(room.id & configId){
+            result.push_back(room);
+        }
+    }
+
+    return result;
+}
+
 /// @brief          Get the adjacency values
 /// @return         int vector
 std::vector<int> Storage::getAdjValues(){

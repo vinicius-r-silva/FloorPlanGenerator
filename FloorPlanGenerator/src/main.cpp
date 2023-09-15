@@ -16,7 +16,7 @@
 #include "../lib/calculator.h"
 #include "../lib/mpHelper.h"
 #include "../lib/search.h"
-#include "../cuda/combine.h"
+#include "../cuda/combineHandler.h"
 #include "../cuda/generateHandler.h"
 #include "../lib/viewer.h"
 
@@ -177,7 +177,6 @@ void showCoreResults(){
                 Log::print(room);
             }
 
-
             std::vector<int16_t> layout = hdd.readCoreData(combId, fileId);
             Viewer::showCoreResults(layout, setup.size());
         }
@@ -188,6 +187,7 @@ void combineDataGPU(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+    CombineHandler handler = CombineHandler();
 
     //TODO check if all of req are present during the gpu combination
     std::vector<int> allReq = hdd.getReqAdjValues();
@@ -195,20 +195,38 @@ void combineDataGPU(){
 
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
-    // for(std::vector<int> fileComb : filesCombs){        
-    //     std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
-    //     std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0]);
-    //     std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1]);
-        
-    //     // std::vector<RoomConfig> setupsA = getConfigsById(fileComb[0], setups);
-    //     // std::vector<RoomConfig> setupsB = getConfigsById(fileComb[1], setups);
+    for(std::vector<int> fileComb : filesCombs){     
+        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
 
-    //     std::string resultPath = hdd.getResultPath();
+        std::vector<int> layout_a_files_ids = hdd.getSavedCoreCombinationFiles(fileComb[0]);
+        std::vector<int> layout_b_files_ids = hdd.getSavedCoreCombinationFiles(fileComb[1]);
 
-    //     // TODO: rotate layout b with layout a, or change cuda code to process the two ways os combination
-    //     gpuHandler::createPts(layout_a, layout_b, allReq, resultPath, fileComb[0], fileComb[1]);
-    //     break;
-    // }
+        for(int layout_a_file_id : layout_a_files_ids){
+            for(int layout_b_file_id : layout_b_files_ids){
+                std::cout << "layout_a_file_id: " << layout_a_file_id << ", layout_b_file_id: " << layout_b_file_id << std::endl;
+                
+                std::vector<RoomConfig> config_a = hdd.getConfigsById(fileComb[0]);
+                std::vector<RoomConfig> config_b = hdd.getConfigsById(fileComb[1]);
+                std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0], layout_a_file_id);
+                std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1], layout_b_file_id);
+
+                std::cout << "a: " << std::endl;
+                for(RoomConfig room : config_a){
+                    Log::print(room);
+                }
+                
+                std::cout << std::endl << std::endl << "b: " << std::endl;
+                for(RoomConfig room : config_b){
+                    Log::print(room);
+                }
+
+                std::string resultPath = hdd.getResultPath();
+
+                handler.combine(config_a, config_b, layout_a, layout_b, allReq, hdd);
+                return;
+            }
+        }
+    }
 }
 
 void showReults(){
@@ -285,9 +303,9 @@ int main(){
 
     // generateData(3);
     // combineData();
-    // combineDataGPU();
+    combineDataGPU();
     // showReults();
-    generateDataGpu();
+    // generateDataGpu();
     // showCoreResults();
     // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/core/21_0.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
 
