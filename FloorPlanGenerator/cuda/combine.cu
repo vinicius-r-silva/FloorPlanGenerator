@@ -58,17 +58,17 @@
 
 
 __global__ 
-void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int qtd_a, const int qtd_b, const int a_offset) {
+void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn, const int qtd_a, const int qtd_b, const int a_offset) {
 	// Block and thread indexes 	
 	// Each blockIdx.x iterates over a fixed number (num_a) of A layouts (blockIdx.y), 
 	// that iterates over Nconn connections (blockIdx.z). Each threadIdx.x represents
 	// a Layout B design inside the blockIdx.x block 
 
 	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
-	const int k = blockIdx.z + 1 + blockIdx.z/4; 
+	// const int kidx = blockIdx.z; 
 	int a_idx = blockIdx.y + a_offset; //layout A index
 	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index
-	const uint64_t res_idx = ((blockIdx.y * qtd_b * __COMBINE_CONN) + (b_idx * __COMBINE_CONN) + blockIdx.z) * __SIZE_RES;
+	const uint64_t res_idx = ((blockIdx.y * qtd_b * gridDim.z) + (b_idx * gridDim.z) + blockIdx.z) * __SIZE_RES;
 
 	// Check bounds
 	if(b_idx >= qtd_b || blockIdx.y >= qtd_a){
@@ -89,7 +89,18 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 		req_adj[threadIdx.x] = d_adj[threadIdx.x];
 	}
 
+	__shared__ int k;
+	if(threadIdx.x == 0){
+		k = d_conn[blockIdx.z];
+	}
+
   	__syncthreads();
+
+	// if(a_idx != 0 || b_idx != 0)
+	// 	return;
+
+	// if(blockIdx.z > 0)
+	// 	return;
 
 	// Load B into local memory
 	int16_t b[__SIZE_B_DISK];
@@ -98,44 +109,44 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 	}
 
 	// Extract source and destination connections from k
-	const int srcConn = k & 0b11;
-	const int dstConn = (k >> 2) & 0b11;
-
-	// Get X axis connection points from layout A and B
-	int dst = 0;
-	int src = 0;
-	if(dstConn == 0 || dstConn == 2)
-		dst = b[0];
-	else 
-		dst = b[2];
-
-	if(srcConn == 0 || srcConn == 2)
-		src = a[__SIZE_A_LAYOUT - 4];
-	else 
-		src = a[__SIZE_A_LAYOUT - 2];
+	int srcConn = (k >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS;
+	int dstConn = (k >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS;
 
 
-	//Move layout B in the X axis by diffX points
+
+	// printf("1 - %ld - pts:\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n", 
+	// res_idx,
+	// a[0], a[1], a[2], a[3], 
+	// a[4], a[5], a[6], a[7], 
+	// a[8], a[9], a[10], a[11],
+	// b[0], b[1], b[2], b[3], 
+	// b[4], b[5], b[6], b[7], 
+	// b[8], b[9], b[10], b[11]);
+
+	int src = a[srcConn];
+	int dst = b[dstConn];
 	const int diffX = src - dst;
+
+	srcConn = (k >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS;
+	dstConn = (k >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS;
+	src = a[srcConn];
+	dst = b[dstConn];
+	const int diffY = src - dst;
+
+	// printf("\n\nbx: %d, by: %d, bz: %d, tx: %d, ty: %d, tz: %d\nres: %ld, a_idx: %d, b_idx: %d\nk: %d, src X: %d (%d), src Y: %d (%d), dst X: %d (%d), dst Y: %d (%d)\ndiffX: %d, diffY: %d, \n\n",
+	// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z,
+	// 		res_idx, blockIdx.y + a_offset, blockIdx.x * blockDim.x + threadIdx.x,
+	// 		k,
+	// 		(k >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS, a[(k >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS],
+	// 		(k >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS, a[(k >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS],
+	// 		(k >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS, b[(k >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS],
+	// 		(k >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS, b[(k >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS],
+	// 		diffX, diffY);
+
+	//Move layout B in the X and Y axis by diffX and diffY points
 	for(int i = 0; i < __SIZE_B_LAYOUT; i+=2){
 		b[i] += diffX;
-	}
-
-	// Get Y axis connection points from layout A and B
-	if(dstConn == 0 || dstConn == 1)
-		dst = b[1];
-	else 
-		dst = b[3];
-		
-	if(srcConn == 0 || srcConn == 1)
-		src = a[__SIZE_A_LAYOUT - 3];
-	else 
-		src = a[__SIZE_A_LAYOUT - 1];
-
-	//Move layout B in the Y axis by diffY points
-	const int diffY = src - dst;
-	for(int i = 1; i < __SIZE_B_LAYOUT; i+=2){
-		b[i] += diffY;
+		b[i + 1] += diffY;
 	}
 
 	// Find the bounding box of B
@@ -276,46 +287,46 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, const int q
 	// 	printf("\n\nbx: %d, by: %d, bz: %d, tx: %d, ty: %d, tz: %d\n\n",
 	// 			blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
 
-	// 	printf("a: (%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n", 
-	// 	a[0], a[1], a[2], a[3], 
-	// 	a[4], a[5], a[6], a[7], 
-	// 	a[8], a[9], a[10], a[11]);
 
-	// 	printf("b: (%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n\n", 
-	// 	b[0], b[1], b[2], b[3], 
-	// 	b[4], b[5], b[6], b[7], 
-	// 	b[8], b[9], b[10], b[11]);
+	// printf("2 - %ld - pts:\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n", 
+	// res_idx,
+	// a[0], a[1], a[2], a[3], 
+	// a[4], a[5], a[6], a[7], 
+	// a[8], a[9], a[10], a[11],
+	// b[0], b[1], b[2], b[3], 
+	// b[4], b[5], b[6], b[7], 
+	// b[8], b[9], b[10], b[11]);
 	// }
 
-	// d_res[res_idx] = a[0];
-	// d_res[res_idx + 1] = a[1];
-	// d_res[res_idx + 2] = a[2];
-	// d_res[res_idx + 3] = a[3];
-	// d_res[res_idx + 4] = a[4];
-	// d_res[res_idx + 5] = a[5];
-	// d_res[res_idx + 6] = a[6];
-	// d_res[res_idx + 7] = a[7];
-	// d_res[res_idx + 8] = a[8];
-	// d_res[res_idx + 9] = a[9];
-	// d_res[res_idx + 10] = a[10];
-	// d_res[res_idx + 11] = a[11];
+	d_res[res_idx] = a[0];
+	d_res[res_idx + 1] = a[1];
+	d_res[res_idx + 2] = a[2];
+	d_res[res_idx + 3] = a[3];
+	d_res[res_idx + 4] = a[4];
+	d_res[res_idx + 5] = a[5];
+	d_res[res_idx + 6] = a[6];
+	d_res[res_idx + 7] = a[7];
+	d_res[res_idx + 8] = a[8];
+	d_res[res_idx + 9] = a[9];
+	d_res[res_idx + 10] = a[10];
+	d_res[res_idx + 11] = a[11];
 
-	// d_res[res_idx + 12] = b[0];
-	// d_res[res_idx + 13] = b[1];
-	// d_res[res_idx + 14] = b[2];
-	// d_res[res_idx + 15] = b[3];
-	// d_res[res_idx + 16] = b[4];
-	// d_res[res_idx + 17] = b[5];
-	// d_res[res_idx + 18] = b[6];
-	// d_res[res_idx + 19] = b[7];
-	// d_res[res_idx + 20] = b[8];
-	// d_res[res_idx + 21] = b[9];
-	// d_res[res_idx + 22] = b[10];
-	// d_res[res_idx + 23] = b[11];
-	d_res[res_idx] = maxH - minH;
-	d_res[res_idx + 1] = maxW - minW;
-	d_res[res_idx + 2] = a_idx;
-	d_res[res_idx + 3] = b_idx;
+	d_res[res_idx + 12] = b[0];
+	d_res[res_idx + 13] = b[1];
+	d_res[res_idx + 14] = b[2];
+	d_res[res_idx + 15] = b[3];
+	d_res[res_idx + 16] = b[4];
+	d_res[res_idx + 17] = b[5];
+	d_res[res_idx + 18] = b[6];
+	d_res[res_idx + 19] = b[7];
+	d_res[res_idx + 20] = b[8];
+	d_res[res_idx + 21] = b[9];
+	d_res[res_idx + 22] = b[10];
+	d_res[res_idx + 23] = b[11];
+	// d_res[res_idx] = maxH - minH;
+	// d_res[res_idx + 1] = maxW - minW;
+	// d_res[res_idx + 2] = a_idx;
+	// d_res[res_idx + 3] = b_idx;
 }
 
 
@@ -327,8 +338,21 @@ int* CudaCombine::createDeviceAdjArray(const std::vector<int>& allReqAdj){
 	int* h_adj = (int*)(allReqAdj.data());
 	checkCudaErrors(cudaMemcpy(d_adj, h_adj, mem_size, cudaMemcpyHostToDevice));
 
-	std::cout << "mem size adj: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	std::cout << "mem size adj: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << ", pointer: " << d_adj << std::endl;
 	return d_adj;
+}
+
+
+int* CudaCombine::createDeviceConnArray(const std::vector<int>& conns){
+	int* d_conn;
+	const size_t mem_size = conns.size() * sizeof(int);
+	checkCudaErrors(cudaMalloc((void **)&d_conn, mem_size));
+
+	int* h_conn = (int*)(conns.data());
+	checkCudaErrors(cudaMemcpy(d_conn, h_conn, mem_size, cudaMemcpyHostToDevice));
+
+	std::cout << "mem size conn: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << ", pointer: " << d_conn << std::endl;
+	return d_conn;
 }
 
 
@@ -340,7 +364,7 @@ int16_t* CudaCombine::createDeviceCoreLayoutsArray(const std::vector<int16_t>& p
 	int16_t* h_pts = (int16_t*)(pts.data());
 	checkCudaErrors(cudaMemcpy(d_pts, h_pts, mem_size, cudaMemcpyHostToDevice));
 
-	std::cout << "mem size core layout: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	std::cout << "mem size core layout: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << ", pointer: " << d_pts << std::endl;
 	return d_pts;
 }
 
@@ -349,15 +373,16 @@ int* CudaCombine::createDeviceResArray(const size_t mem_size) {
 	checkCudaErrors(cudaMalloc((void**)&d_res, mem_size));
 	checkCudaErrors(cudaMemset(d_res, -1, mem_size));
 
-	std::cout << "mem size res: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << std::endl;
+	std::cout << "mem size res: " << mem_size << ", (MB): " << ((float)mem_size)/1024.0/1024.0 << ", pointer: " << d_res << std::endl;
 	return d_res;
 }
 
-void CudaCombine::freeDeviceArrays(int* adj, int* res, int16_t* a, int16_t* b) {
+void CudaCombine::freeDeviceArrays(int* adj, int* res, int* conn, int16_t* a, int16_t* b) {
 	checkCudaErrors(cudaFree(a));
 	checkCudaErrors(cudaFree(b));
 	checkCudaErrors(cudaFree(adj));
 	checkCudaErrors(cudaFree(res));
+	checkCudaErrors(cudaFree(conn));
 }
 
 void CudaCombine::createPts(
@@ -371,16 +396,16 @@ void CudaCombine::createPts(
 		int* h_res,
 		int* d_adj,
 		int* d_res,
+		int* d_conns,
 		int16_t* d_a,
 		int16_t* d_b) 
 	{
-
 	dim3 grid(num_blocks, num_a, NConn);
 	dim3 threads(num_threads, 1, 1);
 
 	checkCudaErrors(cudaMemset(d_res, -1, res_mem_size));
 
-	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, num_a, qtd_b, a_offset);
+	k_createPts<<<grid, threads>>>(d_a, d_b, d_res, d_adj, d_conns, num_a, qtd_b, a_offset);
 	cudaDeviceSynchronize();
 
 	checkCudaErrors(cudaMemcpy(h_res, d_res, res_mem_size, cudaMemcpyDeviceToHost));

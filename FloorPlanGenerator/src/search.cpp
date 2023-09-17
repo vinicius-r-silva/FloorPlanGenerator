@@ -218,47 +218,47 @@ void Search::ShowContent(const std::vector<int>& cudaResult, const std::vector<i
         if(i < 472)
             continue;
 
-        for(int j = 0; j < __COMBINE_CONN; j++){
-            const int conn = j + 1 + j/4;
-            std::cout << "1 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
+        // for(int j = 0; j < __COMBINE_CONN; j++){
+        //     const int conn = j + 1 + j/4;
+        //     std::cout << "1 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
 
-            // std::fill (ptsX.begin(), ptsX.end(), 0);
-            // std::fill (ptsY.begin(), ptsY.end(), 0);
-            if(Search::CalculatePts(ptsX, ptsY, a, b, a_layout_idx, b_layout_idx, n_a, n_b, conn, diffH, diffW)){
-                // std::cout << std::endl;
-                std::cout << "i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
-                std::cout << "diffH: " << diffH << ", diffW: " << diffW << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx << std::endl;
+        //     // std::fill (ptsX.begin(), ptsX.end(), 0);
+        //     // std::fill (ptsY.begin(), ptsY.end(), 0);
+        //     if(Search::CalculatePts(ptsX, ptsY, a, b, a_layout_idx, b_layout_idx, n_a, n_b, conn, diffH, diffW)){
+        //         // std::cout << std::endl;
+        //         std::cout << "i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
+        //         std::cout << "diffH: " << diffH << ", diffW: " << diffW << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx << std::endl;
 
-                int dir = CVHelper::showLayoutMove(ptsX, ptsY);
-                if(dir == -1 && last_i.size() == 0){
-                    j = -1;
-                }
-                else if(dir == -1){
-                    i = last_i.back(); last_i.pop_back(); 
-                    j = last_j.back() - 1; last_j.pop_back(); 
+        //         int dir = CVHelper::showLayoutMove(ptsX, ptsY);
+        //         if(dir == -1 && last_i.size() == 0){
+        //             j = -1;
+        //         }
+        //         else if(dir == -1){
+        //             i = last_i.back(); last_i.pop_back(); 
+        //             j = last_j.back() - 1; last_j.pop_back(); 
 
-                    diffH = cudaResult[i];
-                    diffW = cudaResult[i + 1];
-                    a_layout_idx = cudaResult[i + 2];
-                    b_layout_idx = cudaResult[i + 3];
-                } else {
-                    last_i.push_back(i);
-                    last_j.push_back(j);
-                }
+        //             diffH = cudaResult[i];
+        //             diffW = cudaResult[i + 1];
+        //             a_layout_idx = cudaResult[i + 2];
+        //             b_layout_idx = cudaResult[i + 3];
+        //         } else {
+        //             last_i.push_back(i);
+        //             last_j.push_back(j);
+        //         }
 
-                // std::cout << "3 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
-                std::cout << std::endl;
-                // std::cout << std::endl;
+        //         // std::cout << "3 i: " << i << ", j: " << j << ", conn: " << conn << std::endl;
+        //         std::cout << std::endl;
+        //         // std::cout << std::endl;
 
-                if(false){
-                    std::string fullPath = imagesPath + "/" + std::to_string(diffH) + "_" + std::to_string(diffW) + "_" + std::to_string(a_layout_idx) + "_" + std::to_string(b_layout_idx) + "_" + std::to_string(j) + ".png";
-                    CVHelper::saveImage(ptsX, ptsY, fullPath);
-                }
-            }
-            // std::cout << std::endl;
+        //         if(false){
+        //             std::string fullPath = imagesPath + "/" + std::to_string(diffH) + "_" + std::to_string(diffW) + "_" + std::to_string(a_layout_idx) + "_" + std::to_string(b_layout_idx) + "_" + std::to_string(j) + ".png";
+        //             CVHelper::saveImage(ptsX, ptsY, fullPath);
+        //         }
+        //     }
+        //     // std::cout << std::endl;
             
-            // CVHelper::showLayout(ptsX, ptsY);
-            // break;
-        }
+        //     // CVHelper::showLayout(ptsX, ptsY);
+        //     // break;
+        // }
     }
 }

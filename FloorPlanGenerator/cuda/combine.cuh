@@ -15,8 +15,10 @@ public:
     static int16_t* createDeviceCoreLayoutsArray(const std::vector<int16_t>& pts);
 
     static int* createDeviceResArray(const size_t result_mem_size);
+	
+	static int* createDeviceConnArray(const std::vector<int>& conns);
 
-    static void freeDeviceArrays(int* adj, int* res, int16_t* a, int16_t* b);
+    static void freeDeviceArrays(int* adj, int* res, int* conn, int16_t* a, int16_t* b);
 
     static void createPts(
         const size_t res_mem_size,
@@ -29,6 +31,7 @@ public:
 		int* h_res,
 		int* d_adj,
 		int* d_res,
+		int* d_conns,
 		int16_t* d_a,
 		int16_t* d_b);
 };

@@ -93,9 +93,19 @@ typedef struct{
 
 #define __COMBINE_N_A 3
 #define __COMBINE_N_B 3
-#define __COMBINE_CONN 12 // always 12
 #define __COMBINE_PERM_A 6  // __COMBINE_N_A !
 #define __COMBINE_PERM_B 6  // __COMBINE_N_B !
+
+// #define __COMBINE_CONN 108 //check on the google sheets, i dont want to think about the formula for this number now
+#define __COMBINE_CONN_SRC_X_SHIFT 0
+#define __COMBINE_CONN_SRC_Y_SHIFT 4
+#define __COMBINE_CONN_DST_X_SHIFT 8
+#define __COMBINE_CONN_DST_Y_SHIFT 12
+#define __COMBINE_CONN_BITS 0b0000000000001111
+// #define __COMBINE_CONN_SRC_Y_BITS 0b0000000011110000
+// #define __COMBINE_CONN_DST_X_BITS 0b0000111100000000
+// #define __COMBINE_CONN_DST_Y_BITS 0b1111000000000000
+
 
 #define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
 #define __CONN_CHECK_IDX 5 // _N_A + N_B - 1

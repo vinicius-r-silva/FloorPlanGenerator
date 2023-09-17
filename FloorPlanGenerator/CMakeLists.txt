@@ -43,6 +43,7 @@ set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper
 list(APPEND cxx_warning_flags "-Wall" "-Wextra")
 # list(APPEND cuda_flags_lst "-G" "-Xptxas=-v")
 list(APPEND cuda_flags_lst "-lineinfo" "-Xptxas=-v")
+# list(APPEND cuda_flags_lst "-lineinfo" "-Xptxas=-O2 -v")
 add_executable(FloorPlanGenerator ${cuda_headers} ${cuda_codes} ${headers} ${codes}) 
 
 # target_compile_options(FloorPlanGenerator PRIVATE -Wall -Wextra)

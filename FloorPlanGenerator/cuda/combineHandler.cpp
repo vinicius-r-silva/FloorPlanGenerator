@@ -34,6 +34,9 @@ void CombineHandler::consume(const int *h_res, const size_t res_mem_size, Storag
             ptsY[j] = h_res[i + (j * 2) + 1];
 
             std::cout << "(" << ptsX[j] << ", " << ptsY[j] << "), ";
+			if(j % 2 == 1){
+        		std::cout << std::endl;
+			}
         }
         std::cout << std::endl;
         
@@ -97,6 +100,79 @@ void CombineHandler::consume(const int *h_res, const size_t res_mem_size, Storag
 	// // printf("consumer %d end (pts: %zu, layouts: %zu)\n", threadId, result.size(), result.size() / __GENERATE_RES_LENGHT);
 }
 
+
+std::vector<int> CombineHandler::createConns(
+	const std::vector<RoomConfig>& rooms_a, 
+	const std::vector<RoomConfig>& rooms_b,
+	const std::vector<int16_t>& a, 
+	const std::vector<int16_t>& b)
+{
+	std::vector<int> conns;
+
+	// std::vector<int> pts_a_x;
+	// std::vector<int> pts_a_y;
+	// std::vector<int> pts_b_x;
+	// std::vector<int> pts_b_y;
+
+	const int n_a = rooms_a.size();
+	const int n_b = rooms_b.size();
+
+	const int pts_a = n_a * 4;
+	const int pts_b = n_b * 4;
+
+	for(int i = 0; i < pts_a; i++){
+		const int src_offset = (i / 4) * 4;
+		const int src_conn = i % 4;
+
+		int src_x = (src_conn == 0 || src_conn == 2) ? src_offset + 0 : src_offset + 2;
+		int src_y = (src_conn == 0 || src_conn == 1) ? src_offset + 1 : src_offset + 3;
+
+		// int a_x = a[src_x];
+		// int a_y = a[src_y];
+
+		for(int j = 0; j < pts_b; j++){
+			const int dst_offset = (j / 4) * 4;
+			const int dst_conn = j % 4;
+
+			if(dst_conn == src_conn)
+				continue;
+
+			int dst_x = (dst_conn == 0 || dst_conn == 2) ? dst_offset + 0 : dst_offset + 2;
+			int dst_y = (dst_conn == 0 || dst_conn == 1) ? dst_offset + 1 : dst_offset + 3;
+
+			// int b_x = b[dst_x];
+			// int b_y = b[dst_y];
+
+			// bool repeated_conn = false; 
+			// for(int i = 0; i < conns.size() && !repeated_conn; i++){
+			// 	if(pts_a_x[i] == a_x && pts_a_y[i] == a_y && pts_b_x[i] == b_x && pts_b_y[i] == b_y)
+			// 		repeated_conn = true;
+			// }
+
+			// if(repeated_conn)
+			// 	continue;
+
+			int conn = 0;
+			conn |= src_x << __COMBINE_CONN_SRC_X_SHIFT;
+			conn |= src_y << __COMBINE_CONN_SRC_Y_SHIFT;
+			conn |= dst_x << __COMBINE_CONN_DST_X_SHIFT;
+			conn |= dst_y << __COMBINE_CONN_DST_Y_SHIFT;
+
+			conns.push_back(conn);			
+			// pts_a_x.push_back(a_x);
+			// pts_a_y.push_back(a_y);
+			// pts_b_x.push_back(b_x);
+			// pts_b_y.push_back(b_y);
+		}
+	}
+
+	// for(int conn : conns){
+	// 	std::cout << conn << "\tsrc: " << ((conn >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS) << ", " << ((conn >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS) << "\tdst: " << ((conn >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS) << ", " << ((conn >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS) << std::endl;
+	// }
+
+	return conns;
+}
+
 void CombineHandler::combine(
 	const std::vector<RoomConfig>& rooms_a, 
 	const std::vector<RoomConfig>& rooms_b, 
@@ -105,14 +181,15 @@ void CombineHandler::combine(
 	std::vector<int> allReqAdj, 
 	Storage& hdd)
 {
+	std::vector<int> conns = CombineHandler::createConns(rooms_a, rooms_b, a, b);
 
-	if(CombineHandler::checkDefineValues(rooms_a, rooms_b, allReqAdj))
+	if(CombineHandler::checkDefineValues(rooms_a, rooms_b, allReqAdj, conns))
 		return;
 
 	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
 	const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
 
-	const int NConn = __COMBINE_CONN;
+	const int NConn = conns.size();
 	const int qtd_a = a.size() / __SIZE_A_DISK;
 	const int qtd_b = b.size() / __SIZE_B_DISK;
 	
@@ -133,6 +210,7 @@ void CombineHandler::combine(
 	const unsigned long mem_size_res = resLayoutSize * qtd_res;
 
 	int* d_adj = CudaCombine::createDeviceAdjArray(allReqAdj);
+	int* d_conns = CudaCombine::createDeviceConnArray(conns);
 	int* d_res = CudaCombine::createDeviceResArray(mem_size_res);
 	int16_t* d_a = CudaCombine::createDeviceCoreLayoutsArray(a);
 	int16_t* d_b = CudaCombine::createDeviceCoreLayoutsArray(b);
@@ -175,9 +253,9 @@ void CombineHandler::combine(
 					printf("producer %d init, diff: %d\n", threadId, diff);
 					if(diff < num_a){
 						int final_qtdBlocksX = (diff + qtdThreadX - 1) / qtdThreadX;
-						CudaCombine::createPts(mem_size_res, NConn, diff, qtd_b, i, final_qtdBlocksX, qtdThreadX, h_res[threadId].data(), d_adj, d_res, d_a, d_b);
+						CudaCombine::createPts(mem_size_res, NConn, diff, qtd_b, i, final_qtdBlocksX, qtdThreadX, h_res[threadId].data(), d_adj, d_res, d_conns, d_a, d_b);
 					} else {
-						CudaCombine::createPts(mem_size_res, NConn, num_a, qtd_b, i, num_blocks, qtdThreadX, h_res[threadId].data(), d_adj, d_res, d_a, d_b);
+						CudaCombine::createPts(mem_size_res, NConn, num_a, qtd_b, i, num_blocks, qtdThreadX, h_res[threadId].data(), d_adj, d_res, d_conns, d_a, d_b);
 					}
 
 					// CudaGenerate::launchDuplicateCheckKernel(d_res, h_res[threadId].data(), layoutsPerKernel, result_mem_size);
@@ -194,7 +272,7 @@ void CombineHandler::combine(
     // }
 	printf("parallel end\n");
 
-    CudaCombine::freeDeviceArrays(d_adj, d_res, d_a, d_b);
+    CudaCombine::freeDeviceArrays(d_adj, d_res, d_conns, d_a, d_b);
 }
 
 int CombineHandler::minThreadCount(){
@@ -215,7 +293,7 @@ int CombineHandler::checkThreadCountValue(const int qtdThreadsY){
 	return 0;
 }
 
-int CombineHandler::checkDefineValues(const std::vector<RoomConfig>& a, const std::vector<RoomConfig>& b, std::vector<int> adj){
+int CombineHandler::checkDefineValues(const std::vector<RoomConfig>& a, const std::vector<RoomConfig>& b, std::vector<int> adj, std::vector<int> conns){
 	if(a.size() != __COMBINE_N_A){
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!! wrong __COMBINE_N_A value !!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
@@ -291,9 +369,9 @@ int CombineHandler::checkDefineValues(const std::vector<RoomConfig>& a, const st
 		return 1; 
 	}
 
-	int maxAdjTypes = 0;
+	int maxAdjTypeSupported = 0;
 	for(int i = 0; i < __RID_BITS_SIZE; i++){
-		maxAdjTypes |= 1 << i;
+		maxAdjTypeSupported |= 1 << i;
 	}
 
 	int maxAdjType = 0;
@@ -306,16 +384,33 @@ int CombineHandler::checkDefineValues(const std::vector<RoomConfig>& a, const st
 			maxAdjType = room.rPlannyId;
 	}
 
-	if(maxAdjTypes < __SIZE_ADJ_TYPES || maxAdjTypes < maxAdjType){
+	if(maxAdjTypeSupported < __SIZE_ADJ_TYPES || maxAdjTypeSupported < maxAdjType){
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!! wrong __SIZE_ADJ_TYPES value !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		return 1; 
 	}
 
-	if(maxAdjTypes != __RID_BITS){
+	if(maxAdjTypeSupported != __RID_BITS){
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!! wrong __RID_BITS value !!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		return 1; 
+	}
+	int pts_a = a.size() * 4;
+	if ((pts_a - 1) > __COMBINE_CONN_BITS)
+	{
+		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << "!!!!!!!!!!!!!!!!!!!! wrong __COMBINE_CONN_BITS value !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		return 1; 
+	}
+
+	int pts_b = b.size() * 4;
+	if ((pts_b - 1) > __COMBINE_CONN_BITS)
+	{
+		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+		std::cout << "!!!!!!!!!!!!!!!!!!!! wrong __COMBINE_CONN_BITS value !!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 		return 1; 
 	}
