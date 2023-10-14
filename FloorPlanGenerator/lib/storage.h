@@ -13,6 +13,15 @@
 #include <string>
 // #include <boost/numeric/ublas/matrix.hpp>
 
+class CombinationResultPart {
+public:
+    int combId;
+    int minSizeId;
+    int kernelCount;
+
+    CombinationResultPart(const int combId, const int minSizeId, const int kernelCount) : combId(combId), minSizeId(minSizeId), kernelCount(kernelCount) {}
+};
+
 /**
   Handles all file managing (read/write) for the project
 */
@@ -24,6 +33,9 @@ class Storage
       Vector for all informations baout the rooms setups
     */ 
     std::vector<RoomConfig> setups;
+
+
+    std::vector<CombinationResultPart> combinationResultsParts;
 
     /**
       Vector with multiplicaiton value for each adjcency
@@ -55,6 +67,8 @@ class Storage
     /// @return         None
     void readReqAdjValues();
 
+    void readCombinationResultPartFiles();
+
 public:
 
     /// @brief          Storage Constructor
@@ -85,21 +99,38 @@ public:
     // boost::numeric::ublas::matrix<int> getReqAdjValues();
  
 
-    void saveResult(const std::vector<int16_t>& layouts, const int combId, const int offsetId);
+    void saveResult(std::vector<int16_t>& layouts, const int combId, const int offsetId);
 
-    std::vector<int> getSavedCoreCombinations();
+    // void saveCombineResult(const std::vector<int>& result, const std::vector<size_t>& index_table, const int combId, const int offsetId);
+    void saveCombineResultPart(std::vector<std::vector<std::vector<int>>> results, const int combId, const int kernelLaunchCount);
+    
+    void saveCombineResult(std::vector<int> results, const int combId, const int minSizeId);
 
-    std::vector<int> getSavedCoreCombinationFiles(int id);
+    std::vector<int> getSavedCores();
+
+    std::vector<int> getSavedCoreFiles(int id);
+
+    std::vector<int> getSavedCombinationsPartsCombIds();
+
+    std::vector<int> getSavedCombinationsPartsMinSizeIds(int combId);
+    
+    std::vector<int> getSavedCombinationsPartsKernelIds(int combId, int minSizeId);
     
     std::vector<int16_t> readCoreData(int combId, int fileId);
 
+    std::vector<int32_t> readCombineSplitData(int combId, int sizeID, int fileId);
+
     template <typename T>
-    void saveVector(std::string fullPath, std::vector<T> arr, size_t elemSize);
+    void saveVector(std::string fullPath, std::vector<T>& arr);
 
     template <typename T>
     std::vector<T> readVector(std::string fullPath);
 
-    void deleteSavedResults();
+    void deleteSavedCoreResults();
+
+    void deleteSavedCombinedResults();
+
+    void deleteSavedCombinedResultsParts();
 
     std::vector<int> getSavedResults();
 

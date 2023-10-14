@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <string>
 #include <cmath>
+#include <set>
 #include "../lib/storage.h"
 #include "../lib/globals.h"
 #include "../lib/log.h"
@@ -11,10 +12,14 @@
 #include "../lib/calculator.h"
 
 // ls -la ../FloorPlanGenerator/storage/core --block-size=MB
-// du -hs ../FloorPlanGenerator/storage/core
+// du -hS ../FloorPlanGenerator/storage/core
 
-// ls -la ../FloorPlanGenerator/storage/cudaResult --block-size=MB
-// du -hs ../FloorPlanGenerator/storage/cudaResult
+// ls -la ../FloorPlanGenerator/storage/combined/parts --block-size=MB
+// du -hS ../FloorPlanGenerator/storage/combined/parts
+
+// ls -la ../FloorPlanGenerator/storage/combined --block-size=MB
+// du -hS ../FloorPlanGenerator/storage/combined
+
 
 /// @brief          Storage Constructor
 /// @return         None
@@ -23,6 +28,7 @@ Storage::Storage(){
     readConfigs();
     readAdjValues();
     readReqAdjValues();
+    readCombinationResultPartFiles();
 }
 
     
@@ -159,6 +165,29 @@ void Storage::readReqAdjValues(){
     input_file.close();
 }
 
+void Storage::readCombinationResultPartFiles(){
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/combined/parts";
+    combinationResultsParts.clear();
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string fileName = entry.path().stem();
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") != 0)
+            continue;
+            
+        std::stringstream ss(fileName);
+        std::string combId, minSizeId, kernelCountId;
+
+        std::getline(ss, combId, '_');
+        std::getline(ss, minSizeId, '_');
+        std::getline(ss, kernelCountId, '.');
+
+        CombinationResultPart item(std::stoi(combId), std::stoi(minSizeId), std::stoi(kernelCountId));
+        combinationResultsParts.push_back(item);
+    }
+}
+
 /// @brief          Get the possible RoomConfig informations
 /// @return         RoomConfig vector
 std::vector<RoomConfig> Storage::getConfigs(){
@@ -204,49 +233,70 @@ inline void getSizeId(int k, const int n, const std::vector<int>& qtdSizesH, con
 }
 
 // layout: size -> order -> conn
-void Storage::saveResult(const std::vector<int16_t>& layouts, const int combId, const int offsetId){
+void Storage::saveResult(std::vector<int16_t>& layouts, const int combId, const int offsetId){
     if(layouts.size() == 0)
         return;
 
     std::string path = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + "_" + std::to_string(offsetId) + ".dat";
-    Storage::saveVector(path, layouts, sizeof(int16_t));
+    Storage::saveVector(path, layouts);
+}
+
+void Storage::saveCombineResultPart(std::vector<std::vector<std::vector<int>>> results, const int combId, const int kernelCount){
+    const int max_size = results.size();
+    for(int i = 0; i < max_size; i++){
+        for(int j = 0; j < max_size; j++){
+            if(results[i][j].size() == 0)
+                continue;
+
+            int minSizeId = (i << __RES_FILE_LENGHT_BITS) | j;
+            // std::cout << "i: " << i << ", j: " << j << ", minSizeId: " << minSizeId << std::endl;
+            std::string path = _projectDir + "/FloorPlanGenerator/storage/combined/parts/" + std::to_string(combId) + "_" + std::to_string(minSizeId) + "_" + std::to_string(kernelCount) + ".dat";
+            Storage::saveVector(path, results[i][j]);
+        }
+    }
+}
+
+void Storage::saveCombineResult(std::vector<int> results, const int combId, const int minSizeId){
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/combined/" + std::to_string(combId) + "_" + std::to_string(minSizeId) + ".dat";
+    Storage::saveVector(path, results);
 }
 
 template <typename T>
-void Storage::saveVector(std::string fullPath, std::vector<T> arr, size_t elemSize){    
+void Storage::saveVector(std::string fullPath, std::vector<T>& arr){    
+    size_t elemSize = sizeof(T);
     std::ofstream outputFile(fullPath, std::ios::out | std::ios::binary);
     outputFile.write(reinterpret_cast<const char*>(arr.data()), arr.size() * elemSize);
     outputFile.close();
 }
 
-std::vector<int> Storage::getSavedCoreCombinationFiles(int id) {
+std::vector<int> Storage::getSavedCoreFiles(int id) {
+    std::set<int> fileIds;
     std::string id_name = std::to_string(id);
-    std::vector<int> result;
     std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
 
     for (const auto & entry : std::filesystem::directory_iterator(path)){
         std::string fileName = entry.path().stem();
         std::string extension = entry.path().extension();
 
-
         if(extension.compare(".dat") != 0)
             continue;
 
-        if (fileName.find(id_name) != 0)
+        if (fileName.find(id_name) == std::string::npos)
             continue;
             
         size_t split_pos = fileName.find('_');
         
         std::string fileId = fileName.substr(split_pos + 1, fileName.length() - 1);
-        result.push_back(stoi(fileId));
+        fileIds.insert(stoi(fileId));
     }
 
+    std::vector<int> result(fileIds.begin(), fileIds.end());
     return result;
 }
 
 
-std::vector<int> Storage::getSavedCoreCombinations() {
-    std::vector<int> result;
+std::vector<int> Storage::getSavedCores() {
+    std::set<int> ids;
     std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
 
     for (const auto & entry : std::filesystem::directory_iterator(path)){
@@ -262,10 +312,45 @@ std::vector<int> Storage::getSavedCoreCombinations() {
                 continue;
             
             fileName = fileName.substr(0, split_pos);
-            result.push_back(stoi(fileName));
+            ids.insert(stoi(fileName));
         }
     }
 
+    std::vector<int> result(ids.begin(), ids.end());
+    return result;
+}
+
+
+std::vector<int> Storage::getSavedCombinationsPartsCombIds() {
+    std::set<int> ids;
+    for(CombinationResultPart item : combinationResultsParts){
+        ids.insert(item.combId);
+    }
+
+    std::vector<int> result(ids.begin(), ids.end());
+    return result;
+}
+
+
+std::vector<int> Storage::getSavedCombinationsPartsMinSizeIds(int combId) {
+    std::set<int> ids;
+    for(CombinationResultPart item : combinationResultsParts){
+        if(item.combId == combId)
+            ids.insert(item.minSizeId);
+    }
+
+    std::vector<int> result(ids.begin(), ids.end());
+    return result;
+}
+
+std::vector<int> Storage::getSavedCombinationsPartsKernelIds(int combId, int minSizeId) {
+    std::set<int> ids;
+    for(CombinationResultPart item : combinationResultsParts){
+        if(item.combId == combId && item.minSizeId == minSizeId)
+            ids.insert(item.kernelCount);
+    }
+
+    std::vector<int> result(ids.begin(), ids.end());
     return result;
 }
 
@@ -273,6 +358,11 @@ std::vector<int> Storage::getSavedCoreCombinations() {
 std::vector<int16_t> Storage::readCoreData(int combId, int fileId){
     const std::string filename = _projectDir + "/FloorPlanGenerator/storage/core/" + std::to_string(combId) + "_" + std::to_string(fileId) + ".dat";
     return readVector<int16_t>(filename);
+}
+
+std::vector<int> Storage::readCombineSplitData(int combId, int sizeId, int fileId){
+    const std::string filename = _projectDir + "/FloorPlanGenerator/storage/combined/parts/" + std::to_string(combId) + "_" + std::to_string(sizeId) + "_" + std::to_string(fileId) + ".dat";
+    return readVector<int>(filename);
 }
 
 template <typename T>
@@ -287,14 +377,16 @@ std::vector<T> Storage::readVector(std::string fullPath){
     file.seekg(0, std::ios::beg);
 
     // read the data:
-    std::vector<T> fileData(fileSize);
-    file.read((char*) &fileData[0], fileSize * sizeof(T));
+    std::vector<T> fileData(fileSize, -1);
+    // file.read((char*) &fileData[0], fileSize * sizeof(T));
+    file.read(reinterpret_cast<char*>(fileData.data()), fileData.size() * sizeof(T)); // char==byte
+
 
     return fileData;
 }
 
 
-void Storage::deleteSavedResults() {
+void Storage::deleteSavedCoreResults() {
     std::string path = _projectDir + "/FloorPlanGenerator/storage/core";
 
     for (const auto & entry : std::filesystem::directory_iterator(path)){
@@ -304,6 +396,36 @@ void Storage::deleteSavedResults() {
             remove(entry.path());
         }
     }
+}
+
+
+void Storage::deleteSavedCombinedResultsParts() {
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/combined/parts";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") == 0){
+            remove(entry.path());
+        }
+    }
+    
+    readCombinationResultPartFiles();
+}
+
+
+void Storage::deleteSavedCombinedResults() {
+    std::string path = _projectDir + "/FloorPlanGenerator/storage/combined";
+
+    for (const auto & entry : std::filesystem::directory_iterator(path)){
+        std::string extension = entry.path().extension();
+
+        if(extension.compare(".dat") == 0){
+            remove(entry.path());
+        }
+    }
+    
+    readCombinationResultPartFiles();
 }
 
 
@@ -344,4 +466,8 @@ std::vector<int> Storage::readResultData(int combId, int fileId){
 
 
 template std::vector<int16_t> Storage::readVector(std::string fullPath);
-template void Storage::saveVector(std::string fullPath, std::vector<int16_t> arr, size_t elemSize);
+template std::vector<int> Storage::readVector(std::string fullPath);
+template std::vector<size_t> Storage::readVector(std::string fullPath);
+template void Storage::saveVector(std::string fullPath, std::vector<int16_t>& arr);
+template void Storage::saveVector(std::string fullPath, std::vector<int>& arr);
+template void Storage::saveVector(std::string fullPath, std::vector<size_t>& arr);

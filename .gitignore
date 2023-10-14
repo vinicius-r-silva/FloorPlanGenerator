@@ -42,6 +42,8 @@ docs/_templates/
 /logs/
 build/
 FloorPlanGenerator/storage/
+FloorPlanGenerator/storage_prod
+FloorPlanGenerator/storage_prod/
 config.out
 
 calculator.py

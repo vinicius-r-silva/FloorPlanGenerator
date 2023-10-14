@@ -69,8 +69,6 @@ typedef struct{
 //     _NAME_IDS_COUNT = 6
 // };
 
-
-
 #define __GENERATE_N 3
 #define __GENERATE_PERM 6 // __GENERATE_N!
 #define __GENERATE_REQ_ADJ 9 // __GENERATE_N * __GENERATE_N
@@ -90,7 +88,6 @@ typedef struct{
 
 #define __ROOM_CONFIG_LENGHT 8
 
-
 #define __COMBINE_N_A 3
 #define __COMBINE_N_B 3
 #define __COMBINE_PERM_A 6  // __COMBINE_N_A !
@@ -106,6 +103,9 @@ typedef struct{
 // #define __COMBINE_CONN_DST_X_BITS 0b0000111100000000
 // #define __COMBINE_CONN_DST_Y_BITS 0b1111000000000000
 
+#define __COMBINE_NAME_ROOMS_ID_SHIFT 16
+
+#define __COMBINE_INVALID_LAYOUT -1
 
 #define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
 #define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
@@ -115,7 +115,26 @@ typedef struct{
 #define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
 #define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
 // #define __SIZE_RES 4
-#define __SIZE_RES 24
+
+#define __COMBINE_RES_DIFF_H 0
+#define __COMBINE_RES_DIFF_W 1
+#define __COMBINE_RES_A_IDX 2
+#define __COMBINE_RES_B_IDX 3
+#define __SIZE_RES 4
+
+#define __RES_DISK_MAX_H 0
+#define __RES_DISK_MAX_W 1
+#define __RES_DISK_A_IDX 2
+#define __RES_DISK_B_IDX 3
+// #define __RES_DISK_MIN_SCORE 4
+// #define __RES_DISK_Min_H 5
+// #define __RES_DISK_Min_W 6
+// #define __RES_DISK_MAX_SCORE 7
+
+#define __SIZE_RES_DISK 4
+
+#define __RES_FILE_LENGHT_BITS 12
+#define __RES_FILE_LENGHT_AND_RULE 0b111111111111
 
 // TODO INCREASE RPLANNY IDS TO 5 TYPES INSTEAD OF 4 TYPES
 
@@ -135,4 +154,4 @@ typedef struct{
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
 
-#endif //GLOBALS
+#endif //GLOBALS 

@@ -19,6 +19,8 @@ public:
     static void showCoreResults(const std::vector<int16_t>& arr, const int n);
     
     static void showFileResults(std::string fullPath, int arrayOffset, int ptsPerLayout);
+
+    static void showResults(std::string fullPath);
 };
 
 #endif //VIEWER

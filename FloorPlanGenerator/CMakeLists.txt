@@ -37,8 +37,8 @@ set(CMAKE_BUILD_TYPE Release)
 
 set(cuda_headers "./cuda/combine.cuh" "./cuda/generate.cuh" "./cuda/helper.cuh"  "./cuda/common.cuh"  )
 set(cuda_codes   "./cuda/combine.cu"  "./cuda/generate.cu")
-set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/search.h"   "./lib/viewer.h"   "./cuda/process.h"   "./cuda/generateHandler.h"   "./cuda/combineHandler.h"   "./lib/globals.h") 
-set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/search.cpp" "./src/viewer.cpp" "./cuda/process.cpp" "./cuda/generateHandler.cpp" "./cuda/combineHandler.cpp" "./src/main.cpp")
+set(headers "./lib/storage.h"   "./lib/iter.h"   "./lib/log.h"   "./lib/cvHelper.h"   "./lib/calculator.h"   "./lib/mpHelper.h"   "./lib/generate.h"   "./lib/combine.h"   "./lib/search.h"   "./lib/viewer.h"   "./lib/combinePostProcess.h"   "./cuda/process.h"   "./cuda/generateHandler.h"   "./cuda/combineHandler.h"   "./lib/globals.h") 
+set(codes   "./src/storage.cpp" "./src/iter.cpp" "./src/log.cpp" "./src/cvHelper.cpp" "./src/calculator.cpp" "./src/mpHelper.cpp" "./src/generate.cpp" "./src/combine.cpp" "./src/search.cpp" "./src/viewer.cpp" "./src/combinePostProcess.cpp" "./cuda/process.cpp" "./cuda/generateHandler.cpp" "./cuda/combineHandler.cpp" "./src/main.cpp")
 
 list(APPEND cxx_warning_flags "-Wall" "-Wextra")
 # list(APPEND cuda_flags_lst "-G" "-Xptxas=-v")

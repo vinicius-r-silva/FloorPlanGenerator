@@ -19,6 +19,7 @@
 #include "../cuda/combineHandler.h"
 #include "../cuda/generateHandler.h"
 #include "../lib/viewer.h"
+#include "../lib/combinePostProcess.h"
 
 /*!
     @brief counts how many rooms of each class is included in the final layout
@@ -98,7 +99,7 @@ void generateDataGpu() {
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> allReq = hdd.getReqAdjValues();
 
-    hdd.deleteSavedResults();
+    hdd.deleteSavedCoreResults();
     
     const int reqSize = sqrt(allReq.size());
     std::vector<int> allReqCount = countReqClasses(setups, reqSize);
@@ -140,7 +141,7 @@ static inline std::vector<RoomConfig> getConfigsById(const int layoutId, const s
 void combineData(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+    std::vector<int> savedCombs = hdd.getSavedCores();
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     // for(std::vector<int> fileComb : filesCombs){
@@ -162,11 +163,11 @@ void combineData(){
 void showCoreResults(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+    std::vector<int> savedCombs = hdd.getSavedCores();
     std::sort (savedCombs.begin(), savedCombs.end()); // 12 32 45 71(26 33 53 80)
 
     for(int combId : savedCombs){
-        std::vector<int> fileIds = hdd.getSavedCoreCombinationFiles(combId);
+        std::vector<int> fileIds = hdd.getSavedCoreFiles(combId);
 
         for(int fileId : fileIds){
             std::cout << std::endl << std::endl << std::endl;
@@ -186,8 +187,10 @@ void showCoreResults(){
 void combineDataGPU(){
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
-    std::vector<int> savedCombs = hdd.getSavedCoreCombinations();
+    std::vector<int> savedCombs = hdd.getSavedCores();
     CombineHandler handler = CombineHandler();
+
+    hdd.deleteSavedCombinedResultsParts();
 
     //TODO check if all of req are present during the gpu combination
     std::vector<int> allReq = hdd.getReqAdjValues();
@@ -198,8 +201,8 @@ void combineDataGPU(){
     for(std::vector<int> fileComb : filesCombs){     
         std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
 
-        std::vector<int> layout_a_files_ids = hdd.getSavedCoreCombinationFiles(fileComb[0]);
-        std::vector<int> layout_b_files_ids = hdd.getSavedCoreCombinationFiles(fileComb[1]);
+        std::vector<int> layout_a_files_ids = hdd.getSavedCoreFiles(fileComb[0]);
+        std::vector<int> layout_b_files_ids = hdd.getSavedCoreFiles(fileComb[1]);
 
         for(int layout_a_file_id : layout_a_files_ids){
             for(int layout_b_file_id : layout_b_files_ids){
@@ -223,7 +226,7 @@ void combineDataGPU(){
                 std::string resultPath = hdd.getResultPath();
 
                 handler.combine(config_a, config_b, layout_a, layout_b, allReq, hdd);
-                return;
+                // return;
             }
         }
     }
@@ -294,6 +297,23 @@ void showReults(){
 //     std::cout << std::endl << std::endl << std::endl;
 // }
 
+void postProcess(){
+    std::cout << "main postProcess init" << std::endl;
+    Storage hdd = Storage();
+    std::vector<int> savedPartsCombIds = hdd.getSavedCombinationsPartsCombIds();
+
+    hdd.deleteSavedCombinedResults();
+
+    std::cout << "main postProcess savedPartsCombIds: ";
+    Log::printVector1D(savedPartsCombIds);
+
+    for(int combId : savedPartsCombIds){
+    std::cout << "main postProcess call process combId: " << combId << std::endl;
+        CombinePostProcess::postProcess(hdd, combId);
+        // break;
+    }
+}
+
 /*!
     @brief Main Function
     @return if there are no erros returns 0 
@@ -304,10 +324,16 @@ int main(){
     // generateData(3);
     // combineData();
     combineDataGPU();
+
+
+    // std::cout << "showResults. sizeIdx " << 163935 << ", min H: " << (163935 >> __RES_FILE_LENGHT_BITS) << ", min W: " << (163935 & __RES_FILE_LENGHT_AND_RULE) << std::endl;
+    // Viewer::showResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/combined/parts/3407883_163935_0.dat");
+    // Viewer::showIndexTable("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/combined/parts/3407883_0_table.dat");
     // showReults();
     // generateDataGpu();
     // showCoreResults();
     // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/core/21_0.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
+    postProcess();
 
     // std::vector<int16_t> result{0,1,2,-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
     // std::vector<int16_t> result{-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
