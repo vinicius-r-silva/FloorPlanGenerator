@@ -12,11 +12,11 @@
 Viewer::Viewer(){
 }
 
-void Viewer::showCoreResults(const std::vector<int16_t>& arr, const int n){
-    const int vectorOffset = n * 4 + 1;
-    const int ptsPerLayout = n * 2;
-    std::vector<int16_t> ptsX(n * 2, 0); 
-    std::vector<int16_t> ptsY(n * 2, 0);
+void Viewer::showLayouts(const std::vector<int16_t>& arr, const int roomsCount, const int padding){
+    const int vectorOffset = (roomsCount * 4) + padding;
+    const int ptsPerLayout = roomsCount * 2;
+    std::vector<int16_t> ptsX(roomsCount * 2, 0); 
+    std::vector<int16_t> ptsY(roomsCount * 2, 0);
     std::cout << "vectorOffset: " << vectorOffset << ", ptsPerLayout: " << ptsPerLayout << std::endl;
 
     for(int i = 0; i <= (int)arr.size(); i += vectorOffset){    
@@ -40,6 +40,26 @@ void Viewer::showCoreResults(const std::vector<int16_t>& arr, const int n){
         } else if(dir == -1){
             i -= (vectorOffset*2);
         }
+    }
+}
+
+void Viewer::saveLayoutsImages(const std::vector<int16_t>& arr, const int roomsCount, const int padding, std::string folderPath, std::string fileNamePrefix){
+    const int vectorOffset = (roomsCount * 4) + padding;
+    const int ptsPerLayout = roomsCount * 2;
+    std::vector<int16_t> ptsX(roomsCount * 2, 0); 
+    std::vector<int16_t> ptsY(roomsCount * 2, 0);
+
+    std::cout << "saveLayoutsImages. Layouts " << ((double)arr.size())/((double)vectorOffset) << std::endl;
+    std::cout << "saveLayoutsImages. vectorOffset: " << vectorOffset << ", ptsPerLayout: " << ptsPerLayout << std::endl;
+
+    for(int i = 0; i < (int)arr.size(); i += vectorOffset){    
+        for(int j = 0; j < ptsPerLayout; j++){
+            ptsX[j] = arr[i + (j * 2)];
+            ptsY[j] = arr[i + (j * 2) + 1];
+        }
+
+        std::string fullPath = folderPath + "/" + fileNamePrefix + "_" + std::to_string(i / vectorOffset) + ".png";
+        CVHelper::saveImage(ptsX, ptsY, fullPath);
     }
 }
 
@@ -108,7 +128,7 @@ void Viewer::showResults(std::string fullPath){
 
     std::cout << "showIndexTable arrSize: " << arrSize << ", rows: " << rows << std::endl;
 
-    for(int i = 0; i < arr.size(); i+=__SIZE_RES_DISK){
+    for(int i = 0; i < (int)arr.size(); i+=__SIZE_RES_DISK){
         // std::cout << "row: " << i << ", max H: " << arr[(i * rows) + __RES_DISK_MAX_H] << ", max W: " << arr[(i * rows) + __RES_DISK_MAX_W] << ", a idx: " << arr[(i * rows) + __RES_DISK_A_IDX] << ", b idx: " << arr[(i * rows) + __RES_DISK_B_IDX] << std::endl;
 
         for(int j = 0; j < __SIZE_RES_DISK; j++){

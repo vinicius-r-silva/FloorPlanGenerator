@@ -16,7 +16,9 @@ public:
     */
     Viewer();
 
-    static void showCoreResults(const std::vector<int16_t>& arr, const int n);
+    static void showLayouts(const std::vector<int16_t>& arr, const int roomsCount, const int padding);
+    
+    static void saveLayoutsImages(const std::vector<int16_t>& arr, const int roomsCount, const int padding, std::string folderPath, std::string fileNamePrefix);
     
     static void showFileResults(std::string fullPath, int arrayOffset, int ptsPerLayout);
 

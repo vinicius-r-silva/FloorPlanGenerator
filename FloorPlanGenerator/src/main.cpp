@@ -119,6 +119,10 @@ void generateDataGpu() {
 	    std::cout << std::endl << std::endl << std::endl;
         std::cout << "combId: " << combId << std::endl;
 
+        for(RoomConfig config : allCombs[i]){
+            Log::print(config);
+        }
+
         // if(combId != 14)
         //     continue;
 
@@ -179,7 +183,7 @@ void showCoreResults(){
             }
 
             std::vector<int16_t> layout = hdd.readCoreData(combId, fileId);
-            Viewer::showCoreResults(layout, setup.size());
+            Viewer::showLayouts(layout, setup.size(), 1);
         }
     }
 }
@@ -199,40 +203,43 @@ void combineDataGPU(){
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){     
-        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+        // std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
 
         std::vector<int> layout_a_files_ids = hdd.getSavedCoreFiles(fileComb[0]);
         std::vector<int> layout_b_files_ids = hdd.getSavedCoreFiles(fileComb[1]);
 
         for(int layout_a_file_id : layout_a_files_ids){
             for(int layout_b_file_id : layout_b_files_ids){
-                std::cout << "layout_a_file_id: " << layout_a_file_id << ", layout_b_file_id: " << layout_b_file_id << std::endl;
+                // std::cout << "layout_a_file_id: " << layout_a_file_id << ", layout_b_file_id: " << layout_b_file_id << std::endl;
                 
                 std::vector<RoomConfig> config_a = hdd.getConfigsById(fileComb[0]);
                 std::vector<RoomConfig> config_b = hdd.getConfigsById(fileComb[1]);
                 std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0], layout_a_file_id);
                 std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1], layout_b_file_id);
 
-                std::cout << "a: " << std::endl;
-                for(RoomConfig room : config_a){
-                    Log::print(room);
-                }
+                // std::cout << "a: " << std::endl;
+                // for(RoomConfig room : config_a){
+                //     Log::print(room);
+                // }
                 
-                std::cout << std::endl << std::endl << "b: " << std::endl;
-                for(RoomConfig room : config_b){
-                    Log::print(room);
-                }
+                // std::cout << std::endl << std::endl << "b: " << std::endl;
+                // for(RoomConfig room : config_b){
+                //     Log::print(room);
+                // }
+                const int filesdId = (layout_a_file_id << __COMBINE_NAME_ROOMS_ID_SHIFT) | layout_b_file_id;
 
-                std::string resultPath = hdd.getResultPath();
+                // std::string resultPath = hdd.getResultPath();
 
-                handler.combine(config_a, config_b, layout_a, layout_b, allReq, hdd);
+                handler.combine(config_a, config_b, layout_a, layout_b, filesdId, allReq, hdd);
                 // return;
             }
         }
     }
+
+    hdd.updateCombinationList();
 }
 
-void showReults(){
+// void showReults(){
     // Storage hdd = Storage();
     // std::vector<RoomConfig> setups = hdd.getConfigs();
     // std::vector<int> savedResults = hdd.getSavedResults();
@@ -253,7 +260,7 @@ void showReults(){
     //     Search::ShowContent(cudaResult, layout_a, layout_b, setupsA.size(), setupsB.size(), imagesPath);
     //     break;
     // }
-}
+// }
 
 // void test(std::vector<int16_t> result){
 // 	const size_t resultSize = result.size();
@@ -299,19 +306,26 @@ void showReults(){
 
 void postProcess(){
     std::cout << "main postProcess init" << std::endl;
+    
     Storage hdd = Storage();
     std::vector<int> savedPartsCombIds = hdd.getSavedCombinationsPartsCombIds();
 
     hdd.deleteSavedCombinedResults();
 
-    std::cout << "main postProcess savedPartsCombIds: ";
-    Log::printVector1D(savedPartsCombIds);
-
     for(int combId : savedPartsCombIds){
-    std::cout << "main postProcess call process combId: " << combId << std::endl;
         CombinePostProcess::postProcess(hdd, combId);
         // break;
     }
+
+    hdd.updateCombinationList();
+}
+
+void search(){
+    Storage hdd = Storage();
+    hdd.deleteSavedImages();
+
+    Search::getLayouts(hdd, 40, 95);
+    // Search::getLayouts(hdd, 95, 40);
 }
 
 /*!
@@ -323,7 +337,10 @@ int main(){
 
     // generateData(3);
     // combineData();
-    combineDataGPU();
+    // combineDataGPU();
+    // postProcess();
+    //
+    search();
 
 
     // std::cout << "showResults. sizeIdx " << 163935 << ", min H: " << (163935 >> __RES_FILE_LENGHT_BITS) << ", min W: " << (163935 & __RES_FILE_LENGHT_AND_RULE) << std::endl;
@@ -333,18 +350,8 @@ int main(){
     // generateDataGpu();
     // showCoreResults();
     // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/core/21_0.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
-    postProcess();
-
-    // std::vector<int16_t> result{0,1,2,-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
-    // std::vector<int16_t> result{-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1};
-    // std::vector<int16_t> result{0,1,2,-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1,3,4,5};
-    // std::vector<int16_t> result{-1,-1,-1,1,2,3,-1,-1,-1,2,3,4,-1,-1,-1,3,4,5};
-
-    // test(std::vector<int16_t>{0,1,2,-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1});
-    // test(std::vector<int16_t>{-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1});
-    // test(std::vector<int16_t>{0,1,2,-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1,9,10,11});
-    // test(std::vector<int16_t>{-1,-1,-1,3,4,5,-1,-1,-1,6,7,8,-1,-1,-1,9,10,11});
-    
+    // 
+    // Storage hdd = Storage();
     
     return 0;
 }

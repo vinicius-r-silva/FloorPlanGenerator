@@ -204,8 +204,8 @@ void CombineHandler::moveElements(std::vector<int>& arr, size_t begin, size_t of
 }
 
 // TODO split consume with more threads, too many cores doing nothing
-void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int taskCount, const int max_layout_size){
-	const int threadId = omp_get_thread_num();
+void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int combFilesdId, const int taskCount, const int max_layout_size){
+	// const int threadId = omp_get_thread_num();
 	const int max_size_diff = max_layout_size;
 
 	// if(combId != 2293788)
@@ -216,6 +216,8 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 
 	// std::vector<int> result; //sorted result
 	// std::vector<size_t> h_begin(max_size_diff, invalid_idx);
+	std::vector<std::vector<int>> fileMaxH(max_size_diff, std::vector<int>(max_size_diff, -1));
+	std::vector<std::vector<int>> fileMaxW(max_size_diff, std::vector<int>(max_size_diff, -1));
 	std::vector<std::vector<std::vector<int>>> results(max_size_diff, std::vector<std::vector<int>>(max_size_diff, std::vector<int>()));
 
 	// std::cout << "combine init" << std::endl;
@@ -268,28 +270,66 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 		// 	max_diff_W += error;
 		// }
 
+		if(fileMaxH[min_diff_H][min_diff_W] < max_diff_H)
+			fileMaxH[min_diff_H][min_diff_W] = max_diff_H;
+
+		if(fileMaxW[min_diff_H][min_diff_W] < max_diff_W)
+			fileMaxW[min_diff_H][min_diff_W] = max_diff_W;
+
 		std::vector<int>& arr = results[min_diff_H][min_diff_W];
+
+		const int minSizeId = (min_diff_H << __RES_FILE_LENGHT_BITS) | min_diff_W;
+		// if(combId == 917553 && minSizeId == 163900){
+		// 	std::cout << std::endl << std::endl << std::endl << taskCount << ", max_diff_H: " << max_diff_H << ", max_diff_W: " << max_diff_W << ", " << std::endl;
+
+		// 	for(size_t j = 0; j < arr.size(); j+=__SIZE_RES_DISK){
+		// 		for(size_t k = 0; k < __SIZE_RES_DISK; k++){
+		// 			std::cout << arr[j + k] << ", ";
+		// 		}
+		// 		std::cout << std::endl;
+		// 	}
+		// }
 
 		// TODO replace with binary search
 		size_t insertIdx = 0;
-		while(insertIdx < arr.size() && arr[insertIdx + __RES_DISK_MAX_H] < max_diff_H && arr[insertIdx + __RES_DISK_MAX_W] < max_diff_W){
+		while(insertIdx < arr.size() && 
+			 (arr[insertIdx + __RES_DISK_MAX_H] < max_diff_H || 
+			 (arr[insertIdx + __RES_DISK_MAX_H] == max_diff_H && arr[insertIdx + __RES_DISK_MAX_W] < max_diff_W))){
 			insertIdx += __SIZE_RES_DISK;
 		}
 		while(insertIdx < arr.size() && arr[insertIdx + __RES_DISK_MAX_H] == max_diff_H && arr[insertIdx + __RES_DISK_MAX_W] == max_diff_W){
 			insertIdx += __SIZE_RES_DISK;
 		}
 
+		// if(combId == 917553 && minSizeId == 163900){
+		// 	std::cout << ", insertIdx: " << insertIdx << ", prev values: " << 
+		// }
+
+
 		size_t original_arr_size = arr.size();
 		arr.resize(arr.size() + __SIZE_RES_DISK);
 
 		if(insertIdx < original_arr_size){
-			std::shift_right(begin(arr), end(arr), __SIZE_RES_DISK);
+			std::shift_right(begin(arr) + insertIdx, end(arr), __SIZE_RES_DISK);
 		}
 
 		arr[insertIdx + __RES_DISK_MAX_H] = max_diff_H;
 		arr[insertIdx + __RES_DISK_MAX_W] = max_diff_W;
 		arr[insertIdx + __RES_DISK_A_IDX] = a_layout_idx;
 		arr[insertIdx + __RES_DISK_B_IDX] = b_layout_idx;
+
+		// if(combId == 917553 && minSizeId == 163900){
+		// 	std::cout << std::endl << "insertIdx: " << insertIdx << ", " << std::endl;
+
+		// 	for(size_t j = 0; j < arr.size(); j+=__SIZE_RES_DISK){
+		// 		for(size_t k = 0; k < __SIZE_RES_DISK; k++){
+		// 			std::cout << arr[j + k] << ", ";
+		// 		}
+		// 		std::cout << std::endl;
+		// 	}
+
+		// 	getchar();
+		// }
 
 		// if(min_diff_H == 40 && min_diff_W == 95){
 		// 	std::cout << "min H: " << min_diff_H << ", min W: " << min_diff_W << ", max H: " << max_diff_H << ", max W: " << max_diff_W << ", a idx: " << a_layout_idx << ", b idx: " << b_layout_idx << ", insertIdx: " << insertIdx  << std::endl;
@@ -323,23 +363,26 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 	// }
 	// std::cout << std::endl << std::endl << std::endl;
 
+	// std::cout << "fileMaxH" << std::endl;
+	// Log::printVector1D(fileMaxH);
+	// std::cout << "fileMaxW" << std::endl;
+	// Log::printVector1D(fileMaxW);
 
-	hdd.saveCombineResultPart(results, combId, taskCount);
-	std::cout << "consumer : " << threadId << " end, layouts: " << totalSize / __SIZE_RES_DISK << ", mem size (MB): " << ((double)(totalSize * sizeof(size_t))) / 1024.0 / 1024.0 << std::endl;
+
+	hdd.saveCombineResultPart(results, combId, combFilesdId, taskCount, fileMaxH, fileMaxW);
+	// std::cout << "consumer : " << threadId << " end, layouts: " << totalSize / __SIZE_RES_DISK << ", mem size (MB): " << ((double)(totalSize * sizeof(size_t))) / 1024.0 / 1024.0 << std::endl;
+	std::cout << "consumer end: " << combId << ", " << ", " << taskCount << ", layouts: " << totalSize / __SIZE_RES_DISK << ", mem size (MB): " << ((double)(totalSize * sizeof(size_t))) / 1024.0 / 1024.0 << std::endl;
 }
 
 // TODO removed repeated connections (create two conn arrays, one for the a, other for the b, maybe?)
 std::vector<int> CombineHandler::createConns(
-	const std::vector<RoomConfig>& rooms_a, 
-	const std::vector<RoomConfig>& rooms_b)
+	const int rooms_count_a, 
+	const int rooms_count_b)
 {
 	std::vector<int> conns;
 
-	const int n_a = rooms_a.size();
-	const int n_b = rooms_b.size();
-
-	const int pts_a = n_a * 4;
-	const int pts_b = n_b * 4;
+	const int pts_a = rooms_count_a * 4;
+	const int pts_b = rooms_count_b * 4;
 
 	for(int i = 0; i < pts_a; i++){
 		const int src_offset = (i / 4) * 4;
@@ -431,18 +474,19 @@ void CombineHandler::combine(
 	const std::vector<RoomConfig>& rooms_b, 
 	const std::vector<int16_t>& a, 
 	const std::vector<int16_t>& b,
+	const int combFilesdId,
 	std::vector<int> allReqAdj, 
 	Storage& hdd)
 {
-	std::vector<int> conns = CombineHandler::createConns(rooms_a, rooms_b);
+	std::vector<int> conns = CombineHandler::createConns(rooms_a.size(), rooms_b.size());
 
 	if(CombineHandler::checkDefineValues(rooms_a, rooms_b, allReqAdj))
 		return;
 
-	int combId = CombineHandler::getRoomsCombId(rooms_a);
-	combId |= CombineHandler::getRoomsCombId(rooms_b) << __COMBINE_NAME_ROOMS_ID_SHIFT;
+	int combId = CombineHandler::getRoomsCombId(rooms_a) << __COMBINE_NAME_ROOMS_ID_SHIFT;
+	combId |= CombineHandler::getRoomsCombId(rooms_b);
 
-	// if(combId >= 2490393)
+	// if(combId != 917553)
 	// 	return;
 
 	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
@@ -462,11 +506,11 @@ void CombineHandler::combine(
 	const int max_layout_size = CombineHandler::getMaxLayoutSize(rooms_a, rooms_b);
 	// const int min_layout_size = CombineHandler::getMinLayoutSize(rooms_a, rooms_b);
 
-	std::cout << std::endl;
-	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
-	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << qtd_a * qtd_b << std::endl;
-	std::cout << "maxResCount: " << maxResCount << ", qtd_res: " << qtd_res << std::endl;
-	std::cout << "num_a: " << num_a << ", kernel launchs: " << ((qtd_a + num_a - 1) / (num_a)) << std::endl;
+	// std::cout << std::endl;
+	// std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
+	// std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << qtd_a * qtd_b << std::endl;
+	// std::cout << "maxResCount: " << maxResCount << ", qtd_res: " << qtd_res << std::endl;
+	// std::cout << "num_a: " << num_a << ", kernel launchs: " << ((qtd_a + num_a - 1) / (num_a)) << std::endl;
 
 	const long resLayoutSize = sizeof(int) * __SIZE_RES;
 	const unsigned long mem_size_res = resLayoutSize * qtd_res;
@@ -480,7 +524,7 @@ void CombineHandler::combine(
 	const int nCpuThreads = 2;
 	// int16_t** h_res = CudaGenerate::createHostResArray(result_mem_size, nCpuThreads);
 	std::vector<std::vector<int>> h_res(nCpuThreads, std::vector<int>(ptsPerKernel, __COMBINE_INVALID_LAYOUT));
-	std::cout << "nCpuThreads: " << nCpuThreads << std::endl;
+	// std::cout << "nCpuThreads: " << nCpuThreads << std::endl;
 
 	
 	int qtdThreadX = qtd_b > __THREADS_PER_BLOCK ? __THREADS_PER_BLOCK : qtd_b; 
@@ -493,14 +537,14 @@ void CombineHandler::combine(
 	if(CombineHandler::checkThreadCountValue(qtdThreadX))
 		return;
 
-	std::cout << "num_blocks: " << num_blocks << std::endl;
-	std::cout << "qtdThreadX: " << qtdThreadX << std::endl;
+	// std::cout << "num_blocks: " << num_blocks << std::endl;
+	// std::cout << "qtdThreadX: " << qtdThreadX << std::endl;
 
 	int dependencyControl = 0;
 
 
 
-	std::cout << "start parallel process" << std::endl;
+	// std::cout << "start parallel process" << std::endl;
     #pragma omp parallel num_threads(nCpuThreads)
     {
         #pragma omp single
@@ -527,7 +571,7 @@ void CombineHandler::combine(
 
                 	#pragma omp task priority(10)
 					{
-						CombineHandler::consume(h_res[threadId], mem_size_res, hdd, combId, dependencyControl - 1, max_layout_size);
+						CombineHandler::consume(h_res[threadId], mem_size_res, hdd, combId, combFilesdId, dependencyControl - 1, max_layout_size);
 						// CombineHandler::drawResult(h_res[threadId].data(), mem_size_res);
 					}
                 }
@@ -535,7 +579,7 @@ void CombineHandler::combine(
             }
         }
     }
-	printf("parallel end\n");
+	// printf("parallel end\n");
 
     CudaCombine::freeDeviceArrays(d_adj, d_res, d_conns, d_a, d_b);
 }

@@ -19,6 +19,8 @@
  */
 #define OPENCV_ENABLED
 
+#define PROD_STORAGE
+
 // #define MULTI_THREAD
 
 // #define N_ROOMS 3
@@ -50,6 +52,28 @@ typedef struct{
     int numExtensions;
     /*@}*/
 } RoomConfig;
+
+
+class CombinationResult {
+public:
+    int combId;
+    int combFileId;
+    int minSizeId;
+    int maxSizeId;
+
+    CombinationResult(const int combId, const int combFileId, const int minSizeId, const int maxSizeId) : combId(combId), combFileId(combFileId), minSizeId(minSizeId), maxSizeId(maxSizeId) {}
+};
+
+class CombinationResultPart {
+public:
+    int combId;
+    int combFileId;
+    int minSizeId;
+    int maxSizeId;
+    int kernelCount;
+
+    CombinationResultPart(const int combId, const int combFileId, const int minSizeId, const int maxSizeId, const int kernelCount) : combId(combId), combFileId(combFileId), minSizeId(minSizeId), maxSizeId(maxSizeId), kernelCount(kernelCount) {}
+};
 
 #define REQ_NONE 0
 #define REQ_ANY 1
@@ -104,6 +128,7 @@ typedef struct{
 // #define __COMBINE_CONN_DST_Y_BITS 0b1111000000000000
 
 #define __COMBINE_NAME_ROOMS_ID_SHIFT 16
+#define __COMBINE_NAME_ROOMS_ID_BYTES 0b1111111111111111
 
 #define __COMBINE_INVALID_LAYOUT -1
 

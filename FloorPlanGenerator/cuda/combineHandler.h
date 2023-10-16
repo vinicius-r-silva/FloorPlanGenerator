@@ -15,9 +15,8 @@ private:
 
     // static void drawResult(const int *h_res, const size_t res_mem_size);
 
-    void consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int taskCount, const int max_layout_size);
+    void consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int filesdId, const int taskCount, const int max_layout_size);
 
-    std::vector<int> createConns(const std::vector<RoomConfig>& rooms_a, const std::vector<RoomConfig>& rooms_b);
 
     int getMaxLayoutSize(const std::vector<RoomConfig>& rooms_a, const std::vector<RoomConfig>& rooms_b);
 
@@ -30,11 +29,14 @@ private:
 public:
     CombineHandler();
 
+    static std::vector<int> createConns(const int rooms_count_a, const int rooms_count_b);
+
     void combine(
         const std::vector<RoomConfig>& rooms_a, 
         const std::vector<RoomConfig>& rooms_b, 
         const std::vector<int16_t>& a, 
         const std::vector<int16_t>& b,
+        const int filesdId,
     	std::vector<int> allReqAdj, 
         Storage& hdd);
 };

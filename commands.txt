@@ -20,3 +20,5 @@ du -hs ../FloorPlanGenerator/storage/core
 ls -la ../FloorPlanGenerator/storage/cudaResult --block-size=MB
 du -hs ../FloorPlanGenerator/storage/cudaResult
 
+rm -rf ../FloorPlanGenerator/storage/combined/parts && rm -rf ../FloorPlanGenerator/storage/combined/ && mkdir ../FloorPlanGenerator/storage/combined/ && mkdir ../FloorPlanGenerator/storage/combined/parts/
+
