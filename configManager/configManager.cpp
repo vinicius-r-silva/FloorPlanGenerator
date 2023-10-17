@@ -461,8 +461,7 @@ void normalConfig(std::string projectPath){
         quarto = 2,
         corredor = 3,
         cozinha = 4,
-        lavanderia = 5,
-        numOfRooms = 6
+        numOfRooms = 5
     };
 
     RoomConfig *rooms = (RoomConfig*)calloc(numOfRooms , sizeof(RoomConfig));
@@ -482,9 +481,11 @@ void normalConfig(std::string projectPath){
     rooms[sala].numExtensions = 0; // 2
     rooms[sala].minH = 40; rooms[sala].maxH = 40;
     rooms[sala].minW = 30; rooms[sala].maxW = 30;
+    // rooms[sala].minH = 30; rooms[sala].maxH = 40;
+    // rooms[sala].minW = 20; rooms[sala].maxW = 30;
     // rooms[sala].minH = 30; rooms[sala].maxH = 50;
     // rooms[sala].minW = 20; rooms[sala].maxW = 40;
-    rooms[sala].step = 100; // 5
+    rooms[sala].step = 10; // 5
     rooms[sala].depend = 0;
     rooms[sala].rPlannyId = _LIVING_ROOM;
     rooms[sala].name[0] = 's'; rooms[sala].name[1] = 'a';
@@ -495,9 +496,11 @@ void normalConfig(std::string projectPath){
     rooms[banheiro].numExtensions = 0;
     rooms[banheiro].minH = 30; rooms[banheiro].maxH = 30;
     rooms[banheiro].minW = 15; rooms[banheiro].maxW = 15;
+    // rooms[banheiro].minH = 20; rooms[banheiro].maxH = 30;
+    // rooms[banheiro].minW = 15; rooms[banheiro].maxW = 20;
     // rooms[banheiro].minH = 8; rooms[banheiro].maxH = 20;
     // rooms[banheiro].minW = 15; rooms[banheiro].maxW = 30;
-    rooms[banheiro].step = 100; // 5
+    rooms[banheiro].step = 10; // 5
     rooms[banheiro].depend = 0;
     rooms[banheiro].rPlannyId = _BATHROOM;
     rooms[banheiro].name[0] = 'b'; rooms[banheiro].name[1] = 'a';
@@ -510,9 +513,11 @@ void normalConfig(std::string projectPath){
     rooms[quarto].numExtensions = 0; // 1
     rooms[quarto].minH = 30; rooms[quarto].maxH = 30;
     rooms[quarto].minW = 30; rooms[quarto].maxW = 30;
+    // rooms[quarto].minH = 20; rooms[quarto].maxH = 30;
+    // rooms[quarto].minW = 20; rooms[quarto].maxW = 30;
     // rooms[quarto].minH = 20; rooms[quarto].maxH = 40;
     // rooms[quarto].minW = 20; rooms[quarto].maxW = 40;
-    rooms[quarto].step = 100; // 5
+    rooms[quarto].step = 10; // 5
     rooms[quarto].depend = 0;
     rooms[quarto].rPlannyId = _MASTER_ROOM;
     rooms[quarto].name[0] = 'q'; rooms[quarto].name[1] = 'u';
@@ -524,9 +529,11 @@ void normalConfig(std::string projectPath){
     rooms[corredor].numExtensions = 0;
     rooms[corredor].minH = 10; rooms[corredor].maxH = 10;
     rooms[corredor].minW = 45; rooms[corredor].maxW = 45;
+    // rooms[corredor].minH = 10; rooms[corredor].maxH = 15;
+    // rooms[corredor].minW = 35; rooms[corredor].maxW = 45;
     // rooms[corredor].minH = 7; rooms[corredor].maxH = 15;
     // rooms[corredor].minW = 7; rooms[corredor].maxW = 50;
-    rooms[corredor].step = 100; // 5
+    rooms[corredor].step = 10; // 5
     rooms[corredor].depend = 0;
     rooms[corredor].rPlannyId = _LIVING_ROOM;
     rooms[corredor].name[0] = 'c'; rooms[corredor].name[1] = 'o';
@@ -537,11 +544,13 @@ void normalConfig(std::string projectPath){
     // 4 - cozinha
     rooms[cozinha].id = 1 << cozinha;
     rooms[cozinha].numExtensions = 0;
-    rooms[cozinha].minH = 25; rooms[cozinha].maxH = 25;
+    rooms[cozinha].minH = 40; rooms[cozinha].maxH = 40;
     rooms[cozinha].minW = 20; rooms[cozinha].maxW = 20;
+    // rooms[cozinha].minH = 30; rooms[cozinha].maxH = 40;
+    // rooms[cozinha].minW = 20; rooms[cozinha].maxW = 25;
     // rooms[cozinha].minH = 15; rooms[cozinha].maxH = 25;
     // rooms[cozinha].minW = 15; rooms[cozinha].maxW = 30;
-    rooms[cozinha].step = 100; // 10
+    rooms[cozinha].step = 10; // 10
     rooms[cozinha].depend = 0;
     rooms[cozinha].rPlannyId = _KITCHEN;
     rooms[cozinha].name[0] = 'c'; rooms[cozinha].name[1] = 'o';
@@ -549,21 +558,23 @@ void normalConfig(std::string projectPath){
     rooms[cozinha].name[4] = 'n'; rooms[cozinha].name[5] = 'h';
     rooms[cozinha].name[6] = 'a';
     
-    // 5 - lavanderia
-    rooms[lavanderia].id = 1 << lavanderia;
-    rooms[lavanderia].numExtensions = 0;
-    rooms[lavanderia].minH = 15; rooms[lavanderia].maxH = 15;
-    rooms[lavanderia].minW = 20; rooms[lavanderia].maxW = 20;
+    // // 5 - lavanderia
+    // rooms[lavanderia].id = 1 << lavanderia;
+    // rooms[lavanderia].numExtensions = 0;
+    // // rooms[lavanderia].minH = 15; rooms[lavanderia].maxH = 15;
+    // // rooms[lavanderia].minW = 20; rooms[lavanderia].maxW = 20;
     // rooms[lavanderia].minH = 15; rooms[lavanderia].maxH = 25;
-    // rooms[lavanderia].minW = 16; rooms[lavanderia].maxW = 30;
-    rooms[lavanderia].step = 100; // 10
-    rooms[lavanderia].depend = 0;
-    rooms[lavanderia].rPlannyId = _KITCHEN;
-    rooms[lavanderia].name[0] = 'l'; rooms[lavanderia].name[1] = 'a';
-    rooms[lavanderia].name[2] = 'v'; rooms[lavanderia].name[3] = 'a';
-    rooms[lavanderia].name[4] = 'n'; rooms[lavanderia].name[5] = 'd';
-    rooms[lavanderia].name[6] = 'e'; rooms[lavanderia].name[7] = 'r';
-    rooms[lavanderia].name[8] = 'i'; rooms[lavanderia].name[9] = 'a';
+    // rooms[lavanderia].minW = 20; rooms[lavanderia].maxW = 25;
+    // // rooms[lavanderia].minH = 15; rooms[lavanderia].maxH = 25;
+    // // rooms[lavanderia].minW = 16; rooms[lavanderia].maxW = 30;
+    // rooms[lavanderia].step = 10; // 10
+    // rooms[lavanderia].depend = 0;
+    // rooms[lavanderia].rPlannyId = _KITCHEN;
+    // rooms[lavanderia].name[0] = 'l'; rooms[lavanderia].name[1] = 'a';
+    // rooms[lavanderia].name[2] = 'v'; rooms[lavanderia].name[3] = 'a';
+    // rooms[lavanderia].name[4] = 'n'; rooms[lavanderia].name[5] = 'd';
+    // rooms[lavanderia].name[6] = 'e'; rooms[lavanderia].name[7] = 'r';
+    // rooms[lavanderia].name[8] = 'i'; rooms[lavanderia].name[9] = 'a';
 
     std::set<int> rPlannyIds;
     for(int i = 0; i < numOfRooms; i++)

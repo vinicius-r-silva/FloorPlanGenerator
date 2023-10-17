@@ -20,6 +20,15 @@
 // ls -la ../FloorPlanGenerator/storage/combined --block-size=MB
 // du -hS ../FloorPlanGenerator/storage/combined
 
+// ls -la ../FloorPlanGenerator/storage_prod/core --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/core
+
+// ls -la ../FloorPlanGenerator/storage_prod/combined/parts --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/combined/parts
+
+// ls -la ../FloorPlanGenerator/storage_prod/combined --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/combined
+
 
 /// @brief          Storage Constructor
 /// @return         None

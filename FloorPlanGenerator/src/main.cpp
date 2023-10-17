@@ -5,6 +5,7 @@
 #include <string> 
 #include <stdlib.h>
 #include <cmath>
+#include <chrono>
 // #include <boost/numeric/ublas/matrix.hpp>
 // #include <boost/numeric/ublas/io.hpp>
 // #include <sstream>   
@@ -95,11 +96,12 @@ std::vector<int> countReqClasses(std::vector<RoomConfig> setups, int reqSize){
 
 
 void generateDataGpu() {
+    std::cout << "generateDataGpu init" << std::endl;
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> allReq = hdd.getReqAdjValues();
 
-    hdd.deleteSavedCoreResults();
+    // hdd.deleteSavedCoreResults();
     
     const int reqSize = sqrt(allReq.size());
     std::vector<int> allReqCount = countReqClasses(setups, reqSize);
@@ -189,6 +191,8 @@ void showCoreResults(){
 }
 
 void combineDataGPU(){
+    auto begin = std::chrono::high_resolution_clock::now();
+
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCores();
@@ -203,40 +207,75 @@ void combineDataGPU(){
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){     
-        // std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
+        std::cout << "fileComb[0]: " << fileComb[0] << ", fileComb[1]: " << fileComb[1] << std::endl;
 
         std::vector<int> layout_a_files_ids = hdd.getSavedCoreFiles(fileComb[0]);
         std::vector<int> layout_b_files_ids = hdd.getSavedCoreFiles(fileComb[1]);
 
         for(int layout_a_file_id : layout_a_files_ids){
             for(int layout_b_file_id : layout_b_files_ids){
-                // std::cout << "layout_a_file_id: " << layout_a_file_id << ", layout_b_file_id: " << layout_b_file_id << std::endl;
+                std::cout << "layout_a_file_id: " << layout_a_file_id << ", layout_b_file_id: " << layout_b_file_id << std::endl;
                 
                 std::vector<RoomConfig> config_a = hdd.getConfigsById(fileComb[0]);
                 std::vector<RoomConfig> config_b = hdd.getConfigsById(fileComb[1]);
+
+                bool invertLayouts = false;
+                if(config_a.size() != __COMBINE_N_A && config_a.size() != __COMBINE_N_B){
+                    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                    std::cout << "!!!!!!!config size error!!!!!!!" << std::endl;
+                    std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+                    return;
+                }
+
+                if(config_a.size() != __COMBINE_N_A){
+                    invertLayouts = true;
+                }
+
                 std::vector<int16_t> layout_a = hdd.readCoreData(fileComb[0], layout_a_file_id);
                 std::vector<int16_t> layout_b = hdd.readCoreData(fileComb[1], layout_b_file_id);
 
-                // std::cout << "a: " << std::endl;
-                // for(RoomConfig room : config_a){
-                //     Log::print(room);
-                // }
+                std::cout << "a: " << std::endl;
+                for(RoomConfig room : config_a){
+                    Log::print(room);
+                }
                 
-                // std::cout << std::endl << std::endl << "b: " << std::endl;
-                // for(RoomConfig room : config_b){
-                //     Log::print(room);
-                // }
-                const int filesdId = (layout_a_file_id << __COMBINE_NAME_ROOMS_ID_SHIFT) | layout_b_file_id;
+                std::cout << std::endl << std::endl << "b: " << std::endl;
+                for(RoomConfig room : config_b){
+                    Log::print(room);
+                }
 
-                // std::string resultPath = hdd.getResultPath();
+                std::cout << "invertLayouts: " << invertLayouts << std::endl;
+                std::cout << std::endl << std::endl;
 
-                handler.combine(config_a, config_b, layout_a, layout_b, filesdId, allReq, hdd);
-                // return;
+                // const int filesdId = (layout_a_file_id << __COMBINE_NAME_ROOMS_ID_SHIFT) | layout_b_file_id;
+
+                // // std::string resultPath = hdd.getResultPath();
+
+                if(invertLayouts){
+                    const int filesdId = (layout_b_file_id << __COMBINE_NAME_ROOMS_ID_SHIFT) | layout_a_file_id;
+                    handler.combine(config_b, config_a, layout_b, layout_a, filesdId, allReq, hdd);
+                }
+                else {
+                    const int filesdId = (layout_a_file_id << __COMBINE_NAME_ROOMS_ID_SHIFT) | layout_b_file_id;
+                    handler.combine(config_a, config_b, layout_a, layout_b, filesdId, allReq, hdd);
+                }
+                // // return;
+                // // break;
             }
+            // break;
         }
+        // break;
     }
 
     hdd.updateCombinationList();
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "Elapsed Time milliseconds: " << duration_milliseconds.count() << std::endl;
+
+    auto duration_minutes = std::chrono::duration_cast<std::chrono::minutes>(end - begin);
+    std::cout << "Elapsed Time minutes: " << duration_minutes.count() << std::endl;
 }
 
 // void showReults(){
@@ -336,6 +375,7 @@ int main(){
     // Process::processResult((int*)0, 0);
 
     // generateData(3);
+    // generateDataGpu();
     // combineData();
     // combineDataGPU();
     // postProcess();
@@ -347,7 +387,6 @@ int main(){
     // Viewer::showResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/combined/parts/3407883_163935_0.dat");
     // Viewer::showIndexTable("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/combined/parts/3407883_0_table.dat");
     // showReults();
-    // generateDataGpu();
     // showCoreResults();
     // Viewer::showFileResults("/home/ribeiro/Documents/FloorPlanGenerator/FloorPlanGenerator/storage/core/21_0.dat", __GENERATE_RES_LENGHT, __GENERATE_RES_LAYOUT_LENGHT);
     // 

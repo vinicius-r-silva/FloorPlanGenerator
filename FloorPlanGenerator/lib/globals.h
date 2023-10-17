@@ -19,7 +19,7 @@
  */
 #define OPENCV_ENABLED
 
-#define PROD_STORAGE
+// #define PROD_STORAGE
 
 // #define MULTI_THREAD
 
@@ -49,12 +49,12 @@ typedef struct{
      * (every normal room is rectangular, this "attachments" make
      *  it possible to have more the 4 vertexes in a room setup)
      */
-    int numExtensions;
-    /*@}*/
-} RoomConfig;
-
-
-class CombinationResult {
+    int numExtensions; 
+    /*@}*/ 
+} RoomConfig; 
+ 
+ 
+class CombinationResult { 
 public:
     int combId;
     int combFileId;
@@ -93,13 +93,13 @@ public:
 //     _NAME_IDS_COUNT = 6
 // };
 
-#define __GENERATE_N 3
-#define __GENERATE_PERM 6 // __GENERATE_N!
-#define __GENERATE_REQ_ADJ 9 // __GENERATE_N * __GENERATE_N
-#define __GENERATE_ROTATIONS 8 //2 ^ __GENERATE_N
-#define __GENERATE_RES_LENGHT 13 // __GENERATE_N * 4 + 1
-#define __GENERATE_SIZE_LENGHT 6 //__GENERATE_N * 2
-#define __GENERATE_RES_LAYOUT_LENGHT 12 // __GENERATE_N * 4
+#define __GENERATE_N 2
+#define __GENERATE_PERM 2               // __GENERATE_N!                n = 3 -> 6  | n = 2 -> 2
+#define __GENERATE_REQ_ADJ 4            // __GENERATE_N * __GENERATE_N  n = 3 -> 9  | n = 2 -> 4
+#define __GENERATE_ROTATIONS 4          //2 ^ __GENERATE_N              n = 3 -> 8  | n = 2 -> 4
+#define __GENERATE_RES_LENGHT 9         // __GENERATE_N * 4 + 1         n = 3 -> 13 | n = 2 -> 9
+#define __GENERATE_SIZE_LENGHT 4        //__GENERATE_N * 2              n = 3 -> 6  | n = 2 -> 4
+#define __GENERATE_RES_LAYOUT_LENGHT 8  // __GENERATE_N * 4             n = 3 -> 12 | n = 2 -> 8
 
 #define __ROOM_CONFIG_STEP 0
 #define __ROOM_CONFIG_MINH 1
@@ -112,10 +112,10 @@ public:
 
 #define __ROOM_CONFIG_LENGHT 8
 
-#define __COMBINE_N_A 3
-#define __COMBINE_N_B 3
-#define __COMBINE_PERM_A 6  // __COMBINE_N_A !
-#define __COMBINE_PERM_B 6  // __COMBINE_N_B !
+#define __COMBINE_N_A 3                             // 3
+#define __COMBINE_N_B 2                             // 3
+#define __COMBINE_PERM_A 6  // __COMBINE_N_A !      // 3 -> 6 | 2 -> 2
+#define __COMBINE_PERM_B 2  // __COMBINE_N_B !      // 3 -> 6 | 2 -> 2
 
 // #define __COMBINE_CONN 108 //check on the google sheets, i dont want to think about the formula for this number now
 #define __COMBINE_CONN_SRC_X_SHIFT 0
@@ -132,13 +132,13 @@ public:
 
 #define __COMBINE_INVALID_LAYOUT -1
 
-#define __CONN_CHECK 63 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)
-#define __CONN_CHECK_IDX 5 // _N_A + N_B - 1
+#define __CONN_CHECK 31 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)  // 6 -> 63 | 5 -> 31
+#define __CONN_CHECK_IDX 4 // _N_A + N_B - 1                              // 6 -> 6  | 5 -> 4
 
-#define __SIZE_A_LAYOUT 12		// __COMBINE_N_A * 4
-#define __SIZE_B_LAYOUT 12		// __COMBINE_N_B * 4
-#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value
-#define __SIZE_B_DISK 13 // __SIZE_B + perm iter value
+#define __SIZE_A_LAYOUT 12		// __COMBINE_N_A * 4        3 -> 12 | 2 -> 8
+#define __SIZE_B_LAYOUT 8		// __COMBINE_N_B * 4        3 -> 12 | 2 -> 8
+#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value      3 -> 13 | 2 -> 9
+#define __SIZE_B_DISK 9  // __SIZE_B + perm iter value      3 -> 13 | 2 -> 9
 // #define __SIZE_RES 4
 
 #define __COMBINE_RES_DIFF_H 0

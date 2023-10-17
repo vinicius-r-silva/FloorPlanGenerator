@@ -29,8 +29,8 @@ int Calculator::Factorial(int x){
 
 int Calculator::NRotations(int n){
     int res = 1;
-    for(int i = 1; i < n; i++){
-        res *= i * 2;
+    for(int i = 1; i <= n; i++){
+        res *= 2;
     }
 
     return res;
@@ -44,14 +44,13 @@ int Calculator::NRotations(int n){
     @return (int) number of connections
 */
 int Calculator::NConnections(int n){
-    if(n == 1)
+    if(n <= 1)
         return 0;
 
-    int res = 1;
-    for(int i = 1; i < n; i++){
-        res *= i * 16;
-    }
+    if(n == 2)
+        return 16;
 
+    int res = NConnections(n - 1) * (n - 1) * 16;
     return res;
 }
     

@@ -24,8 +24,6 @@ private:
     
     int getRoomsCombId(const std::vector<RoomConfig>& rooms);
 
-    void moveElements(std::vector<int>& arr, size_t begin, size_t offset);
-
 public:
     CombineHandler();
 

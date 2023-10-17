@@ -52,6 +52,7 @@ void GenerateHandler::generate(
 	const int combid,
 	Storage& hdd)
 {
+    std::cout << "GenerateHandler generate" << std::endl;
 	if(GenerateHandler::checkDefineValues(rooms, reqSize))
 		return;
 

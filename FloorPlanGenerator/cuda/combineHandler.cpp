@@ -13,195 +13,6 @@
 
 CombineHandler::CombineHandler(){}
 
-// void CombineHandler::drawResult(const int *h_res, const size_t res_mem_size){
-// 	size_t res_size = res_mem_size / sizeof(int);
-// 	std::cout << "drawResult " << ", res_mem_size: " << res_mem_size << std::endl;
-
-// 	const int qtd_pts = __SIZE_RES / 2;
-//     std::vector<int16_t> ptsX(qtd_pts, 0); 
-//     std::vector<int16_t> ptsY(qtd_pts, 0);
-
-//     std::vector<int> iArray;
-//     for(size_t i = 0; i < res_size; i += __SIZE_RES){
-// 		if(h_res[i] == __COMBINE_INVALID_LAYOUT)
-// 			continue;
-
-// 		// i = 1660128;
-// 		bool found1 = false;
-// 		bool found2 = false;
-// 		bool found3 = false;
-
-//         // std::cout << "i: " << i << ", idx: " << i / qtd_pts << std::endl;
-//         for(int j = 0; j < qtd_pts; j++){
-//             ptsX[j] = h_res[i + (j * 2)];
-//             ptsY[j] = h_res[i + (j * 2) + 1];
-
-//             // std::cout << "(" << ptsX[j] << ", " << ptsY[j] << "), ";
-// 			// if(j % 2 == 1){
-//         	// 	std::cout << std::endl;
-// 			// }
-
-// 			if((ptsX[j] == 95 && ptsY[j] == 40) || (ptsY[j] == 95 && ptsX[j] == 40))
-// 				found1 = true;
-
-// 			if((ptsX[j] == 80 && ptsY[j] == 10) || (ptsY[j] == 80 && ptsX[j] == 10))
-// 				found2 = true;
-
-// 			if((ptsX[j] == 50 && ptsY[j] == 10) || (ptsY[j] == 50 && ptsX[j] == 10))
-// 				found3 = true;
-//         }
-//         // std::cout << std::endl;
-        
-// 		if(!found1)
-// 			continue;
-
-// 		if(!found2)
-// 			continue;
-
-// 		if(!found3)
-// 			continue;
-
-//         int dir = CVHelper::showLayoutMove(ptsX, ptsY);
-
-//         if(dir == -1 && iArray.size() == 0){
-//             i = -__SIZE_RES;
-// 		} else if(dir == -1 ){
-// 			i = iArray.back() - __SIZE_RES; iArray.pop_back(); 
-//         } else {
-// 			iArray.push_back(i);
-//         }
-//     }
-// }
-
-// void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int taskCount, const int max_layout_size){
-// 	const int threadId = omp_get_thread_num();
-// 	const int max_size_diff = max_layout_size;
-
-//     const size_t invalid_idx = (size_t)-1;
-// 	const size_t res_size = res_mem_size / sizeof(int);
-
-// 	std::vector<int> result; //sorted result
-// 	std::vector<size_t> h_begin(max_size_diff, invalid_idx);
-// 	std::vector<size_t> index_table(max_size_diff * max_size_diff, invalid_idx); //relative
-
-// 	// std::cout << "combine init" << std::endl;
-// 	size_t lowest_index_table_idx = max_size_diff * max_size_diff;
-
-// 	for(size_t i = 0; i < res_size; i+= __SIZE_RES){
-// 		if(h_res[i] == __COMBINE_INVALID_LAYOUT)
-// 			continue;
-			
-// 		// std::cout << "valid layout " << i << std::endl;
-// 		int min_diff_H = h_res[i + __COMBINE_RES_DIFF_H];
-// 		int min_diff_W = h_res[i + __COMBINE_RES_DIFF_W];
-// 		// int max_diff_H = h_res[i + __COMBINE_RES_DIFF_H];
-// 		// int max_diff_W = h_res[i + __COMBINE_RES_DIFF_W];
-// 		const int a_layout_idx = h_res[i + __COMBINE_RES_A_IDX];
-// 		const int b_layout_idx = h_res[i + __COMBINE_RES_B_IDX];
-// 		// std::cout << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx  << std::endl;
-
-// 		for(; i < res_size; i+= __SIZE_RES){
-// 			if(h_res[i] == __COMBINE_INVALID_LAYOUT)
-// 				continue;
-
-// 			// std::cout << "compare i: " << i << ", a: " << h_res[i + __COMBINE_RES_A_IDX] << ", b: " << h_res[i + __COMBINE_RES_B_IDX] << ", diffH: " << h_res[i + __COMBINE_RES_DIFF_H] << ", diffW: " << h_res[i + __COMBINE_RES_DIFF_W] << std::endl;
-// 			if(h_res[i + __COMBINE_RES_A_IDX] != a_layout_idx || h_res[i + __COMBINE_RES_B_IDX] != b_layout_idx)
-// 				break;
-
-// 			const int diff_H = h_res[i + __COMBINE_RES_DIFF_H];
-// 			const int diff_W = h_res[i + __COMBINE_RES_DIFF_W];
-// 			if(min_diff_H > diff_H)
-// 				min_diff_H = diff_H;
-			
-// 			// if(max_diff_H < diff_H)
-// 			// 	max_diff_H = diff_H;
-			
-// 			if(min_diff_W > diff_W)
-// 				min_diff_W = diff_W;
-			
-// 			// if(max_diff_W < diff_W)
-// 			// 	max_diff_W = diff_W;
-// 		}
-// 		i -= __SIZE_RES;
-
-// 		// std::cout << "min_diff_H: " << min_diff_H << ", min_diff_W: " << min_diff_W << ", max_diff_H: " << max_diff_H << ", max_diff_W: " << max_diff_W << ", a_layout_idx: " << a_layout_idx << ", b_layout_idx: " << b_layout_idx  << std::endl;
-
-// 		const int index_table_start = min_diff_H * max_size_diff;
-// 		const int index_table_end = index_table_start + max_size_diff;
-// 		const int index_table_idx = index_table_start + min_diff_W;
-
-// 		if(h_begin[min_diff_H] == invalid_idx){
-// 			int j = min_diff_H - 1;
-// 			while(h_begin[j] == invalid_idx && j >= 0){
-// 				j--;
-// 			}
-
-// 			if(j < 0){
-// 				h_begin[min_diff_H] = 0;
-// 			} else {
-// 				h_begin[min_diff_H] = h_begin[j] + __SIZE_RES_DISK;
-// 			}
-// 		}
-
-// 		if(index_table[index_table_idx] == invalid_idx){
-// 			int j = index_table_idx - 1;
-// 			while(index_table[j] == invalid_idx && j >= index_table_start){
-// 				j--;
-// 			}
-
-// 			if(j < index_table_start){
-// 				index_table[index_table_idx] = 0;
-// 			} else {
-// 				index_table[index_table_idx] = index_table[j] + __SIZE_RES_DISK;
-// 			}
-// 		}
-
-// 		for(int j = min_diff_H + 1; j < max_size_diff; j++){
-// 			if(h_begin[j] != invalid_idx)
-// 				h_begin[j] += __SIZE_RES_DISK;
-// 		}
-
-// 		for(int j = index_table_idx + 1; j < index_table_end; j++){
-// 			if(index_table[j] != invalid_idx)
-// 				index_table[j] += __SIZE_RES_DISK;
-// 		}
-
-// 		const size_t result_idx_begin = h_begin[min_diff_H] + index_table[index_table_idx];
-// 		result.resize(result.size() + __SIZE_RES_DISK);
-// 		std::shift_right(result.begin() + result_idx_begin, result.end(), __SIZE_RES_DISK);
-
-// 		result[result_idx_begin + __RES_DISK_A_IDX] = a_layout_idx;
-// 		result[result_idx_begin + __RES_DISK_B_IDX] = b_layout_idx;
-// 		result[result_idx_begin + __RES_DISK_MIN_H] = min_diff_H;
-// 		result[result_idx_begin + __RES_DISK_MIN_W] = min_diff_W;
-//     }
-
-// 	for(int i = 0; i < max_size_diff; i++){
-// 		if(h_begin[i] == invalid_idx)
-// 			continue;
-
-// 		const size_t offset = i * max_size_diff;
-
-// 		for(int j = 0; j < max_size_diff; j++){
-// 			const size_t idx = j + offset;
-// 			if(index_table[idx] == invalid_idx)
-// 				continue;
-
-// 			index_table[idx] += h_begin[i];
-// 		}
-// 	}
-
-
-// 	hdd.saveCombineResult(result, index_table, combId, taskCount);
-// 	std::cout << "consumer : " << threadId << " end, layouts: " << result.size() / __SIZE_RES_DISK << ", mem size (MB): " << ((double)(result.size() * sizeof(int))) / 1024.0 / 1024.0 << std::endl;
-// }
-
-void CombineHandler::moveElements(std::vector<int>& arr, size_t begin, size_t offset){
-	for(size_t i = arr.size() - 1; i >= begin && i >= offset; i--){
-		std::cout << i << " receives " << i - offset << " (" << arr[i - offset] << ")" << std::endl;
-		arr[i] = arr[i - offset];
-	}
-}
 
 // TODO split consume with more threads, too many cores doing nothing
 void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem_size, Storage& hdd, const int combId, const int combFilesdId, const int taskCount, const int max_layout_size){
@@ -278,7 +89,7 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 
 		std::vector<int>& arr = results[min_diff_H][min_diff_W];
 
-		const int minSizeId = (min_diff_H << __RES_FILE_LENGHT_BITS) | min_diff_W;
+		// const int minSizeId = (min_diff_H << __RES_FILE_LENGHT_BITS) | min_diff_W;
 		// if(combId == 917553 && minSizeId == 163900){
 		// 	std::cout << std::endl << std::endl << std::endl << taskCount << ", max_diff_H: " << max_diff_H << ", max_diff_W: " << max_diff_W << ", " << std::endl;
 
@@ -506,11 +317,11 @@ void CombineHandler::combine(
 	const int max_layout_size = CombineHandler::getMaxLayoutSize(rooms_a, rooms_b);
 	// const int min_layout_size = CombineHandler::getMinLayoutSize(rooms_a, rooms_b);
 
-	// std::cout << std::endl;
-	// std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
-	// std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << qtd_a * qtd_b << std::endl;
-	// std::cout << "maxResCount: " << maxResCount << ", qtd_res: " << qtd_res << std::endl;
-	// std::cout << "num_a: " << num_a << ", kernel launchs: " << ((qtd_a + num_a - 1) / (num_a)) << std::endl;
+	std::cout << std::endl;
+	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
+	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << ((unsigned long)qtd_a) * ((unsigned long)qtd_b) << std::endl;
+	std::cout << "maxResCount: " << maxResCount << ", qtd_res: " << qtd_res << std::endl;
+	std::cout << "num_a: " << num_a << ", kernel launchs: " << ((qtd_a + num_a - 1) / (num_a)) << std::endl;
 
 	const long resLayoutSize = sizeof(int) * __SIZE_RES;
 	const unsigned long mem_size_res = resLayoutSize * qtd_res;
@@ -521,7 +332,7 @@ void CombineHandler::combine(
 	int16_t* d_a = CudaCombine::createDeviceCoreLayoutsArray(a);
 	int16_t* d_b = CudaCombine::createDeviceCoreLayoutsArray(b);
 
-	const int nCpuThreads = 2;
+	const int nCpuThreads = 3;
 	// int16_t** h_res = CudaGenerate::createHostResArray(result_mem_size, nCpuThreads);
 	std::vector<std::vector<int>> h_res(nCpuThreads, std::vector<int>(ptsPerKernel, __COMBINE_INVALID_LAYOUT));
 	// std::cout << "nCpuThreads: " << nCpuThreads << std::endl;
@@ -537,14 +348,14 @@ void CombineHandler::combine(
 	if(CombineHandler::checkThreadCountValue(qtdThreadX))
 		return;
 
-	// std::cout << "num_blocks: " << num_blocks << std::endl;
-	// std::cout << "qtdThreadX: " << qtdThreadX << std::endl;
+	std::cout << "num_blocks: " << num_blocks << std::endl;
+	std::cout << "qtdThreadX: " << qtdThreadX << std::endl;
 
 	int dependencyControl = 0;
 
 
 
-	// std::cout << "start parallel process" << std::endl;
+	std::cout << "start parallel process" << std::endl;
     #pragma omp parallel num_threads(nCpuThreads)
     {
         #pragma omp single
