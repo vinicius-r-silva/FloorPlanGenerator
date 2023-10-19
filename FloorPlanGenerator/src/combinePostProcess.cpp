@@ -50,8 +50,8 @@ void CombinePostProcess::postProcess(Storage hdd, const int combId){
 
             int maxSizeId = (maxSizeH << __RES_FILE_LENGHT_BITS) | maxSizeW;
 
-            // long totalSize = result.size();
-            // std::cout << combId << ", " << combFileId << ", " << minSizeId << ", " << totalSize  << ", " << totalSize / __SIZE_RES_DISK << ", " << (((double)(totalSize * sizeof(int))) / 1024.0 / 1024.0) << std::endl;  
+            long totalSize = result.size();
+            std::cout << combId << ", " << combFileId << ", " << minSizeId << ", " << totalSize  << ", " << totalSize / __SIZE_RES_DISK << ", " << (((double)(totalSize * sizeof(int))) / 1024.0 / 1024.0) << std::endl;  
             hdd.saveCombineResult(result, combId, combFileId, minSizeId, maxSizeId);
         }
     }

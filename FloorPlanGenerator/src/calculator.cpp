@@ -115,6 +115,22 @@ int Calculator::NRoomSizes(const std::vector<RoomConfig>& rooms){
     return res;
 }
 
+int Calculator::IntersectionArea(
+    const int a_up, const int a_down, const int a_left, const int a_right, 
+    const int b_up, const int b_down, const int b_left, const int b_right) 
+{
+    int top = std::max(a_up, b_up);
+    int left = std::max(a_left, b_left);
+    int bottom = std::min(a_down, b_down);
+    int right = std::min(a_right, b_right);
+
+    if (top < bottom && left < right) {
+        return (bottom - top) * (right - left);
+    } else {
+        return 0;
+    }
+}
+
 
 /*!
     @brief Calculates the size of the upper (or lower) half of a matrix of size n
@@ -157,6 +173,211 @@ void Calculator::totalOfCombinations(const std::vector<RoomConfig>& setups, cons
     std::cout << "qtdPerComb: " << res/allCombs.size() << std::endl;
     std::cout << "totalOfCombinations: " << res << std::endl;
     std::cout << "totalOfCombinationsReduced: " << resReduced << std::endl;
+}
+
+
+std::pair<int, int> Calculator::getMinimumAcceptableBoundingBoxDimensions(const std::vector<int16_t>& input){
+    const int tolerance = __SEARCH_TOLERANCE_AREA_PCT;
+    
+    int totalArea = 0;
+	int minH = 5000, maxH = -5000;
+	int minW = 5000, maxW = -5000;
+	for(size_t i = 0; i < input.size(); i+=4){
+        int left = input[i + __LEFT];
+        int up = input[i + __UP];
+        int down = input[i + __DOWN];
+        int right = input[i + __RIGHT];
+
+        totalArea += (down - up) * (right - left);
+
+        minH = std::min(minH, up);
+        maxH = std::max(maxH, down);
+        minW = std::min(minW, left);
+        maxW = std::max(maxW, right);
+	}
+    const int diffH = maxH - minH;
+    const int diffW = maxW - minW;
+
+    int newArea = 0;
+    int reduction = 0;
+    int reductionPct = 0;
+    while(reductionPct <= tolerance){
+        reduction++;
+        newArea = 0;
+        int newMaxH = maxH - reduction;
+
+        for(size_t i = 0; i < input.size(); i+=4){
+            int left = input[i + __LEFT];
+            int up = input[i + __UP];
+            int down = input[i + __DOWN];
+            int right = input[i + __RIGHT];
+
+            if(down > newMaxH)
+                down = newMaxH;
+
+            if(up < down)
+                newArea += (down - up) * (right - left);
+        }
+
+        reductionPct = 100 - ((newArea * 100) / totalArea);
+    }
+    const int reductionFromBottom = reduction - 1;
+
+    reduction = 0;
+    reductionPct = 0;
+    while(reductionPct <= tolerance){
+        reduction++;
+        newArea = 0;
+        int newMinH = minH + reduction;
+
+        for(size_t i = 0; i < input.size(); i+=4){
+            int left = input[i + __LEFT];
+            int up = input[i + __UP];
+            int down = input[i + __DOWN];
+            int right = input[i + __RIGHT];
+
+            if(up < newMinH)
+                up = newMinH;
+
+            if(up < down)
+                newArea += (down - up) * (right - left);
+        }
+
+        reductionPct = 100 - ((newArea * 100) / totalArea);
+    }
+    const int reductionFromTop = reduction - 1;
+
+    reduction = 0;
+    reductionPct = 0;
+    while(reductionPct <= tolerance){
+        reduction++;
+        newArea = 0;
+        int newMaxW = maxW - reduction;
+
+        for(size_t i = 0; i < input.size(); i+=4){
+            int left = input[i + __LEFT];
+            int up = input[i + __UP];
+            int down = input[i + __DOWN];
+            int right = input[i + __RIGHT];
+
+            if(right > newMaxW)
+                right = newMaxW;
+
+            if(left < right)
+                newArea += (down - up) * (right - left);
+        }
+
+        reductionPct = 100 - ((newArea * 100) / totalArea);
+    }
+    const int reductionFromRight = reduction - 1;
+
+    reduction = 0;
+    reductionPct = 0;
+    while(reductionPct <= tolerance){
+        reduction++;
+        newArea = 0;
+        int newMinW = minW + reduction;
+
+        for(size_t i = 0; i < input.size(); i+=4){
+            int left = input[i + __LEFT];
+            int up = input[i + __UP];
+            int down = input[i + __DOWN];
+            int right = input[i + __RIGHT];
+
+            if(left < newMinW)
+                left = newMinW;
+
+            if(left < right)
+                newArea += (down - up) * (right - left);
+        }
+
+        reductionPct = 100 - ((newArea * 100) / totalArea);
+    }
+    const int reductionFromLeft = reduction - 1;
+
+    const int heightTolerance = diffH - std::max(reductionFromBottom, reductionFromTop);
+    const int widthTolerance = diffW - std::max(reductionFromRight, reductionFromLeft);
+    
+    return std::make_pair(heightTolerance, widthTolerance);
+}
+
+
+std::pair<int, int> Calculator::getMaximumAcceptableBoundingBoxDimensions(const std::vector<int16_t>& input){
+	int minH = 5000, maxH = -5000;
+	int minW = 5000, maxW = -5000;
+	for(size_t i = 0; i < input.size(); i+=4){
+        int left = input[i + __LEFT];
+        int up = input[i + __UP];
+        int down = input[i + __DOWN];
+        int right = input[i + __RIGHT];
+
+        minH = std::min(minH, up);
+        maxH = std::max(maxH, down);
+        minW = std::min(minW, left);
+        maxW = std::max(maxW, right);
+	}
+    const int diffH = maxH - minH;
+    const int diffW = maxW - minW;
+
+    return std::make_pair(diffH + 15, diffW + 15);
+
+    // const int tolerance = __SEARCH_TOLERANCE_AREA_PCT;
+    
+    // int totalArea = 0;
+	// int minH = 5000, maxH = -5000;
+	// int minW = 5000, maxW = -5000;
+	// for(size_t i = 0; i < input.size(); i+=4){
+    //     int left = input[i + __LEFT];
+    //     int up = input[i + __UP];
+    //     int down = input[i + __DOWN];
+    //     int right = input[i + __RIGHT];
+
+    //     totalArea += (down - up) * (right - left);
+
+    //     minH = std::min(minH, up);
+    //     maxH = std::max(maxH, down);
+    //     minW = std::min(minW, left);
+    //     maxW = std::max(maxW, right);
+	// }
+    // const int diffH = maxH - minH;
+    // const int diffW = maxW - minW;
+    
+    // const int sectionPctConstant = 5;
+    // const int areaTolerance = (totalArea * tolerance) / 10;
+    // const int hSection = (diffH * sectionPctConstant) / 10;
+    // const int wSection = (diffW * sectionPctConstant) / 10;
+
+    // const int heightTolerance = (areaTolerance / hSection) / 10;
+    // const int widthTolerance = (areaTolerance / wSection) / 10;
+
+    // return std::make_pair(heightTolerance, widthTolerance);
+}
+
+std::pair<int, int> Calculator::getCenterOfMass(const std::vector<int16_t>& layout){
+    int totalArea = 0;
+    int centerH = 0;
+    int centerW = 0;
+
+	for(size_t i = 0; i < layout.size(); i+=4){
+        int left = layout[i + __LEFT] * 10;
+        int up = layout[i + __UP] * 10;
+        int down = layout[i + __DOWN] * 10;
+        int right = layout[i + __RIGHT] * 10;
+
+        const int roomArea = (down - up) * (right - left);
+        const int h = (down + up) / 2;
+        const int w = (right + left) / 2;
+
+        centerH += roomArea * h;
+        centerW += roomArea * w;
+
+        totalArea += roomArea;
+	}
+
+    centerH /= totalArea * 10;
+    centerW /= totalArea * 10;
+    
+    return std::make_pair(centerH, centerW);
 }
 
 

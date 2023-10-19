@@ -101,7 +101,7 @@ void generateDataGpu() {
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> allReq = hdd.getReqAdjValues();
 
-    // hdd.deleteSavedCoreResults();
+    hdd.deleteSavedCoreResults();
     
     const int reqSize = sqrt(allReq.size());
     std::vector<int> allReqCount = countReqClasses(setups, reqSize);
@@ -260,7 +260,7 @@ void combineDataGPU(){
                     handler.combine(config_a, config_b, layout_a, layout_b, filesdId, allReq, hdd);
                 }
                 // // return;
-                // // break;
+                // break;
             }
             // break;
         }
@@ -363,7 +363,16 @@ void search(){
     Storage hdd = Storage();
     hdd.deleteSavedImages();
 
-    Search::getLayouts(hdd, 40, 95);
+    std::vector<int16_t> inputShape(4, 0);
+
+    inputShape[__UP] = 0;
+    inputShape[__LEFT] = 0;
+    inputShape[__DOWN] = 40;
+    inputShape[__RIGHT] = 95;
+
+    Search::moveToCenterOfMass(inputShape);
+
+    Search::getLayouts(inputShape, hdd);
     // Search::getLayouts(hdd, 95, 40);
 }
 
@@ -375,12 +384,12 @@ int main(){
     // Process::processResult((int*)0, 0);
 
     // generateData(3);
-    // generateDataGpu();
+    generateDataGpu();
     // combineData();
     // combineDataGPU();
     // postProcess();
     //
-    search();
+    // search();
 
 
     // std::cout << "showResults. sizeIdx " << 163935 << ", min H: " << (163935 >> __RES_FILE_LENGHT_BITS) << ", min W: " << (163935 & __RES_FILE_LENGHT_AND_RULE) << std::endl;

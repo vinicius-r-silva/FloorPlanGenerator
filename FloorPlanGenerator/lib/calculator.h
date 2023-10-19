@@ -51,6 +51,9 @@ public:
     */
     static int NRoomSizes(const std::vector<RoomConfig>& rooms);
 
+    static int IntersectionArea(
+        const int a_up, const int a_down, const int a_left, const int a_right, 
+        const int b_up, const int b_down, const int b_left, const int b_right);
 
     /*!
         @brief Calculates the size of the upper (or lower) half of a matrix of size n
@@ -76,6 +79,12 @@ public:
         @return (int) number of possible layouts
     */
     static void totalOfCombinations(const std::vector<RoomConfig>& setups, const int n);
+
+    static std::pair<int, int> getMinimumAcceptableBoundingBoxDimensions(const std::vector<int16_t>& input);
+
+    static std::pair<int, int> getMaximumAcceptableBoundingBoxDimensions(const std::vector<int16_t>& input);
+
+    static std::pair<int, int> getCenterOfMass(const std::vector<int16_t>& layout);
 };
 
 #endif //CALCUALTOR

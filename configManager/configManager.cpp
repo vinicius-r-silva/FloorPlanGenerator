@@ -459,9 +459,8 @@ void normalConfig(std::string projectPath){
         sala = 0,
         banheiro = 1,
         quarto = 2,
-        corredor = 3,
-        cozinha = 4,
-        numOfRooms = 5
+        cozinha = 3,
+        numOfRooms = 4
     };
 
     RoomConfig *rooms = (RoomConfig*)calloc(numOfRooms , sizeof(RoomConfig));
@@ -524,24 +523,7 @@ void normalConfig(std::string projectPath){
     rooms[quarto].name[2] = 'a'; rooms[quarto].name[3] = 'r';
     rooms[quarto].name[4] = 't'; rooms[quarto].name[5] = 'o';
     
-    // 3 - corredor
-    rooms[corredor].id = 1 << corredor;
-    rooms[corredor].numExtensions = 0;
-    rooms[corredor].minH = 10; rooms[corredor].maxH = 10;
-    rooms[corredor].minW = 45; rooms[corredor].maxW = 45;
-    // rooms[corredor].minH = 10; rooms[corredor].maxH = 15;
-    // rooms[corredor].minW = 35; rooms[corredor].maxW = 45;
-    // rooms[corredor].minH = 7; rooms[corredor].maxH = 15;
-    // rooms[corredor].minW = 7; rooms[corredor].maxW = 50;
-    rooms[corredor].step = 10; // 5
-    rooms[corredor].depend = 0;
-    rooms[corredor].rPlannyId = _LIVING_ROOM;
-    rooms[corredor].name[0] = 'c'; rooms[corredor].name[1] = 'o';
-    rooms[corredor].name[2] = 'r'; rooms[corredor].name[3] = 'r';
-    rooms[corredor].name[4] = 'e'; rooms[corredor].name[5] = 'd';
-    rooms[corredor].name[6] = 'o'; rooms[corredor].name[7] = 'r';
-    
-    // 4 - cozinha
+    // 3 - cozinha
     rooms[cozinha].id = 1 << cozinha;
     rooms[cozinha].numExtensions = 0;
     rooms[cozinha].minH = 40; rooms[cozinha].maxH = 40;
@@ -557,6 +539,23 @@ void normalConfig(std::string projectPath){
     rooms[cozinha].name[2] = 'z'; rooms[cozinha].name[3] = 'i';
     rooms[cozinha].name[4] = 'n'; rooms[cozinha].name[5] = 'h';
     rooms[cozinha].name[6] = 'a';
+    
+    // // 4 - corredor
+    // rooms[corredor].id = 1 << corredor;
+    // rooms[corredor].numExtensions = 0;
+    // rooms[corredor].minH = 10; rooms[corredor].maxH = 10;
+    // rooms[corredor].minW = 45; rooms[corredor].maxW = 45;
+    // // rooms[corredor].minH = 10; rooms[corredor].maxH = 15;
+    // // rooms[corredor].minW = 35; rooms[corredor].maxW = 45;
+    // // rooms[corredor].minH = 7; rooms[corredor].maxH = 15;
+    // // rooms[corredor].minW = 7; rooms[corredor].maxW = 50;
+    // rooms[corredor].step = 10; // 5
+    // rooms[corredor].depend = 0;
+    // rooms[corredor].rPlannyId = _LIVING_ROOM;
+    // rooms[corredor].name[0] = 'c'; rooms[corredor].name[1] = 'o';
+    // rooms[corredor].name[2] = 'r'; rooms[corredor].name[3] = 'r';
+    // rooms[corredor].name[4] = 'e'; rooms[corredor].name[5] = 'd';
+    // rooms[corredor].name[6] = 'o'; rooms[corredor].name[7] = 'r';
     
     // // 5 - lavanderia
     // rooms[lavanderia].id = 1 << lavanderia;

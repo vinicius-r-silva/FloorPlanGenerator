@@ -48,6 +48,7 @@ void Viewer::saveLayoutsImages(const std::vector<int16_t>& arr, const int roomsC
     const int ptsPerLayout = roomsCount * 2;
     std::vector<int16_t> ptsX(roomsCount * 2, 0); 
     std::vector<int16_t> ptsY(roomsCount * 2, 0);
+    const int fitnessIdx = vectorOffset - 1;
 
     std::cout << "saveLayoutsImages. Layouts " << ((double)arr.size())/((double)vectorOffset) << std::endl;
     std::cout << "saveLayoutsImages. vectorOffset: " << vectorOffset << ", ptsPerLayout: " << ptsPerLayout << std::endl;
@@ -57,8 +58,9 @@ void Viewer::saveLayoutsImages(const std::vector<int16_t>& arr, const int roomsC
             ptsX[j] = arr[i + (j * 2)];
             ptsY[j] = arr[i + (j * 2) + 1];
         }
+        const int fitness = arr[i + fitnessIdx];
 
-        std::string fullPath = folderPath + "/" + fileNamePrefix + "_" + std::to_string(i / vectorOffset) + ".png";
+        std::string fullPath = folderPath + "/" + std::to_string(fitness) + "_" + fileNamePrefix + "_" + std::to_string(i / vectorOffset) + ".png";
         CVHelper::saveImage(ptsX, ptsY, fullPath);
     }
 }

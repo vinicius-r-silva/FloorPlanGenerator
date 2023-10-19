@@ -67,7 +67,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn
 	//K represents the connection (from 0 to 15, skipping 0, 5, 10 and 15)
 	// const int kidx = blockIdx.z; 
 
-	// TODO check if int is sufficient for a_idx and b_idx
+	//  TODO check if int is sufficient for a_idx and b_idx 
 	int a_idx = blockIdx.y + a_offset; //layout A index
 	int b_idx = blockIdx.x * blockDim.x + threadIdx.x; //layout B index
 	const uint64_t res_idx = ((blockIdx.y * qtd_b * gridDim.z) + (b_idx * gridDim.z) + blockIdx.z) * __SIZE_RES;
@@ -179,11 +179,13 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn
 		}
 	}
 
+	int totalArea = 0;
 	for(int i = 0; i < __SIZE_A_LAYOUT; i+=4){
 		const int a_left = a[i];
 		const int a_up = a[i + __UP];
 		const int a_down = a[i + __DOWN];
 		const int a_right = a[i + __RIGHT];
+		totalArea += (a_down - a_up) * (a_right - a_left);
 
 		for(int j = 0; j < __SIZE_A_LAYOUT; j+=4){
 			const int b_left = a[j];
@@ -203,6 +205,7 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn
 		const int a_up = b[i + __UP];
 		const int a_down = b[i + __DOWN];
 		const int a_right = b[i + __RIGHT];
+		totalArea += (a_down - a_up) * (a_right - a_left);
 
 		for(int j = 0; j < __SIZE_B_LAYOUT; j+=4){
 			const int b_left = b[j];
@@ -261,38 +264,6 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn
 	if(connections[__CONN_CHECK_IDX] != __CONN_CHECK)
 		return;
 
-	// printf("connections: %d, %d, %d, %d, %d, %d\n",
-	// 		connections[0], connections[1], connections[2], connections[3], connections[4], connections[5]);
-
-	// printf("adj: %d, %d, %d, %d\n",
-	// 		adj[0], adj[1], adj[2], adj[3]);
-
-	// printf("adj_count: %d, %d, %d, %d\n",
-	// 		adj_count[0], adj_count[1], adj_count[2], adj_count[3]);
-
-	// if(res_idx == 1660128){
-	// 	printf("\n\nbx: %d, by: %d, bz: %d, tx: %d, ty: %d, tz: %d\n\n",
-	// 			blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z);
-
-	// printf("1 - %ld - pts:\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n(%d, %d), (%d, %d)\n\n", 
-	// res_idx,
-	// a[0], a[1], a[2], a[3], 
-	// a[4], a[5], a[6], a[7], 
-	// a[8], a[9], a[10], a[11],
-	// b[0], b[1], b[2], b[3], 
-	// b[4], b[5], b[6], b[7], 
-	// b[8], b[9], b[10], b[11]);
-
-	// printf("\n\nbx: %d, by: %d, bz: %d, tx: %d, ty: %d, tz: %d\nres: %ld, a_idx: %d, b_idx: %d\nk: %d, src X: %d (%d), src Y: %d (%d), dst X: %d (%d), dst Y: %d (%d)\ndiffX: %d, diffY: %d, \n\n",
-	// 		blockIdx.x, blockIdx.y, blockIdx.z, threadIdx.x, threadIdx.y, threadIdx.z,
-	// 		res_idx, blockIdx.y + a_offset, blockIdx.x * blockDim.x + threadIdx.x,
-	// 		k,
-	// 		(k >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS, a[(k >> __COMBINE_CONN_SRC_X_SHIFT) & __COMBINE_CONN_BITS],
-	// 		(k >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS, a[(k >> __COMBINE_CONN_SRC_Y_SHIFT) & __COMBINE_CONN_BITS],
-	// 		(k >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS, b[(k >> __COMBINE_CONN_DST_X_SHIFT) & __COMBINE_CONN_BITS],
-	// 		(k >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS, b[(k >> __COMBINE_CONN_DST_Y_SHIFT) & __COMBINE_CONN_BITS],
-	// 		diffX, diffY);
-
 	// d_res[res_idx] = a[0];
 	// d_res[res_idx + 1] = a[1];
 	// d_res[res_idx + 2] = a[2];
@@ -322,6 +293,12 @@ void k_createPts(int16_t *d_a, int16_t *d_b, int *d_res, int *d_adj, int *d_conn
 	d_res[res_idx + __COMBINE_RES_DIFF_W] = maxW - minW;
 	d_res[res_idx + __COMBINE_RES_A_IDX] = a_idx;
 	d_res[res_idx + __COMBINE_RES_B_IDX] = b_idx;
+	d_res[res_idx + __COMBINE_RES_AREA] = totalArea;
+
+	//  TODO save as well how much of the rectngle made by diffH x diffW is occupied by the layout
+	// Superposition = (diffH * diffW) / (area of the layout (sum of the area of each room of the layout))
+	// It makes the search algoritghm faster later
+	// This also can be made in the consume method maybe ()
 }
 
 

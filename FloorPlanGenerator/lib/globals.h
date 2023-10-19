@@ -112,9 +112,9 @@ public:
 
 #define __ROOM_CONFIG_LENGHT 8
 
-#define __COMBINE_N_A 3                             // 3
+#define __COMBINE_N_A 2                             // 3
 #define __COMBINE_N_B 2                             // 3
-#define __COMBINE_PERM_A 6  // __COMBINE_N_A !      // 3 -> 6 | 2 -> 2
+#define __COMBINE_PERM_A 2  // __COMBINE_N_A !      // 3 -> 6 | 2 -> 2
 #define __COMBINE_PERM_B 2  // __COMBINE_N_B !      // 3 -> 6 | 2 -> 2
 
 // #define __COMBINE_CONN 108 //check on the google sheets, i dont want to think about the formula for this number now
@@ -132,12 +132,12 @@ public:
 
 #define __COMBINE_INVALID_LAYOUT -1
 
-#define __CONN_CHECK 31 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)  // 6 -> 63 | 5 -> 31
-#define __CONN_CHECK_IDX 4 // _N_A + N_B - 1                              // 6 -> 6  | 5 -> 4
+#define __CONN_CHECK 15 //1 << 0 | 1 << 1 | .... | 1 << (_N_A + N_B - 1)  // 6 -> 63 | 5 -> 31 | 4 -> 15
+#define __CONN_CHECK_IDX 3 // _N_A + N_B - 1                              // 6 -> 6  | 5 -> 4  | 4 -> 3
 
-#define __SIZE_A_LAYOUT 12		// __COMBINE_N_A * 4        3 -> 12 | 2 -> 8
+#define __SIZE_A_LAYOUT 8		// __COMBINE_N_A * 4        3 -> 12 | 2 -> 8
 #define __SIZE_B_LAYOUT 8		// __COMBINE_N_B * 4        3 -> 12 | 2 -> 8
-#define __SIZE_A_DISK 13 // __SIZE_B + perm iter value      3 -> 13 | 2 -> 9
+#define __SIZE_A_DISK 9 // __SIZE_B + perm iter value      3 -> 13 | 2 -> 9
 #define __SIZE_B_DISK 9  // __SIZE_B + perm iter value      3 -> 13 | 2 -> 9
 // #define __SIZE_RES 4
 
@@ -145,18 +145,20 @@ public:
 #define __COMBINE_RES_DIFF_W 1
 #define __COMBINE_RES_A_IDX 2
 #define __COMBINE_RES_B_IDX 3
-#define __SIZE_RES 4
+#define __COMBINE_RES_AREA 4
+#define __SIZE_RES 5
 
 #define __RES_DISK_MAX_H 0
 #define __RES_DISK_MAX_W 1
 #define __RES_DISK_A_IDX 2
 #define __RES_DISK_B_IDX 3
+#define __RES_DISK_AREA 4
 // #define __RES_DISK_MIN_SCORE 4
 // #define __RES_DISK_Min_H 5
 // #define __RES_DISK_Min_W 6
 // #define __RES_DISK_MAX_SCORE 7
 
-#define __SIZE_RES_DISK 4
+#define __SIZE_RES_DISK 5
 
 #define __RES_FILE_LENGHT_BITS 12
 #define __RES_FILE_LENGHT_AND_RULE 0b111111111111
@@ -178,5 +180,6 @@ public:
 
 #define __THREADS_PER_BLOCK 768 // 192, 288, 384, 480, 576, 672, 768, 862, 
 
+#define __SEARCH_TOLERANCE_AREA_PCT 10
 
 #endif //GLOBALS 

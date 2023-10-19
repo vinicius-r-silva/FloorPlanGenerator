@@ -42,6 +42,7 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 		int min_diff_W = h_res[i + __COMBINE_RES_DIFF_W];
 		int max_diff_H = h_res[i + __COMBINE_RES_DIFF_H];
 		int max_diff_W = h_res[i + __COMBINE_RES_DIFF_W];
+		const int area = h_res[i + __COMBINE_RES_AREA];
 		const int a_layout_idx = h_res[i + __COMBINE_RES_A_IDX];
 		const int b_layout_idx = h_res[i + __COMBINE_RES_B_IDX];
 
@@ -128,6 +129,7 @@ void CombineHandler::consume(const std::vector<int>& h_res, const size_t res_mem
 		arr[insertIdx + __RES_DISK_MAX_W] = max_diff_W;
 		arr[insertIdx + __RES_DISK_A_IDX] = a_layout_idx;
 		arr[insertIdx + __RES_DISK_B_IDX] = b_layout_idx;
+		arr[insertIdx + __RES_DISK_AREA] = area;
 
 		// if(combId == 917553 && minSizeId == 163900){
 		// 	std::cout << std::endl << "insertIdx: " << insertIdx << ", " << std::endl;
@@ -356,13 +358,13 @@ void CombineHandler::combine(
 
 
 	std::cout << "start parallel process" << std::endl;
-    #pragma omp parallel num_threads(nCpuThreads)
-    {
-        #pragma omp single
-        {
+    // #pragma omp parallel num_threads(nCpuThreads)
+    // {
+    //     #pragma omp single
+    //     {
 			for(int i = 0; i < qtd_a; i += num_a){
-                #pragma omp task depend(inout: dependencyControl) priority(0)
-                {
+                // #pragma omp task depend(inout: dependencyControl) priority(0)
+                // {
 					int diff = qtd_a - i;
 					int threadId = omp_get_thread_num();
 					dependencyControl++;
@@ -380,16 +382,16 @@ void CombineHandler::combine(
 					
 					printf("producer %d end\n", threadId);
 
-                	#pragma omp task priority(10)
-					{
+                	// #pragma omp task priority(10)
+					// {
 						CombineHandler::consume(h_res[threadId], mem_size_res, hdd, combId, combFilesdId, dependencyControl - 1, max_layout_size);
 						// CombineHandler::drawResult(h_res[threadId].data(), mem_size_res);
-					}
-                }
+					// }
+                // }
 				// break;
             }
-        }
-    }
+    //     }
+    // }
 	// printf("parallel end\n");
 
     CudaCombine::freeDeviceArrays(d_adj, d_res, d_conns, d_a, d_b);
