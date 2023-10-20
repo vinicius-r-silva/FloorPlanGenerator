@@ -19,7 +19,7 @@
  */
 #define OPENCV_ENABLED
 
-// #define PROD_STORAGE
+#define PROD_STORAGE
 
 // #define MULTI_THREAD
 

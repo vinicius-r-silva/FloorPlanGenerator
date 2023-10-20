@@ -478,13 +478,15 @@ void normalConfig(std::string projectPath){
     // 0 - sala
     rooms[sala].id = 1 << sala;
     rooms[sala].numExtensions = 0; // 2
-    rooms[sala].minH = 40; rooms[sala].maxH = 40;
-    rooms[sala].minW = 30; rooms[sala].maxW = 30;
+    // rooms[sala].minH = 40; rooms[sala].maxH = 40;
+    // rooms[sala].minW = 30; rooms[sala].maxW = 30;
     // rooms[sala].minH = 30; rooms[sala].maxH = 40;
     // rooms[sala].minW = 20; rooms[sala].maxW = 30;
     // rooms[sala].minH = 30; rooms[sala].maxH = 50;
     // rooms[sala].minW = 20; rooms[sala].maxW = 40;
-    rooms[sala].step = 10; // 5
+    rooms[sala].minH = 16; rooms[sala].maxH = 32;
+    rooms[sala].minW = 24; rooms[sala].maxW = 52;
+    rooms[sala].step = 2; // 5
     rooms[sala].depend = 0;
     rooms[sala].rPlannyId = _LIVING_ROOM;
     rooms[sala].name[0] = 's'; rooms[sala].name[1] = 'a';
@@ -493,13 +495,15 @@ void normalConfig(std::string projectPath){
     // 1 - banheiro
     rooms[banheiro].id = 1 << banheiro;
     rooms[banheiro].numExtensions = 0;
-    rooms[banheiro].minH = 30; rooms[banheiro].maxH = 30;
-    rooms[banheiro].minW = 15; rooms[banheiro].maxW = 15;
+    // rooms[banheiro].minH = 30; rooms[banheiro].maxH = 30;
+    // rooms[banheiro].minW = 15; rooms[banheiro].maxW = 15;
     // rooms[banheiro].minH = 20; rooms[banheiro].maxH = 30;
     // rooms[banheiro].minW = 15; rooms[banheiro].maxW = 20;
     // rooms[banheiro].minH = 8; rooms[banheiro].maxH = 20;
     // rooms[banheiro].minW = 15; rooms[banheiro].maxW = 30;
-    rooms[banheiro].step = 10; // 5
+    rooms[banheiro].minH = 10; rooms[banheiro].maxH = 16;
+    rooms[banheiro].minW = 18; rooms[banheiro].maxW = 26;
+    rooms[banheiro].step = 2; // 5
     rooms[banheiro].depend = 0;
     rooms[banheiro].rPlannyId = _BATHROOM;
     rooms[banheiro].name[0] = 'b'; rooms[banheiro].name[1] = 'a';
@@ -510,13 +514,15 @@ void normalConfig(std::string projectPath){
     // 2 - quarto
     rooms[quarto].id = 1 << quarto;
     rooms[quarto].numExtensions = 0; // 1
-    rooms[quarto].minH = 30; rooms[quarto].maxH = 30;
-    rooms[quarto].minW = 30; rooms[quarto].maxW = 30;
+    // rooms[quarto].minH = 30; rooms[quarto].maxH = 30;
+    // rooms[quarto].minW = 30; rooms[quarto].maxW = 30;
     // rooms[quarto].minH = 20; rooms[quarto].maxH = 30;
     // rooms[quarto].minW = 20; rooms[quarto].maxW = 30;
     // rooms[quarto].minH = 20; rooms[quarto].maxH = 40;
     // rooms[quarto].minW = 20; rooms[quarto].maxW = 40;
-    rooms[quarto].step = 10; // 5
+    rooms[quarto].minH = 24; rooms[quarto].maxH = 32;
+    rooms[quarto].minW = 26; rooms[quarto].maxW = 36;
+    rooms[quarto].step = 2; // 5
     rooms[quarto].depend = 0;
     rooms[quarto].rPlannyId = _MASTER_ROOM;
     rooms[quarto].name[0] = 'q'; rooms[quarto].name[1] = 'u';
@@ -526,13 +532,15 @@ void normalConfig(std::string projectPath){
     // 3 - cozinha
     rooms[cozinha].id = 1 << cozinha;
     rooms[cozinha].numExtensions = 0;
-    rooms[cozinha].minH = 40; rooms[cozinha].maxH = 40;
-    rooms[cozinha].minW = 20; rooms[cozinha].maxW = 20;
+    // rooms[cozinha].minH = 40; rooms[cozinha].maxH = 40;
+    // rooms[cozinha].minW = 20; rooms[cozinha].maxW = 20;
     // rooms[cozinha].minH = 30; rooms[cozinha].maxH = 40;
     // rooms[cozinha].minW = 20; rooms[cozinha].maxW = 25;
     // rooms[cozinha].minH = 15; rooms[cozinha].maxH = 25;
     // rooms[cozinha].minW = 15; rooms[cozinha].maxW = 30;
-    rooms[cozinha].step = 10; // 10
+    rooms[cozinha].minH = 10; rooms[cozinha].maxH = 18;
+    rooms[cozinha].minW = 20; rooms[cozinha].maxW = 40;
+    rooms[cozinha].step = 2; // 10
     rooms[cozinha].depend = 0;
     rooms[cozinha].rPlannyId = _KITCHEN;
     rooms[cozinha].name[0] = 'c'; rooms[cozinha].name[1] = 'o';

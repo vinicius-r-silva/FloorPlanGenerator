@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <cmath>
 #include <chrono>
+#include <iomanip>
 // #include <boost/numeric/ublas/matrix.hpp>
 // #include <boost/numeric/ublas/io.hpp>
 // #include <sstream>   
@@ -111,7 +112,7 @@ void generateDataGpu() {
 
     GenerateHandler handler = GenerateHandler();
 
-    for(int i = 1; i < NCombs; i++)
+    for(int i = 0; i < NCombs; i++)
     {            
         int combId  = 0;
         for(int j = 0; j < __GENERATE_N; j++){
@@ -191,19 +192,23 @@ void showCoreResults(){
 }
 
 void combineDataGPU(){
-    auto begin = std::chrono::high_resolution_clock::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin, end;
+    begin = std::chrono::high_resolution_clock::now();
+    std::cout << std::fixed << std::setprecision(3);
 
     Storage hdd = Storage();
     std::vector<RoomConfig> setups = hdd.getConfigs();
     std::vector<int> savedCombs = hdd.getSavedCores();
     CombineHandler handler = CombineHandler();
 
-    hdd.deleteSavedCombinedResultsParts();
+    // hdd.deleteSavedCombinedResultsParts();
 
     //TODO check if all of req are present during the gpu combination
+    std::cout << "fcombineDataGPU getReqAdjValues" << std::endl;
     std::vector<int> allReq = hdd.getReqAdjValues();
     // Log::printVector1D(allReq);
 
+    std::cout << "fcombineDataGPU getFilesToCombine" << std::endl;
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){     
@@ -267,14 +272,14 @@ void combineDataGPU(){
         // break;
     }
 
-    hdd.updateCombinationList();
+    // hdd.updateCombinationList();
 
-    auto end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::high_resolution_clock::now();
 
-    auto duration_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::chrono::milliseconds duration_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     std::cout << "Elapsed Time milliseconds: " << duration_milliseconds.count() << std::endl;
 
-    auto duration_minutes = std::chrono::duration_cast<std::chrono::minutes>(end - begin);
+    std::chrono::minutes duration_minutes = std::chrono::duration_cast<std::chrono::minutes>(end - begin);
     std::cout << "Elapsed Time minutes: " << duration_minutes.count() << std::endl;
 }
 
@@ -384,10 +389,10 @@ int main(){
     // Process::processResult((int*)0, 0);
 
     // generateData(3);
-    generateDataGpu();
+    // generateDataGpu();
     // combineData();
-    // combineDataGPU();
-    // postProcess();
+    combineDataGPU();
+    postProcess();
     //
     // search();
 

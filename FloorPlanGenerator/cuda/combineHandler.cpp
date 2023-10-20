@@ -1,6 +1,7 @@
 #include <iostream>
 #include <algorithm>
 #include <omp.h>
+#include <chrono>
 
 #include "combineHandler.h"
 #include "combine.cuh"
@@ -354,23 +355,29 @@ void CombineHandler::combine(
 	std::cout << "qtdThreadX: " << qtdThreadX << std::endl;
 
 	int dependencyControl = 0;
-
-
+    std::chrono::time_point<std::chrono::high_resolution_clock> clock_begin, clock_now, clock_end;
+    clock_begin = std::chrono::high_resolution_clock::now();
 
 	std::cout << "start parallel process" << std::endl;
-    // #pragma omp parallel num_threads(nCpuThreads)
-    // {
-    //     #pragma omp single
-    //     {
+    #pragma omp parallel num_threads(nCpuThreads)
+    {
+        #pragma omp single
+        {
 			for(int i = 0; i < qtd_a; i += num_a){
-                // #pragma omp task depend(inout: dependencyControl) priority(0)
-                // {
+                #pragma omp task depend(inout: dependencyControl) priority(0)
+                {
 					int diff = qtd_a - i;
 					int threadId = omp_get_thread_num();
-					dependencyControl++;
+					clock_now = std::chrono::high_resolution_clock::now();
+    				std::chrono::milliseconds milis = std::chrono::duration_cast<std::chrono::milliseconds>(clock_now - clock_begin);
 
-					// std::cout << ((float)i / (float)qtd_a) * 100.0 <<  " %" << std::endl;
-					printf("producer %d init, diff: %d\n", threadId, diff);
+					dependencyControl++;
+					double pctCompletion = (double)i / (double)qtd_a;
+					double etf = ((double)(qtd_a * milis.count())) / ((double)i) / 60000.0;
+
+					// printf("producer %d init, diff: %d, completion %.4lf, etf: %.2lf minutes\n", threadId, diff, pctCompletion, etf);
+					std::cout << "producer " << threadId << " init, diff: " << diff << ", completion " << pctCompletion << ", etf: " << etf << " minutes (" << (etf / 60.0) << ") hours" << std::endl;
+
 					if(diff < num_a){
 						int final_qtdBlocksX = (diff + qtdThreadX - 1) / qtdThreadX;
 						CudaCombine::createPts(mem_size_res, NConn, diff, qtd_b, i, final_qtdBlocksX, qtdThreadX, h_res[threadId].data(), d_adj, d_res, d_conns, d_a, d_b);
@@ -382,17 +389,17 @@ void CombineHandler::combine(
 					
 					printf("producer %d end\n", threadId);
 
-                	// #pragma omp task priority(10)
-					// {
+                	#pragma omp task priority(10)
+					{
 						CombineHandler::consume(h_res[threadId], mem_size_res, hdd, combId, combFilesdId, dependencyControl - 1, max_layout_size);
 						// CombineHandler::drawResult(h_res[threadId].data(), mem_size_res);
-					// }
-                // }
+					}
+                }
 				// break;
             }
-    //     }
-    // }
-	// printf("parallel end\n");
+        }
+    }
+	printf("parallel end\n");
 
     CudaCombine::freeDeviceArrays(d_adj, d_res, d_conns, d_a, d_b);
 }

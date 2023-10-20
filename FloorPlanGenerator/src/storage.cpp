@@ -216,7 +216,7 @@ void Storage::readCombinationResultFiles(){
     std::string path = getStoragePath() + "/combined";
     combinationResults.clear();
 
-    std::cout << "readCombinationResultFiles" << std::endl;
+    // std::cout << "readCombinationResultFiles" << std::endl;
     for (const auto & entry : std::filesystem::directory_iterator(path)){
         std::string fileName = entry.path().stem();
         std::string extension = entry.path().extension();
