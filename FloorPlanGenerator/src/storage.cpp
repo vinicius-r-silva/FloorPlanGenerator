@@ -29,6 +29,15 @@
 // ls -la ../FloorPlanGenerator/storage_prod/combined --block-size=MB
 // du -hS ../FloorPlanGenerator/storage_prod/combined
 
+// ls -la ../FloorPlanGenerator/storage_prod/storage_2/core --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/storage_2/core
+
+// ls -la ../FloorPlanGenerator/storage_prod/storage_2/combined/parts --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/storage_2/combined/parts
+
+// ls -la ../FloorPlanGenerator/storage_prod/storage_2/combined --block-size=MB
+// du -hS ../FloorPlanGenerator/storage_prod/storage_2/combined
+
 
 /// @brief          Storage Constructor
 /// @return         None
@@ -37,8 +46,8 @@ Storage::Storage(){
     readConfigs();
     readAdjValues();
     readReqAdjValues();
-    readCombinationResultFiles();
-    readCombinationResultPartFiles();
+    // readCombinationResultFiles();
+    // readCombinationResultPartFiles();
 }
 
 void Storage::updateCombinationList(){
@@ -78,7 +87,9 @@ void Storage::updateProjectDir(){
 
 std::string Storage::getStoragePath(){
     #ifdef PROD_STORAGE
-        return _projectDir + "/FloorPlanGenerator/storage_prod";
+        // return _projectDir + "/FloorPlanGenerator/storage_prod";
+        // return _projectDir + "/FloorPlanGenerator/storage_prod/storage_2";
+        return "/home/ribeiro/bigdisk2/storage_2";
     #else
         return _projectDir + "/FloorPlanGenerator/storage";
     #endif
@@ -120,6 +131,8 @@ void Storage::readConfigs(){
         input_file.read((char*)&(rooms[i].maxH), sizeof(tempRoom.maxH));
         input_file.read((char*)&(rooms[i].minW), sizeof(tempRoom.minW));
         input_file.read((char*)&(rooms[i].maxW), sizeof(tempRoom.maxW));
+        input_file.read((char*)&(rooms[i].minArea), sizeof(tempRoom.minArea));
+        input_file.read((char*)&(rooms[i].maxArea), sizeof(tempRoom.maxArea));
         input_file.read((char*)&(rooms[i].depend), sizeof(tempRoom.depend));
         input_file.read((char*)&(rooms[i].familyIds), sizeof(tempRoom.familyIds));
         input_file.read((char*)&(rooms[i].rPlannyId), sizeof(tempRoom.rPlannyId));

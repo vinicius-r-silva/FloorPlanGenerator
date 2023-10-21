@@ -304,7 +304,8 @@ void CombineHandler::combine(
 	// 	return;
 
 	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
-	const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
+	// const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
+	const size_t targetVRamSize = 7500l * 1024l * 1024l;
 
 	const int NConn = conns.size();
 	const int qtd_a = a.size() / __SIZE_A_DISK;
@@ -323,9 +324,10 @@ void CombineHandler::combine(
 	std::cout << std::endl;
 	std::cout << "a.size(): " << a.size() << ", b.size(): " << b.size() << std::endl;
 	std::cout << "qtd_a: " << qtd_a << ", qtd_b: " << qtd_b  << ", a*b: " << ((unsigned long)qtd_a) * ((unsigned long)qtd_b) << std::endl;
+	std::cout << "targetVRamSize: " << targetVRamSize << ", targetVRamSize GB: " << (double)targetVRamSize / 1024.0 / 1024.0 / 1024.0 << std::endl;
 	std::cout << "maxResCount: " << maxResCount << ", qtd_res: " << qtd_res << std::endl;
 	std::cout << "num_a: " << num_a << ", kernel launchs: " << ((qtd_a + num_a - 1) / (num_a)) << std::endl;
-
+	
 	const long resLayoutSize = sizeof(int) * __SIZE_RES;
 	const unsigned long mem_size_res = resLayoutSize * qtd_res;
 
@@ -366,6 +368,7 @@ void CombineHandler::combine(
 			for(int i = 0; i < qtd_a; i += num_a){
                 #pragma omp task depend(inout: dependencyControl) priority(0)
                 {
+					// int i = qtd_a - 417490;
 					int diff = qtd_a - i;
 					int threadId = omp_get_thread_num();
 					clock_now = std::chrono::high_resolution_clock::now();

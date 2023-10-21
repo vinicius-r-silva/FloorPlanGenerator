@@ -22,3 +22,12 @@ du -hs ../FloorPlanGenerator/storage/cudaResult
 
 rm -rf ../FloorPlanGenerator/storage/combined/parts && rm -rf ../FloorPlanGenerator/storage/combined/ && mkdir ../FloorPlanGenerator/storage/combined/ && mkdir ../FloorPlanGenerator/storage/combined/parts/
 
+rm -rf ../FloorPlanGenerator/storage_prod/combined/parts && rm -rf ../FloorPlanGenerator/storage_prod/combined/ && mkdir ../FloorPlanGenerator/storage_pord/combined/ && mkdir ../FloorPlanGenerator/storage_prod/combined/parts
+
+rm -rf ../FloorPlanGenerator/storage_prod/storage_2/combined/parts && rm -rf ../FloorPlanGenerator/storage_prod/storage_2/combined/ && mkdir ../FloorPlanGenerator/storage_prod/storage_2/combined/ && mkdir ../FloorPlanGenerator/storage_prod/storage_2/combined/parts
+
+rm -rf ../FloorPlanGenerator/storage_prod/storage_2/combined/parts && rm -rf ../FloorPlanGenerator/storage_prod/storage_2/combined/ && rm -rf ../FloorPlanGenerator/storage_prod/storage_2/core/ && mkdir ../FloorPlanGenerator/storage_prod/storage_2/combined/ && mkdir ../FloorPlanGenerator/storage_prod/storage_2/combined/parts && mkdir ../FloorPlanGenerator/storage_prod/storage_2/core
+
+rm -rf /home/ribeiro/bigdisk2/storage_2/combined/parts && rm -rf /home/ribeiro/bigdisk2/storage_2/combined/ && rm -rf /home/ribeiro/bigdisk2/storage_2/core/ && mkdir /home/ribeiro/bigdisk2/storage_2/combined/ && mkdir /home/ribeiro/bigdisk2/storage_2/combined/parts && mkdir /home/ribeiro/bigdisk2/storage_2/core
+
+rm -rf /home/ribeiro/bigdisk2/storage_2/core/ && mkdir /home/ribeiro/bigdisk2/storage_2/core

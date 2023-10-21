@@ -192,7 +192,7 @@ void showCoreResults(){
 }
 
 void combineDataGPU(){
-    std::chrono::time_point<std::chrono::high_resolution_clock> begin, end;
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin, delete_end, end;
     begin = std::chrono::high_resolution_clock::now();
     std::cout << std::fixed << std::setprecision(3);
 
@@ -201,14 +201,21 @@ void combineDataGPU(){
     std::vector<int> savedCombs = hdd.getSavedCores();
     CombineHandler handler = CombineHandler();
 
-    // hdd.deleteSavedCombinedResultsParts();
+    std::cout << "combineDataGPU deleteSavedCombinedResultsParts" << std::endl;
+    hdd.deleteSavedCombinedResultsParts();
+    delete_end = std::chrono::high_resolution_clock::now();
+    std::chrono::milliseconds delete_duration_milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(delete_end - begin);
+    std::cout << "Elapsed Time milliseconds: " << delete_duration_milliseconds.count() << std::endl;
+
+    std::chrono::minutes delete_duration_minutes = std::chrono::duration_cast<std::chrono::minutes>(delete_end - begin);
+    std::cout << "Elapsed Time minutes: " << delete_duration_minutes.count() << std::endl;
 
     //TODO check if all of req are present during the gpu combination
-    std::cout << "fcombineDataGPU getReqAdjValues" << std::endl;
+    std::cout << "combineDataGPU getReqAdjValues" << std::endl;
     std::vector<int> allReq = hdd.getReqAdjValues();
     // Log::printVector1D(allReq);
 
-    std::cout << "fcombineDataGPU getFilesToCombine" << std::endl;
+    std::cout << "combineDataGPU getFilesToCombine" << std::endl;
     std::vector<std::vector<int>> filesCombs = Iter::getFilesToCombine(savedCombs, setups);
 
     for(std::vector<int> fileComb : filesCombs){     
@@ -269,7 +276,7 @@ void combineDataGPU(){
             }
             // break;
         }
-        // break;
+        break;
     }
 
     // hdd.updateCombinationList();
@@ -392,7 +399,7 @@ int main(){
     // generateDataGpu();
     // combineData();
     combineDataGPU();
-    postProcess();
+    // postProcess();
     //
     // search();
 

@@ -37,6 +37,8 @@ typedef struct{
     int16_t maxH;                   /**< maximum Height */
     int16_t minW;                   /**< minimum Width */
     int16_t maxW;                   /**< maximum Width */
+    int16_t minArea;                   /**< maximum Width */
+    int16_t maxArea;                   /**< maximum Width */
     int familyIds;
     int rPlannyId;                  /**< rPlanny Id */
     // int nameId;                     /**< name Id */
@@ -109,8 +111,10 @@ public:
 #define __ROOM_CONFIG_COUNTH 5
 #define __ROOM_CONFIG_COUNTW 6
 #define __ROOM_CONFIG_RID 7
+#define __ROOM_CONFIG_MINAREA 8
+#define __ROOM_CONFIG_MAXAREA 9
 
-#define __ROOM_CONFIG_LENGHT 8
+#define __ROOM_CONFIG_LENGHT 10
 
 #define __COMBINE_N_A 2                             // 3
 #define __COMBINE_N_B 2                             // 3

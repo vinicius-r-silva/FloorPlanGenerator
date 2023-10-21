@@ -88,6 +88,10 @@ void generate(
 		}
 		size_idx /= countW;
 
+		int area = w * h;
+		if(area < rooms_config[room_idx + __ROOM_CONFIG_MINAREA] || area > rooms_config[room_idx + __ROOM_CONFIG_MAXAREA])
+			return;
+
 		if(rotation_idx & (1 << id)){
 			if(w == h)
 				return;
@@ -278,6 +282,8 @@ int* CudaGenerate::createDeviceRoomConfigsArray(const std::vector<RoomConfig>& r
 		h_configs[offset + __ROOM_CONFIG_MAXH] = rooms[i].maxH;
 		h_configs[offset + __ROOM_CONFIG_MINW] = rooms[i].minW;
 		h_configs[offset + __ROOM_CONFIG_MAXW] = rooms[i].maxW;
+		h_configs[offset + __ROOM_CONFIG_MINAREA] = rooms[i].minArea;
+		h_configs[offset + __ROOM_CONFIG_MAXAREA] = rooms[i].maxArea;
 
 		const int countH = (((rooms[i].maxH - rooms[i].minH) + rooms[i].step - 1) / rooms[i].step) + 1;
 		const int countW = (((rooms[i].maxW - rooms[i].minW) + rooms[i].step - 1) / rooms[i].step) + 1;

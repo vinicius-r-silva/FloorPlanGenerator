@@ -17,7 +17,8 @@ Log::Log(){
 void Log::print(RoomConfig s){
     std::cout << s.id << " " << s.name << ":\tH (" << s.minH << 
                  " - " << s.maxH << "),\tW (" << s.minW << 
-                 " - " << s.maxW << "),\tE: " << s.numExtensions << 
+                 " - " << s.maxW << "),\tArea (" << s.minArea << 
+                 " - " << s.maxArea << ")\tE: " << s.numExtensions << 
                  "\tstep: " << s.step <<
                  "\tdepend: " << s.depend << 
                  "\tPlannyId: " << s.rPlannyId << std::endl;
