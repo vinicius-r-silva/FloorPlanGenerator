@@ -31,3 +31,5 @@ rm -rf ../FloorPlanGenerator/storage_prod/storage_2/combined/parts && rm -rf ../
 rm -rf /home/ribeiro/bigdisk2/storage_2/combined/parts && rm -rf /home/ribeiro/bigdisk2/storage_2/combined/ && rm -rf /home/ribeiro/bigdisk2/storage_2/core/ && mkdir /home/ribeiro/bigdisk2/storage_2/combined/ && mkdir /home/ribeiro/bigdisk2/storage_2/combined/parts && mkdir /home/ribeiro/bigdisk2/storage_2/core
 
 rm -rf /home/ribeiro/bigdisk2/storage_2/core/ && mkdir /home/ribeiro/bigdisk2/storage_2/core
+
+find . -type f -name "*.txt" | parallel rm 

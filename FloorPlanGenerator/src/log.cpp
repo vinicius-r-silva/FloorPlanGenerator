@@ -52,3 +52,4 @@ void Log::printVector2D(std::vector<std::vector<RoomConfig>> arr){
 
 template void Log::printVector1D<int>(std::vector<int>);
 template void Log::printVector1D<int16_t>(std::vector<int16_t>);
+template void Log::printVector1D<std::string>(std::vector<std::string>);

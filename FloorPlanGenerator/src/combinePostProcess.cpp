@@ -17,9 +17,6 @@ void CombinePostProcess::postProcess(Storage hdd, const int combId){
 
         for(int minSizeId : minSizeIds){
             std::vector<CombinationResultPart> files = hdd.getSavedCombinationsParts(combId, combFileId, minSizeId);
-
-            // // std::cout << "minSizeId: " << minSizeId << std::endl;
-            // std::vector<int> kernelIds = hdd.getSavedCombinationsPartsKernelIds(combId, combFileId, minSizeId);
             std::vector<int> result;
 
             int maxSizeH = -1;

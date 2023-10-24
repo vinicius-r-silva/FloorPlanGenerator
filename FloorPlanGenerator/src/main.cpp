@@ -358,17 +358,39 @@ void combineDataGPU(){
 void postProcess(){
     std::cout << "main postProcess init" << std::endl;
     
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin, end_storage, end_deletion, end;
+    std::chrono::milliseconds end_storage_duration, end_deletion_duration, total_duration;
+
+    begin = std::chrono::high_resolution_clock::now();
+
     Storage hdd = Storage();
-    std::vector<int> savedPartsCombIds = hdd.getSavedCombinationsPartsCombIds();
+    end_storage = std::chrono::high_resolution_clock::now();
+    end_storage_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_storage - begin);
+    std::cout << "postProcess storage initialization duration: " << end_storage_duration.count() << " miliseconds. (" << ((double)end_storage_duration.count()) / 60000.0 << " minutes)"  << std::endl;
 
     hdd.deleteSavedCombinedResults();
+    end_deletion = std::chrono::high_resolution_clock::now();
+    end_deletion_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_deletion - end_storage);
+    std::cout << "postProcess delete duration: " << end_deletion_duration.count() << " miliseconds. (" << ((double)end_deletion_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+    
+    std::vector<int> savedPartsCombIds = hdd.getSavedCombinationsPartsCombIds();
 
+
+    const int nCpuThreads = 3;
+    
+    #pragma omp parallel for num_threads(nCpuThreads)
     for(int combId : savedPartsCombIds){
         CombinePostProcess::postProcess(hdd, combId);
         // break;
     }
 
     hdd.updateCombinationList();
+    end = std::chrono::high_resolution_clock::now();
+    total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - end_deletion);
+    std::cout << "postProcess duration: " << total_duration.count() << " miliseconds. (" << ((double)total_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+
+    total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_deletion - begin);
+    std::cout << "postProcess total duration: " << total_duration.count() << " miliseconds. " << ((double)total_duration.count()) / 60000.0 << " minutes. " << ((double)total_duration.count()) / 3600000.0 << " hours. "  << std::endl;
 }
 
 void search(){
@@ -396,11 +418,16 @@ int main(){
     // Process::processResult((int*)0, 0);
 
     // generateData(3);
-    // generateDataGpu();
+    generateDataGpu();
     // combineData();
     combineDataGPU();
-    // postProcess();
-    //
+    postProcess();
+    
+
+    // Storage hdd = Storage();
+    // std::cout << "deleteSavedCombinedResultsParts" << std::endl;
+    // hdd.deleteSavedCombinedResultsParts();
+
     // search();
 
 

@@ -63,15 +63,17 @@ class Storage
     /// @return         None
     void readReqAdjValues();
 
-    void readCombinationResultFiles();
-
-    void readCombinationResultPartFiles();
-
 public:
 
     /// @brief          Storage Constructor
     /// @return         None
     Storage();
+
+    std::vector<std::string> getFoldersInPath(std::string path);
+
+    void readCombinationResultFiles();
+
+    void readCombinationResultPartFiles();
 
     void updateCombinationList();
 
@@ -119,8 +121,6 @@ public:
     std::vector<int> getSavedCombinationsPartsCombFileIds(int combId);
 
     std::vector<int> getSavedCombinationsPartsMinSizeIds(int combId, int combFileId);
-    
-    std::vector<int> getSavedCombinationsPartsKernelIds(int combId, int combFileId, int minSizeId);
 
     std::vector<int> getSavedCombinationsCombIds();
 

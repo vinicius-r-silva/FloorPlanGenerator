@@ -305,7 +305,8 @@ void CombineHandler::combine(
 
 	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
 	// const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
-	const size_t targetVRamSize = 7500l * 1024l * 1024l;
+	// const size_t targetVRamSize = 7500l * 1024l * 1024l;
+	const size_t targetVRamSize = 4000l * 1024l * 1024l;
 
 	const int NConn = conns.size();
 	const int qtd_a = a.size() / __SIZE_A_DISK;
@@ -337,7 +338,7 @@ void CombineHandler::combine(
 	int16_t* d_a = CudaCombine::createDeviceCoreLayoutsArray(a);
 	int16_t* d_b = CudaCombine::createDeviceCoreLayoutsArray(b);
 
-	const int nCpuThreads = 3;
+	const int nCpuThreads = 6;
 	// int16_t** h_res = CudaGenerate::createHostResArray(result_mem_size, nCpuThreads);
 	std::vector<std::vector<int>> h_res(nCpuThreads, std::vector<int>(ptsPerKernel, __COMBINE_INVALID_LAYOUT));
 	// std::cout << "nCpuThreads: " << nCpuThreads << std::endl;
@@ -376,10 +377,15 @@ void CombineHandler::combine(
 
 					dependencyControl++;
 					double pctCompletion = (double)i / (double)qtd_a;
-					double etf = ((double)(qtd_a * milis.count())) / ((double)i) / 60000.0;
+					double etf = ((double)(diff * milis.count())) / ((double)i) / 60000.0;
+					double elapsed = ((double)milis.count()) / 60000.0;
+					// std::chrono::minutes elapsed_minutes = std::chrono::duration_cast<std::chrono::minutes>(milis);
+					// std::chrono::hours elapsed_hours = std::chrono::duration_cast<std::chrono::hours>(milis);
 
 					// printf("producer %d init, diff: %d, completion %.4lf, etf: %.2lf minutes\n", threadId, diff, pctCompletion, etf);
-					std::cout << "producer " << threadId << " init, diff: " << diff << ", completion " << pctCompletion << ", etf: " << etf << " minutes (" << (etf / 60.0) << ") hours" << std::endl;
+					std::cout << "producer " << threadId << " init, diff: " << diff << ", completion " << pctCompletion << std::endl;
+					std::cout << "elapsed: " << elapsed << " minutes (" << (elapsed / 60.0) << ") hours" << std::endl;
+					std::cout << "etf: " << etf << " minutes (" << (etf / 60.0) << ") hours" << std::endl;
 
 					if(diff < num_a){
 						int final_qtdBlocksX = (diff + qtdThreadX - 1) / qtdThreadX;
