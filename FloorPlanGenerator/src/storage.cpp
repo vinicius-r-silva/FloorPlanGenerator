@@ -89,7 +89,7 @@ std::string Storage::getStoragePath(){
     #ifdef PROD_STORAGE
         // return _projectDir + "/FloorPlanGenerator/storage_prod";
         // return _projectDir + "/FloorPlanGenerator/storage_prod/storage_2";
-        return "/home/ribeiro/bigdisk3/step2";
+        return "/home/ribeiro/bigdisk4/step1";
     #else
         return _projectDir + "/FloorPlanGenerator/storage";
     #endif
@@ -233,24 +233,23 @@ void Storage::readCombinationResultPartFiles(){
             int minSizeId = std::stoi(minSizeFolder);
 
             std::string minSizePath = combPath + "/" + minSizeFolder;
-            for (const auto & entry : std::filesystem::directory_iterator(minSizePath)) {
-                std::string fileName = entry.path().stem();
-                std::string extension = entry.path().extension();
+            std::vector<std::string> maxSizeFolders = getFoldersInPath(minSizePath);
+            for(std::string maxSizeFolder : maxSizeFolders) {
+                int maxSizeId = std::stoi(maxSizeFolder);
 
-                if(extension.compare(".dat") != 0)
-                    continue;
+                std::string maxSizePath = minSizePath + "/" + maxSizeFolder;
+                for (const auto & entry : std::filesystem::directory_iterator(maxSizePath)) {
+                    std::string fileName = entry.path().stem();
+                    std::string extension = entry.path().extension();
 
-                std::stringstream sss(fileName);
-                std::string sMaxSizeId, sFileId;
+                    if(extension.compare(".dat") != 0)
+                        continue;
 
-                std::getline(sss, sMaxSizeId, '_');
-                std::getline(sss, sFileId);
+                    int fileId = std::stoi(fileName);
 
-                int maxSizeId = std::stoi(sMaxSizeId);
-                int fileId = std::stoi(sFileId);
-
-                CombinationResultPart item(combId, combFileId, minSizeId, maxSizeId, fileId);
-                combinationResultsParts.push_back(item);
+                    CombinationResultPart item(combId, combFileId, minSizeId, maxSizeId, fileId);
+                    combinationResultsParts.push_back(item);
+                }
             }
         }
     }
@@ -387,11 +386,15 @@ void Storage::saveCombineResultPart(std::vector<std::vector<std::vector<int>>> r
             int maxSizeId = (fileMaxH[h][w] << __RES_FILE_LENGHT_BITS) | fileMaxW[h][w];
 
             std::string minSizeFolder = combFolder + "/" + std::to_string(minSizeId); 
-            if (!std::filesystem::exists(minSizeFolder) || !std::filesystem::is_directory(minSizeFolder)) {
-                std::filesystem::create_directory(minSizeFolder);
+            std::string maxSizeFolder = minSizeFolder + "/" + std::to_string(maxSizeId); 
+            if (!std::filesystem::exists(maxSizeFolder) || !std::filesystem::is_directory(maxSizeFolder)) {
+                if (!std::filesystem::exists(minSizeFolder) || !std::filesystem::is_directory(minSizeFolder)) {
+                    std::filesystem::create_directory(minSizeFolder);
+                }
+                std::filesystem::create_directory(maxSizeFolder);
             }
 
-            std::string filePath = minSizeFolder + "/" + std::to_string(maxSizeId) + "_" + std::to_string(kernelCount) + ".dat";
+            std::string filePath = maxSizeFolder + "/" + std::to_string(kernelCount) + ".dat";
 
             // long totalSize = results[i][w].size();
             // std::cout << combId << ", " << minSizeId << ", " << kernelCount << ", " << totalSize << ", " << totalSize / __SIZE_RES_DISK << ", " << ((double)(totalSize * sizeof(int))) / 1024.0 / 1024.0 << std::endl;
@@ -581,7 +584,7 @@ std::vector<int> Storage::readCombineData(const int combId, const int combFileId
 }
 
 std::vector<int> Storage::readCombineSplitData(const int combId, const int combFileId, const int minSizeId, const int maxSizeId, const int fileId){
-    const std::string filename = getStoragePath() + "/combined_parts/" + std::to_string(combId) + "_" + std::to_string(combFileId) + "/" + std::to_string(minSizeId) + "/" + std::to_string(maxSizeId) + "_" + std::to_string(fileId) + ".dat";
+    const std::string filename = getStoragePath() + "/combined_parts/" + std::to_string(combId) + "_" + std::to_string(combFileId) + "/" + std::to_string(minSizeId) + "/" + std::to_string(maxSizeId) + "/" + std::to_string(fileId) + ".dat";
     return readVector<int>(filename);
 }
 
@@ -628,35 +631,31 @@ void Storage::deleteSavedCombinedResultsParts() {
 
     int count = 0;
     for(std::string combFolder : combFolders) {        
-        std::string combPath = path + "/" + combFolder;
+        std::string combPath = path + "/" + combFolder; 
 
         std::vector<std::string> minSizeFolders = getFoldersInPath(combPath);
         std::cout << "deleteSavedCombinedResultsParts minSizeFolders" << std::endl;
         Log::printVector1D(minSizeFolders);
 
         for(std::string minSizeFolder : minSizeFolders) {
+            std::string minSizePath = combPath + "/" + minSizeFolder;
+            std::vector<std::string> maxSizeFolders = getFoldersInPath(minSizePath);
 
-            std::string sizePath = combPath + "/" + minSizeFolder;
-            for (const auto & entry : std::filesystem::directory_iterator(sizePath)) {
-                std::string extension = entry.path().extension();
+            for(std::string maxSizeFolder : maxSizeFolders) {
+                std::string maxSizePath = minSizePath + "/" + maxSizeFolder;
+            
+                for (const auto & entry : std::filesystem::directory_iterator(maxSizePath)) {
+                    std::string extension = entry.path().extension();
 
-                if(extension.compare(".dat") == 0){
-                    remove(entry.path());
-                    count++;
+                    if(extension.compare(".dat") == 0){
+                        remove(entry.path());
+                        count++;
+                    }
                 }
             }
-
-            std::cout << "deleteSavedCombinedResultsParts count "  << count << std::endl;
+            std::cout << "deleteSavedCombinedResultsParts count"  << count << std::endl;
         }
     }
-
-    // for (const auto & entry : std::filesystem::directory_iterator(path)){
-    //     std::string extension = entry.path().extension();
-
-    //     if(extension.compare(".dat") == 0){
-    //         remove(entry.path());
-    //     }
-    // }
     
     readCombinationResultPartFiles();
 }
@@ -666,7 +665,7 @@ void Storage::deleteSavedCombinedResults() {
     std::string path = getStoragePath() + "/combined";
 
     std::vector<std::string> combFolders = getFoldersInPath(path);
-    std::cout << "deleteSavedCombinedResultsParts combFolders" << std::endl;
+    std::cout << "deleteSavedCombinedResults combFolders" << std::endl;
     Log::printVector1D(combFolders);
 
     int count = 0;

@@ -276,7 +276,7 @@ void combineDataGPU(){
             }
             // break;
         }
-        break;
+        // break;
     }
 
     // hdd.updateCombinationList();
@@ -416,12 +416,37 @@ void search(){
 */
 int main(){
     // Process::processResult((int*)0, 0);
+    std::chrono::time_point<std::chrono::high_resolution_clock> begin, end_generate, end_combine, end;
+    std::chrono::milliseconds generate_duration, combine_duration, post_duration, total_duration;
+
+    begin = std::chrono::high_resolution_clock::now();
 
     // generateData(3);
     generateDataGpu();
-    // combineData();
+    end_generate = std::chrono::high_resolution_clock::now();
+    generate_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_generate - begin);
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "!!!! generateDataGpu duration: " << generate_duration.count() << " miliseconds. (" << ((double)generate_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+    std::cout << std::endl << std::endl << std::endl;
+
+
+    // // combineData();
     combineDataGPU();
+    end_combine = std::chrono::high_resolution_clock::now();
+    combine_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_combine - end_generate);
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "!!!! combineDataGPU duration: " << combine_duration.count() << " miliseconds. (" << ((double)combine_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+    std::cout << std::endl << std::endl << std::endl;
+
+
     postProcess();
+    end = std::chrono::high_resolution_clock::now();
+    post_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - end_combine);
+    total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "!!!! postProcess duration: " << post_duration.count() << " miliseconds. (" << ((double)post_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+    std::cout << "!!!! total duration: " << total_duration.count() << " miliseconds. (" << ((double)total_duration.count()) / 60000.0 << " minutes)"  << std::endl;
+    std::cout << std::endl << std::endl << std::endl;
     
 
     // Storage hdd = Storage();

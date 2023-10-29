@@ -305,8 +305,8 @@ void CombineHandler::combine(
 
 	// const size_t targetRamSize = 25l * 1024l * 1024l * 1024l;
 	// const size_t targetVRamSize = 8l * 1024l * 1024l * 1024l;
-	// const size_t targetVRamSize = 7500l * 1024l * 1024l;
-	const size_t targetVRamSize = 4000l * 1024l * 1024l;
+	const size_t targetVRamSize = 7500l * 1024l * 1024l;
+	// const size_t targetVRamSize = 4000l * 1024l * 1024l;
 
 	const int NConn = conns.size();
 	const int qtd_a = a.size() / __SIZE_A_DISK;
@@ -338,7 +338,7 @@ void CombineHandler::combine(
 	int16_t* d_a = CudaCombine::createDeviceCoreLayoutsArray(a);
 	int16_t* d_b = CudaCombine::createDeviceCoreLayoutsArray(b);
 
-	const int nCpuThreads = 6;
+	const int nCpuThreads = 3;
 	// int16_t** h_res = CudaGenerate::createHostResArray(result_mem_size, nCpuThreads);
 	std::vector<std::vector<int>> h_res(nCpuThreads, std::vector<int>(ptsPerKernel, __COMBINE_INVALID_LAYOUT));
 	// std::cout << "nCpuThreads: " << nCpuThreads << std::endl;
